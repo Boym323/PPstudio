@@ -21,10 +21,32 @@
     <meta property="og:title" content="<?= escape($title) ?>">
     <meta property="og:description" content="<?= escape($description) ?>">
     <meta property="og:image" content="https://www.ppstudio.cz/frontend/Paji.jpeg">
-    <meta property="og:url" content="https://www.ppstudio.cz/">
+    <meta property="og:url" content="<?= escape($canonicalUrl ?? 'https://www.ppstudio.cz/') ?>">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="cs_CZ">
-    <link rel="canonical" href="https://www.ppstudio.cz/">
+    <meta property="og:site_name" content="<?= escape(setting($siteSettings ?? [], 'site_name', SITE_NAME)) ?>">
+    <link rel="canonical" href="<?= escape($canonicalUrl ?? 'https://www.ppstudio.cz/') ?>">
+
+    <script type="application/ld+json">
+        <?= json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BeautySalon',
+            'name' => setting($siteSettings ?? [], 'site_name', SITE_NAME),
+            'url' => $siteBaseUrl ?? 'https://www.ppstudio.cz',
+            'telephone' => '+420732856036',
+            'image' => 'https://www.ppstudio.cz/frontend/Paji.jpeg',
+            'address' => [
+                '@type' => 'PostalAddress',
+                'streetAddress' => 'náměstí Práce 2512',
+                'addressLocality' => 'Zlín',
+                'postalCode' => '760 01',
+                'addressCountry' => 'CZ',
+            ],
+            'sameAs' => [
+                'https://www.instagram.com/beauty_touch_by_vp/',
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+    </script>
 
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>

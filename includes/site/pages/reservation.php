@@ -1,6 +1,6 @@
 <section class="contact-section" id="contact" style="padding-top:8.5rem;">
     <div class="contact-container">
-        <h2 class="contact-title">Rezervace a kontakt</h2>
+        <h1 class="contact-title">Rezervace a kontakt</h1>
         <div class="reservation-box">
             <h3>Online rezervace</h3>
             <p>Vyberte službu, termín a vyplňte kontakt. Potvrzení rezervace vám dorazí e-mailem.</p>

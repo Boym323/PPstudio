@@ -5,7 +5,7 @@ $certificateItems = loadCertificateUploads(dirname(__DIR__, 3) . '/uploads', '/u
 
 <section class="team" id="team">
     <div class="container">
-        <h2 class="section-title">O <span>mně</span></h2>
+        <h1 class="section-title">O <span>mně</span></h1>
         <div class="team-grid">
             <div class="team-member">
                 <div class="about-profile-head">

@@ -88,6 +88,11 @@ function renderSitePage(array $config): never
         $connection->close();
     }
 
+    $siteBaseUrl = rtrim(setting($siteSettings, 'site_url', 'https://www.ppstudio.cz'), '/');
+    $requestPath = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+    $requestPath = $requestPath !== '' ? $requestPath : '/';
+    $canonicalUrl = $siteBaseUrl . ($requestPath === '/' ? '/' : $requestPath);
+
     $reservationAntispamToken = '';
     if ($activeNav === 'reservation') {
         $reservationAntispamToken = reservationAntispamIssueToken();

@@ -12,7 +12,7 @@ $emailConfig = require __DIR__ . '/config/email.php';
 $siteUrl = rtrim((string) ($emailConfig['site_url'] ?? 'https://www.ppstudio.cz'), '/');
 $lastMod = gmdate('Y-m-d');
 $pages = [
-    '/index.php',
+    '/',
     '/sluzby.php',
     '/cenik.php',
     '/o-studiu.php',

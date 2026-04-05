@@ -1,6 +1,6 @@
 <section class="spaces" id="spaces">
     <div class="container">
-        <h2 class="section-title">Naše <span>Prostory</span></h2>
+        <h1 class="section-title">Naše <span>Prostory</span></h1>
         <div class="spaces-content">
             <div class="spaces-gallery">
                 <a href="/frontend/Prostor5.jpg" class="lightbox-link"><img src="/frontend/Prostor5m.jpg" alt="Kosmetický salon - hlavní místnost"></a>

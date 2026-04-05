@@ -1,6 +1,6 @@
 <section class="services services-primary" id="services">
     <div class="container">
-        <h2 class="section-title">Naše <span>Služby</span></h2>
+        <h1 class="section-title">Naše <span>Služby</span></h1>
         <div class="services-grid">
             <div class="service-card">
                 <span class="service-badge">Nejoblíbenější</span>

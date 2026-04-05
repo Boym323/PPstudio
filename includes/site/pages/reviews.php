@@ -1,6 +1,6 @@
 <section class="reviews-section" id="reviews">
     <div class="reviews-container">
-        <h2 class="reviews-title">Hodnocení našich klientek</h2>
+        <h1 class="reviews-title">Hodnocení našich klientek</h1>
         <p class="reviews-lead">Autentické recenze z Google a možnost přidat vlastní hodnocení na Google i Firmy.cz.</p>
         <div class="reviews-links">
             <?php $googleReviewsUrl = trim(setting($siteSettings, 'google_reviews_url', '')); ?>
