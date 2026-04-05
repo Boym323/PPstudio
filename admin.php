@@ -267,7 +267,6 @@ $studioSettingFields = [
     'site_name' => 'Název studia',
     'site_url' => 'URL webu',
     'contact_address' => 'Adresa studia (pro e-maily)',
-    'contact_map_url' => 'URL mapy (iframe nebo odkaz mapy.cz)',
 ];
 
 if (

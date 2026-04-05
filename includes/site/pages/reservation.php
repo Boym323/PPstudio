@@ -1,22 +1,3 @@
-<?php
-$rawMapSetting = trim(setting($siteSettings, 'contact_map_url', ''));
-$mapIframeSrc = '';
-
-if ($rawMapSetting !== '') {
-    if (preg_match('/<iframe\b[^>]*\bsrc=["\']([^"\']+)["\'][^>]*>/i', $rawMapSetting, $matches)) {
-        $mapIframeSrc = trim((string) ($matches[1] ?? ''));
-    } else {
-        $mapIframeSrc = $rawMapSetting;
-    }
-}
-
-if ($mapIframeSrc === '') {
-    $mapIframeSrc = 'https://mapy.com/';
-}
-
-$mapIframeSrc = preg_replace('#^https?://frame\.mapy\.cz/s/([a-z0-9]+)$#i', 'https://mapy.com/s/$1', $mapIframeSrc) ?: $mapIframeSrc;
-?>
-
 <section class="contact-section" id="contact" style="padding-top:8.5rem;">
     <div class="contact-container">
         <h2 class="contact-title">Rezervace a kontakt</h2>
@@ -183,19 +164,6 @@ $mapIframeSrc = preg_replace('#^https?://frame\.mapy\.cz/s/([a-z0-9]+)$#i', 'htt
                     Interhotel Zlín<br>
                     náměstí Práce 2512, Zlín<br>
                     5. patro, dveře č. 512
-                </div>
-                <div>
-                    <iframe
-                        class="contact-map-iframe"
-                        src="<?= escape($mapIframeSrc) ?>"
-                        width="100%"
-                        height="280"
-                        frameborder="0"
-                        style="border:none;"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                        allowfullscreen
-                    ></iframe>
                 </div>
             </div>
         </div>

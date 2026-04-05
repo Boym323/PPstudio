@@ -91,7 +91,6 @@ const DEFAULT_SETTINGS = [
     'site_url' => 'https://www.ppstudio.cz',
     'site_tagline' => 'Jemná kosmetická péče v klidném, elegantním prostředí',
     'contact_address' => 'Adresa studia',
-    'contact_map_url' => 'https://frame.mapy.cz/s/nonefonano',
     'contact_email' => 'info@ppstudio.cz',
     'contact_phone' => '+420 777 000 000',
     'contact_instagram' => '@ppstudio.cz',

@@ -132,7 +132,6 @@ VALUES
     ('contact_instagram', '@ppstudio.cz'),
     ('contact_transport', 'MHD i autem, presne instrukce po potvrzeni rezervace.'),
     ('contact_parking', 'Parkovani je mozne v okoli studia, doporucujeme prijezd s malou casovou rezervou.'),
-    ('contact_map_url', ''),
     ('instagram_url', 'https://www.instagram.com/beauty_touch_by_vp/'),
     ('google_reviews_url', ''),
     ('firmy_reviews_url', ''),

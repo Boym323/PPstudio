@@ -35,33 +35,10 @@ if (! function_exists('syncServicePriceHistory')) {
     }
 }
 
-if (! function_exists('normalizeContactMapUrlSetting')) {
-    function normalizeContactMapUrlSetting(string $value): string
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return '';
-        }
-
-        if (preg_match('/<iframe\b[^>]*\bsrc=["\']([^"\']+)["\'][^>]*>/i', $value, $matches)) {
-            $value = trim((string) ($matches[1] ?? ''));
-        }
-
-        // Keep provider URL as entered (or extracted from iframe) to avoid
-        // breaking provider-specific embed/share link formats.
-        $value = preg_replace('#^https?://frame\.mapy\.cz/s/([a-z0-9]+)$#i', 'https://mapy.com/s/$1', $value) ?: $value;
-
-        return $value;
-    }
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
     $savedAll = true;
     foreach (array_keys($studioSettingFields) as $settingKey) {
         $settingValue = trim((string) ($_POST[$settingKey] ?? ''));
-        if ($settingKey === 'contact_map_url') {
-            $settingValue = normalizeContactMapUrlSetting($settingValue);
-        }
         if (! saveSiteSetting($connection, $settingKey, $settingValue)) {
             $savedAll = false;
             break;
