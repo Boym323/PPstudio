@@ -1,0 +1,37 @@
+.env
+.env.local
+
+# Secrets / local overrides
+.env.*
+!.env.example
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Runtime and temporary files
+*.log
+*.tmp
+*.temp
+
+# Local caches / generated runtime data
+.google-reviews-cache.json
+.reservation-*
+
+# Uploaded media should stay out of git
+uploads/*
+!uploads/.htaccess
+!uploads/.gitkeep
+
+# Runtime storage (security logs, rate limits, backups)
+var/*
+!var/.gitkeep
+!var/backups/.gitkeep
+!var/security/.gitkeep
+
+# Dependencies (if ever installed locally)
+node_modules/

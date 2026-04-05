@@ -1,0 +1,13 @@
+                <div class="section-heading">
+                    <p class="eyebrow">Provozní správa</p>
+                    <h1>Rychlé řízení termínů, dostupnosti a služeb</h1>
+                    <p>Zjednodušené rozhraní pro každodenní provoz: rezervace, kalendář dostupnosti a služby na jednom místě.</p>
+                </div>
+
+                <?php if ($message !== ''): ?>
+                    <div class="alert alert-success"><?= escape($message) ?></div>
+                <?php endif; ?>
+
+                <?php if ($error !== ''): ?>
+                    <div class="alert alert-error"><?= escape($error) ?></div>
+                <?php endif; ?>

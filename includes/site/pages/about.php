@@ -1,0 +1,107 @@
+<?php
+require_once __DIR__ . '/../../media.php';
+$certificateItems = loadCertificateUploads(dirname(__DIR__, 3) . '/uploads', '/uploads', 'cert_');
+?>
+
+<section class="team" id="team">
+    <div class="container">
+        <h2 class="section-title">O <span>mně</span></h2>
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="team-member-image-veru">
+                    <img src="/frontend/Paji.jpeg" alt="Pavlína Pomykalová">
+                </div>
+                <h3>Pavlína Pomykalová</h3>
+                <div class="team-bio">
+                    <p>Jsem majitelkou PP Studia (Cosmetics & Laminations).</p>
+                    <p>Moje profesní cesta v beauty světě se začala psát v roce 2024. Tehdy jsem se rozhodla v tomto krásném oboru pokračovat a v roce 2025, po dosažení všech kvalifikací, jsem zahájila aktivní praxi.</p>
+                    <p>Věřím, že obličej je zrcadlem naší duše. Mým cílem je dělat ženy sebevědomé, ušetřit jim každé ráno drahocenné minuty času a podpořit jejich fyzickou i duševní pohodu.</p>
+                    <p>Ke každé klientce přistupuji s maximálním respektem a empatií. Doporučuji jen to, co skutečně funguje a přináší výsledky.</p>
+                    <p>Pracuji s českou kosmetikou FOR LIFE & MADAGA. Tato značka je postavena na francouzských základech a je symbolem kvality a šetrnosti.</p>
+                    <p>V PP Studiu najdete například:</p>
+                    <ul>
+                        <li>profesionální péči o pleť,</li>
+                        <li>laminaci obočí,</li>
+                        <li>lash lifting,</li>
+                        <li>uvolňovací lymfatickou masáž obličeje.</li>
+                    </ul>
+                    <p>Vytvořila jsem prostor, kde se můžete zastavit, nadechnout a dopřát si chvíli jen pro sebe.</p>
+                    <p>Těším se na každé naše setkání. I když je několikaletá praxe v oboru výhodou, lze ji vyvážit vášní, talentem, tvrdou dřinou, estetickým cítěním a odhodláním, které do každé své práce dávám.</p>
+                </div>
+                <div class="specialties">
+                    <span class="specialty-tag">Lash lifting</span>
+                    <span class="specialty-tag">Laminace obočí</span>
+                    <span class="specialty-tag">Kosmetické ošetření</span>
+                </div>
+
+                <div class="about-certificates">
+                    <h4>Certifikáty</h4>
+                    <p class="about-certificates-intro">Průběžně se vzdělávám a zde najdete mé odborné certifikace.</p>
+                    <?php if (!empty($certificateItems)): ?>
+                        <div class="about-certificates-grid">
+                            <?php foreach ($certificateItems as $certificate): ?>
+                                <?php
+                                $uploadedAt = (int) ($certificate['modified_at'] ?? 0);
+                                $uploadedLabel = $uploadedAt > 0 ? date('d.m.Y', $uploadedAt) : '';
+                                $isImageCertificate = !empty($certificate['is_image']);
+                                $certificateType = $isImageCertificate ? 'Obrázkový certifikát' : 'PDF certifikát';
+                                $certificateTitle = trim((string) ($certificate['title'] ?? ''));
+                                $certificateUrl = (string) ($certificate['url'] ?? '');
+                                $certificatePreviewUrl = (string) ($certificate['preview_url'] ?? '');
+                                ?>
+                                <a
+                                    class="about-certificate-card"
+                                    href="<?= htmlspecialchars($certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    data-certificate-trigger="1"
+                                    data-certificate-type="<?= $isImageCertificate ? 'image' : 'pdf' ?>"
+                                    data-certificate-url="<?= htmlspecialchars($certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                    data-certificate-title="<?= htmlspecialchars($certificateTitle !== '' ? $certificateTitle : 'Certifikát', ENT_QUOTES, 'UTF-8') ?>"
+                                >
+                                    <div class="about-certificate-media">
+                                        <?php if ($isImageCertificate): ?>
+                                            <img
+                                                src="<?= htmlspecialchars($certificatePreviewUrl !== '' ? $certificatePreviewUrl : $certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                                alt="<?= htmlspecialchars((string) ($certificate['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                loading="lazy"
+                                            >
+                                        <?php else: ?>
+                                            <div class="about-certificate-doc">PDF</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <span class="about-certificate-title"><?= htmlspecialchars($certificateTitle !== '' ? $certificateTitle : 'Certifikát', ENT_QUOTES, 'UTF-8') ?></span>
+                                    <small class="about-certificate-meta">
+                                        <?= htmlspecialchars($certificateType, ENT_QUOTES, 'UTF-8') ?>
+                                        <?= $uploadedLabel !== '' ? ' • nahráno ' . htmlspecialchars($uploadedLabel, ENT_QUOTES, 'UTF-8') : '' ?>
+                                    </small>
+                                    <span class="about-certificate-action">Otevřít certifikát</span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="about-certificates-empty">
+                            Certifikáty budou brzy doplněny.
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="certificate-modal" data-certificate-modal hidden>
+    <div class="certificate-modal-backdrop" data-certificate-close></div>
+    <div class="certificate-modal-dialog" role="dialog" aria-modal="true" aria-label="Náhled certifikátu">
+        <button type="button" class="certificate-modal-close" data-certificate-close aria-label="Zavřít náhled certifikátu">&times;</button>
+        <button type="button" class="certificate-modal-nav certificate-modal-nav-prev" data-certificate-prev aria-label="Předchozí certifikát">‹</button>
+        <button type="button" class="certificate-modal-nav certificate-modal-nav-next" data-certificate-next aria-label="Další certifikát">›</button>
+        <div class="certificate-modal-header">
+            <h5 data-certificate-modal-title>Certifikát</h5>
+        </div>
+        <div class="certificate-modal-body">
+            <img src="" alt="" data-certificate-modal-image hidden>
+            <iframe src="about:blank" title="PDF certifikát" loading="lazy" data-certificate-modal-pdf hidden></iframe>
+        </div>
+    </div>
+</div>

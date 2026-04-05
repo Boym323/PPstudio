@@ -1,0 +1,23 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^(config|includes|database|vendor)/ - [F,L,NC]
+    RewriteRule ^var/ - [F,L,NC]
+    RewriteRule ^uploads/.*\.(php|phtml|phar)$ - [F,L,NC]
+    RewriteRule ^sitemap\.xml$ sitemap.php [L,NC]
+</IfModule>
+
+<FilesMatch "^(\.env|\.env\.local|\.git|\.htaccess|\.reservation-.*|\.google-reviews-cache\.json)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; connect-src 'self' https://maps.googleapis.com; frame-src 'self' https://mapy.com https://*.mapy.com https://mapy.cz https://*.mapy.cz https://www.firmy.cz https://*.firmy.cz https://www.google.com https://maps.google.com; upgrade-insecure-requests"
+</IfModule>
