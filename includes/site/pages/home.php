@@ -1,9 +1,14 @@
 <section class="hero" id="home">
     <div class="hero-content">
-        <div class="hero-text" style="text-align:left;">
-            <img src="/frontend/LOGO1.PNG" alt="PP Studio logo" style="max-width:180px; width:90%; height:auto; margin-bottom:1.2rem;" loading="eager" decoding="async">
+        <div class="hero-text hero-text-left">
+            <img src="/frontend/LOGO1.PNG" alt="PP Studio logo" class="hero-logo" loading="eager" decoding="async">
             <h1>PP <span>Studio</span></h1>
-            <p>Vytvořila jsem pro vás prostor, kde se čas na chvíli zastaví. Moje studio není jen o procedurách, je o zážitku, po kterém se budete cítit odpočatá a sebevědomá. Přijďte si dopřát profesionální péči, nechte se hýčkat v harmonické atmosféře a odejděte jako nová verze sebe sama.</p>
+            <p>Vytvořila jsem pro vás prostor, kde se čas na chvíli zastaví. Dopřejte si profesionální péči, harmonickou atmosféru a odejděte odpočatá a sebevědomá.</p>
+            <div class="hero-benefits">
+                <span class="hero-benefit">Interhotel Zlín</span>
+                <span class="hero-benefit">Individuální přístup</span>
+                <span class="hero-benefit">Online rezervace 24/7</span>
+            </div>
             <div class="hero-cta-group">
                 <a href="/rezervace.php" class="cta-button cta-button-primary">Objednat se online</a>
                 <a href="/cenik.php" class="cta-button cta-button-ghost">Zobrazit ceník</a>
@@ -69,34 +74,6 @@
         <div class="services-help">
             <p>Nejste si jistá výběrem služby? Vyberte orientačně termín a vše doladíme společně na místě.</p>
             <a href="/rezervace.php" class="cta-button cta-button-primary">Chci doporučit službu a rezervovat</a>
-        </div>
-    </div>
-</section>
-
-<section class="services">
-    <div class="container">
-        <h2 class="section-title">Objevte <span>více</span></h2>
-        <div class="services-grid">
-            <a class="service-card" href="/sluzby.php" style="text-decoration:none; color:inherit;">
-                <i class="fas fa-list"></i>
-                <h3>Služby</h3>
-                <p>Přehled hlavních typů ošetření a péče, kterou ve studiu nabízím.</p>
-            </a>
-            <a class="service-card" href="/cenik.php" style="text-decoration:none; color:inherit;">
-                <i class="fas fa-tags"></i>
-                <h3>Ceník</h3>
-                <p>Všechny procedury přehledně podle kategorií včetně délky a ceny.</p>
-            </a>
-            <a class="service-card" href="/o-studiu.php" style="text-decoration:none; color:inherit;">
-                <i class="fas fa-user"></i>
-                <h3>O mně</h3>
-                <p>Poznejte můj přístup, zkušenosti a filozofii péče v PP Studiu.</p>
-            </a>
-            <a class="service-card" href="/rezervace.php" style="text-decoration:none; color:inherit;">
-                <i class="fas fa-calendar-check"></i>
-                <h3>Rezervace a kontakt</h3>
-                <p>Vyberte si termín online nebo mě kontaktujte přímo.</p>
-            </a>
         </div>
     </div>
 </section>

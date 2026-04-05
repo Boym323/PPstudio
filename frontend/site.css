@@ -142,6 +142,18 @@
             align-items: center;
         }
 
+        .hero-text-left {
+            text-align: left;
+        }
+
+        .hero-logo {
+            display: block;
+            max-width: 180px;
+            width: 90%;
+            height: auto;
+            margin-bottom: 1.2rem;
+        }
+
         .hero-text h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
@@ -157,9 +169,30 @@
 
         .hero-text p {
             font-size: 1.2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             color: #6e5f52;
-            line-height: 1.8;
+            line-height: 1.65;
+            max-width: 52ch;
+        }
+
+        .hero-benefits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin: 0 0 1.2rem 0;
+        }
+
+        .hero-benefit {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #d9c3aa;
+            background: rgba(255, 252, 248, .82);
+            color: #6d503b;
+            border-radius: 999px;
+            padding: .33rem .72rem;
+            font-size: .82rem;
+            font-weight: 600;
+            letter-spacing: .01em;
         }
 
         .cta-button {
@@ -1315,6 +1348,25 @@
             .hero-content {
                 grid-template-columns: 1fr;
                 text-align: center;
+            }
+
+            .hero-text-left {
+                text-align: center;
+            }
+
+            .hero-logo {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-benefits {
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+
+            .hero-cta-group {
+                gap: .5rem;
+                justify-content: center;
             }
 
             .hero-text h1 {
@@ -2630,7 +2682,28 @@
             .hero-text p {
                 font-size: 1rem;
                 line-height: 1.58;
-                margin-bottom: 1.2rem;
+                margin-bottom: .82rem;
+                max-width: none;
+            }
+
+            .hero-benefits {
+                margin-bottom: .95rem;
+            }
+
+            .hero-benefit {
+                font-size: .76rem;
+                padding: .3rem .6rem;
+            }
+
+            .hero-cta-group {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hero-cta-group .cta-button {
+                width: 100%;
+                text-align: center;
             }
 
             .hero-image::before {
