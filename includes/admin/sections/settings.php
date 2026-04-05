@@ -6,14 +6,17 @@
                             <?= csrfInputField() ?>
                             <?php
                             foreach ($studioSettingFields as $fieldKey => $fieldLabel):
-                                $isLong = false;
+                                $isLong = $fieldKey === 'contact_map_url';
+                                $inputType = str_contains($fieldKey, 'email')
+                                    ? 'email'
+                                    : (str_contains($fieldKey, 'url') && $fieldKey !== 'contact_map_url' ? 'url' : 'text');
                             ?>
                                 <label class="<?= $isLong ? 'full-span' : '' ?>">
                                     <span><?= escape($fieldLabel) ?></span>
                                     <?php if ($isLong): ?>
-                                        <textarea name="<?= escape($fieldKey) ?>" rows="4"><?= escape(setting($siteSettings, $fieldKey, '')) ?></textarea>
+                                        <textarea name="<?= escape($fieldKey) ?>" rows="3" placeholder="Vložte URL nebo celý iframe kód z Mapy.cz"><?= escape(setting($siteSettings, $fieldKey, '')) ?></textarea>
                                     <?php else: ?>
-                                        <input type="<?= str_contains($fieldKey, 'email') ? 'email' : (str_contains($fieldKey, 'url') ? 'url' : 'text') ?>" name="<?= escape($fieldKey) ?>" value="<?= escape(setting($siteSettings, $fieldKey, '')) ?>">
+                                        <input type="<?= $inputType ?>" name="<?= escape($fieldKey) ?>" value="<?= escape(setting($siteSettings, $fieldKey, '')) ?>">
                                     <?php endif; ?>
                                 </label>
                             <?php endforeach; ?>
