@@ -8,30 +8,47 @@ $certificateItems = loadCertificateUploads(dirname(__DIR__, 3) . '/uploads', '/u
         <h2 class="section-title">O <span>mně</span></h2>
         <div class="team-grid">
             <div class="team-member">
-                <div class="team-member-image-veru">
-                    <img src="/frontend/Paji.jpeg" alt="Pavlína Pomykalová">
+                <div class="about-profile-head">
+                    <div class="team-member-image-veru">
+                        <img src="/frontend/Paji.jpeg" alt="Pavlína Pomykalová">
+                    </div>
+                    <div class="about-profile-meta">
+                        <h3>Pavlína Pomykalová</h3>
+                        <p class="about-role">Majitelka PP Studia (Cosmetics &amp; Laminations)</p>
+                        <p class="about-intro">Vytvořila jsem prostor, kde se můžete zastavit, nadechnout a dopřát si chvíli jen pro sebe.</p>
+                        <div class="specialties">
+                            <span class="specialty-tag">Lash lifting</span>
+                            <span class="specialty-tag">Laminace obočí</span>
+                            <span class="specialty-tag">Kosmetické ošetření</span>
+                        </div>
+                    </div>
                 </div>
-                <h3>Pavlína Pomykalová</h3>
                 <div class="team-bio">
-                    <p>Jsem majitelkou PP Studia (Cosmetics & Laminations).</p>
-                    <p>Moje profesní cesta v beauty světě se začala psát v roce 2024. Tehdy jsem se rozhodla v tomto krásném oboru pokračovat a v roce 2025, po dosažení všech kvalifikací, jsem zahájila aktivní praxi.</p>
-                    <p>Věřím, že obličej je zrcadlem naší duše. Mým cílem je dělat ženy sebevědomé, ušetřit jim každé ráno drahocenné minuty času a podpořit jejich fyzickou i duševní pohodu.</p>
-                    <p>Ke každé klientce přistupuji s maximálním respektem a empatií. Doporučuji jen to, co skutečně funguje a přináší výsledky.</p>
-                    <p>Pracuji s českou kosmetikou FOR LIFE & MADAGA. Tato značka je postavena na francouzských základech a je symbolem kvality a šetrnosti.</p>
-                    <p>V PP Studiu najdete například:</p>
-                    <ul>
-                        <li>profesionální péči o pleť,</li>
-                        <li>laminaci obočí,</li>
-                        <li>lash lifting,</li>
-                        <li>uvolňovací lymfatickou masáž obličeje.</li>
-                    </ul>
-                    <p>Vytvořila jsem prostor, kde se můžete zastavit, nadechnout a dopřát si chvíli jen pro sebe.</p>
-                    <p>Těším se na každé naše setkání. I když je několikaletá praxe v oboru výhodou, lze ji vyvážit vášní, talentem, tvrdou dřinou, estetickým cítěním a odhodláním, které do každé své práce dávám.</p>
+                    <div class="about-story-grid">
+                        <article class="about-story-block">
+                            <h4>Můj příběh</h4>
+                            <p>Moje profesní cesta v beauty světě se začala psát v roce 2024. Tehdy jsem se rozhodla v tomto krásném oboru pokračovat a v roce 2025, po dosažení všech kvalifikací, jsem zahájila aktivní praxi.</p>
+                        </article>
+                        <article class="about-story-block">
+                            <h4>Můj přístup</h4>
+                            <p>Věřím, že obličej je zrcadlem naší duše. Mým cílem je dělat ženy sebevědomé, ušetřit jim každé ráno drahocenné minuty času a podpořit jejich fyzickou i duševní pohodu.</p>
+                            <p>Ke každé klientce přistupuji s maximálním respektem a empatií. Doporučuji jen to, co skutečně funguje a přináší výsledky.</p>
+                        </article>
+                        <article class="about-story-block about-story-block-wide">
+                            <h4>Na co se můžete těšit</h4>
+                            <p>Pracuji s českou kosmetikou FOR LIFE &amp; MADAGA. Tato značka je postavena na francouzských základech a je symbolem kvality a šetrnosti.</p>
+                            <ul>
+                                <li>profesionální péče o pleť,</li>
+                                <li>laminace obočí,</li>
+                                <li>lash lifting,</li>
+                                <li>uvolňovací lymfatická masáž obličeje.</li>
+                            </ul>
+                        </article>
+                    </div>
+                    <p class="about-closing">Těším se na každé naše setkání. I když je několikaletá praxe v oboru výhodou, lze ji vyvážit vášní, talentem, tvrdou dřinou, estetickým cítěním a odhodláním, které do každé své práce dávám.</p>
                 </div>
-                <div class="specialties">
-                    <span class="specialty-tag">Lash lifting</span>
-                    <span class="specialty-tag">Laminace obočí</span>
-                    <span class="specialty-tag">Kosmetické ošetření</span>
+                <div class="about-divider" aria-hidden="true">
+                    <span></span>
                 </div>
 
                 <div class="about-certificates">

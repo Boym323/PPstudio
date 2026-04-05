@@ -444,16 +444,56 @@
 
         .team-member {
             background: #fff;
-            padding: 2.5rem;
+            padding: 2rem;
             border-radius: var(--radius);
-            text-align: center;
+            text-align: left;
             transition: all 0.3s;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 980px;
+            margin: 0 auto;
         }
 
         .team-member:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.13);
+        }
+
+        .about-profile-head {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 1.1rem;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .about-profile-meta h3 {
+            margin: 0 0 .35rem 0;
+            font-size: 1.95rem;
+            line-height: 1.02;
+            letter-spacing: .01em;
+        }
+
+        .about-role {
+            margin: 0 0 .5rem 0;
+            display: inline-flex;
+            align-items: center;
+            background: #f2e5d7;
+            color: #6d503b;
+            border: 1px solid #e0cdb8;
+            border-radius: 999px;
+            padding: .24rem .74rem;
+            font-size: .78rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .about-intro {
+            margin: 0 0 .7rem 0;
+            color: #5e4a3b;
+            line-height: 1.65;
+            max-width: 62ch;
+            font-size: 1.01rem;
         }
 
         .team-member-image,
@@ -509,6 +549,90 @@
             margin-bottom: 0.9rem;
         }
 
+        .about-story-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .95rem;
+        }
+
+        .about-story-block {
+            background: #fff8ef;
+            border: 1px solid #e6d7c6;
+            border-radius: 14px;
+            padding: .9rem .95rem;
+        }
+
+        .about-story-block h4 {
+            margin: 0 0 .42rem 0;
+            font-size: 1.02rem;
+            color: #4a3529;
+        }
+
+        .about-story-block p {
+            margin: 0 0 .55rem 0;
+            color: #645548;
+            line-height: 1.68;
+            max-width: 64ch;
+            text-align: left;
+            font-size: .99rem;
+        }
+
+        .about-story-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        .about-story-block ul {
+            margin: .4rem 0 0 1rem;
+            line-height: 1.65;
+            color: #625244;
+            max-width: 62ch;
+        }
+
+        .about-story-block li + li {
+            margin-top: .16rem;
+        }
+
+        .about-story-block-wide {
+            grid-column: 1 / -1;
+        }
+
+        .about-closing {
+            margin-top: .95rem;
+            color: #5c493a;
+            font-style: italic;
+            text-align: left !important;
+            line-height: 1.72;
+            max-width: 70ch;
+            font-size: 1.01rem;
+        }
+
+        .about-divider {
+            display: flex;
+            justify-content: center;
+            margin: 1.25rem 0 1.1rem;
+        }
+
+        .about-divider span {
+            width: min(220px, 62%);
+            height: 1px;
+            display: block;
+            background: linear-gradient(90deg, rgba(210, 187, 163, 0) 0%, rgba(186, 156, 128, 0.9) 50%, rgba(210, 187, 163, 0) 100%);
+            position: relative;
+        }
+
+        .about-divider span::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: #c4a283;
+            box-shadow: 0 0 0 3px #fff;
+        }
+
         .team-bio ul {
             text-align: left;
             color: #6e5f52;
@@ -520,7 +644,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         .specialty-tag {
@@ -789,6 +913,20 @@
         @media (max-width: 520px) {
             .about-certificates-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .about-profile-head {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .about-profile-meta h3 {
+                font-size: 1.65rem;
+            }
+
+            .about-story-grid {
+                grid-template-columns: 1fr;
+                gap: .75rem;
             }
 
             .about-certificate-media {
