@@ -84,22 +84,15 @@ ppstudioLoadEnvFiles([
 ]);
 
 const SITE_NAME = 'PPStudio';
-const SITE_TAGLINE = 'Kosmetické studio s jemnou péčí a profesionálním přístupem';
 
 const DEFAULT_SETTINGS = [
     'site_name' => 'PPStudio',
     'site_url' => 'https://www.ppstudio.cz',
-    'site_tagline' => 'Jemná kosmetická péče v klidném, elegantním prostředí',
     'contact_address' => 'Adresa studia',
-    'contact_email' => 'info@ppstudio.cz',
-    'contact_phone' => '+420 777 000 000',
-    'contact_instagram' => '@ppstudio.cz',
-    'opening_hours' => 'Po - Pá: 8:00 - 18:00 | So: dle objednání',
     'instagram_url' => 'https://www.instagram.com/beauty_touch_by_vp/',
     'instagram_feed_embed' => '',
     'google_reviews_url' => '',
     'firmy_reviews_url' => '',
-    'google_reviews_embed' => '',
     'firmy_reviews_embed' => '',
     'google_place_id' => '',
     'google_reviews_language' => 'cs',
