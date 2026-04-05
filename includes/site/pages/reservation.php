@@ -11,11 +11,10 @@ if ($rawMapSetting !== '') {
 }
 
 if ($mapIframeSrc === '') {
-    $mapIframeSrc = 'https://frame.mapy.cz/s/nonefonano';
+    $mapIframeSrc = 'https://mapy.com/';
 }
 
-$mapIframeSrc = preg_replace('#^https?://(?:www\.)?mapy\.com/#i', 'https://mapy.cz/', $mapIframeSrc) ?: $mapIframeSrc;
-$mapIframeSrc = preg_replace('#^https?://(?:www\.)?mapy\.(?:cz|com)/s/([a-z0-9]+)$#i', 'https://frame.mapy.cz/s/$1', $mapIframeSrc) ?: $mapIframeSrc;
+$mapIframeSrc = preg_replace('#^https?://frame\.mapy\.cz/s/([a-z0-9]+)$#i', 'https://mapy.com/s/$1', $mapIframeSrc) ?: $mapIframeSrc;
 ?>
 
 <section class="contact-section" id="contact" style="padding-top:8.5rem;">

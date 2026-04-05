@@ -47,8 +47,9 @@ if (! function_exists('normalizeContactMapUrlSetting')) {
             $value = trim((string) ($matches[1] ?? ''));
         }
 
-        $value = preg_replace('#^https?://(?:www\.)?mapy\.com/#i', 'https://mapy.cz/', $value) ?: $value;
-        $value = preg_replace('#^https?://(?:www\.)?mapy\.(?:cz|com)/s/([a-z0-9]+)$#i', 'https://frame.mapy.cz/s/$1', $value) ?: $value;
+        // Keep provider URL as entered (or extracted from iframe) to avoid
+        // breaking provider-specific embed/share link formats.
+        $value = preg_replace('#^https?://frame\.mapy\.cz/s/([a-z0-9]+)$#i', 'https://mapy.com/s/$1', $value) ?: $value;
 
         return $value;
     }
