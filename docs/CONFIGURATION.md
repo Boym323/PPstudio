@@ -12,6 +12,12 @@ Klíče, které aplikace načítá z DB:
 - `site_name` – název studia pro web/e-maily/admin.
 - `site_url` – veřejná URL webu (kanonické URL, odkazy v e-mailech, sitemap).
 - `contact_address` – adresa studia (web + e-mailové šablony).
+- `contact_name` – jméno kontaktní osoby v sekci Rezervace & kontakt.
+- `contact_phone` – telefon v sekci Rezervace & kontakt.
+- `contact_email` – kontaktní e-mail v sekci Rezervace & kontakt (obfuskovaný na frontendu).
+- `contact_instagram_url` – odkaz na Instagram v kontaktním boxu.
+- `contact_ico` – IČO v kontaktním boxu.
+- `contact_opening_hours` – otevírací doba v kontaktním boxu.
 - `notification_emails` – cílové e-maily pro admin notifikace rezervací.
 - `instagram_url` – odkaz na Instagram profil.
 - `instagram_feed_embed` – embed kód/zdroj pro Instagram feed (pokud používán).

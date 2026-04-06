@@ -266,6 +266,12 @@ $adminBasePath = 'admin.php';
 $studioSettingFields = [
     'site_name' => 'Název studia',
     'site_url' => 'URL webu',
+    'contact_name' => 'Kontaktní osoba',
+    'contact_phone' => 'Telefon',
+    'contact_email' => 'Kontaktní e-mail',
+    'contact_instagram_url' => 'Instagram URL',
+    'contact_ico' => 'IČO',
+    'contact_opening_hours' => 'Otevírací doba',
     'contact_address' => 'Adresa studia (pro e-maily)',
 ];
 

@@ -6,7 +6,7 @@
                             <?= csrfInputField() ?>
                             <?php
                             foreach ($studioSettingFields as $fieldKey => $fieldLabel):
-                                $isLong = false;
+                                $isLong = in_array($fieldKey, ['contact_address', 'contact_opening_hours'], true);
                                 $inputType = str_contains($fieldKey, 'email')
                                     ? 'email'
                                     : (str_contains($fieldKey, 'url') ? 'url' : 'text');

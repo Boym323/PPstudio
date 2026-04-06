@@ -4,6 +4,9 @@
     <?php
     $cssVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.css') ?: time());
     $jsVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.js') ?: time());
+    $schemaAddress = setting($siteSettings ?? [], 'contact_address', 'náměstí Práce 2512, Zlín');
+    $schemaInstagramUrl = setting($siteSettings ?? [], 'instagram_url', 'https://www.instagram.com/beauty_touch_by_vp/');
+    $schemaPhone = setting($siteSettings ?? [], 'contact_phone', '+420732856036');
     ?>
     <meta charset="UTF-8">
     <link rel="apple-touch-icon" sizes="180x180" href="/frontend/favicon/apple-touch-icon.png">
@@ -34,17 +37,16 @@
             '@type' => 'BeautySalon',
             'name' => setting($siteSettings ?? [], 'site_name', defaultSiteName()),
             'url' => $resolvedSiteBaseUrl,
-            'telephone' => '+420732856036',
+            'telephone' => $schemaPhone,
             'image' => ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg',
             'address' => [
                 '@type' => 'PostalAddress',
-                'streetAddress' => 'náměstí Práce 2512',
-                'addressLocality' => 'Zlín',
+                'streetAddress' => $schemaAddress,
                 'postalCode' => '760 01',
                 'addressCountry' => 'CZ',
             ],
             'sameAs' => [
-                'https://www.instagram.com/beauty_touch_by_vp/',
+                $schemaInstagramUrl,
             ],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
     </script>

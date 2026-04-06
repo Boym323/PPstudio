@@ -142,28 +142,52 @@
             </div>
         </div>
 
+        <?php
+        $contactName = setting($siteSettings, 'contact_name', 'Pavlína Pomykalová');
+        $contactPhone = setting($siteSettings, 'contact_phone', '+420 732 856 036');
+        $contactEmail = setting($siteSettings, 'contact_email', 'pavlina@pomykal.cz');
+        $contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', setting($siteSettings, 'instagram_url', ''));
+        $contactIco = setting($siteSettings, 'contact_ico', '234 275 66');
+        $contactOpeningHours = setting($siteSettings, 'contact_opening_hours', 'Po-Pá: Dle objednávek');
+        $contactAddress = setting($siteSettings, 'contact_address', "Interhotel Zlin\nnamesti Prace 2512, Zlin\n5. patro, dvere c. 512");
+
+        $emailUser = $contactEmail;
+        $emailDomain = '';
+        if (str_contains($contactEmail, '@')) {
+            [$emailUser, $emailDomain] = explode('@', $contactEmail, 2);
+        }
+        $instagramHandle = '';
+        if ($contactInstagramUrl !== '') {
+            $instagramPath = trim((string) parse_url($contactInstagramUrl, PHP_URL_PATH), '/');
+            if ($instagramPath !== '') {
+                $instagramHandle = '@' . trim(explode('/', $instagramPath)[0]);
+            }
+        }
+        ?>
         <div class="contact-grid" id="contact-info">
             <div>
                 <div class="contact-box">
-                    <strong>Pavlína Pomykalová</strong><br>
-                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> +420 732 856 036<br>
+                    <strong><?= escape($contactName) ?></strong><br>
+                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <?= escape($contactPhone) ?><br>
                     <i class="fas fa-envelope" style="color:#7a5a43; margin-right:6px;"></i>
-                    <span class="email" data-user="pavlina" data-domain="pomykal.cz">pavlina [zavináč] pomykal.cz</span><br>
-                    <i class="fab fa-instagram" style="color:#7a5a43; margin-right:6px;"></i>
-                    <a href="https://www.instagram.com/beauty_touch_by_vp/" target="_blank" style="color:#7a5a43;">@beauty_touch_by_vp</a><br>
-                    <span style="font-size:0.98em; color:#7a6a5b;"><strong>IČO:</strong> 234 275 66</span>
+                    <span class="email" data-user="<?= escape($emailUser) ?>" data-domain="<?= escape($emailDomain) ?>"><?= escape($emailUser) ?> [zavináč] <?= escape($emailDomain) ?></span><br>
+                    <?php if ($contactInstagramUrl !== ''): ?>
+                        <i class="fab fa-instagram" style="color:#7a5a43; margin-right:6px;"></i>
+                        <a href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= escape($instagramHandle !== '' ? $instagramHandle : $contactInstagramUrl) ?></a><br>
+                    <?php endif; ?>
+                    <?php if ($contactIco !== ''): ?>
+                        <span style="font-size:0.98em; color:#7a6a5b;"><strong>IČO:</strong> <?= escape($contactIco) ?></span>
+                    <?php endif; ?>
                 </div>
                 <div class="contact-box">
                     <strong>Otevírací doba:</strong><br>
-                    Po–Pá: Dle objednávek
+                    <?= nl2br(escape($contactOpeningHours)) ?>
                 </div>
             </div>
             <div>
                 <div class="contact-box" style="margin-bottom: 1.2rem;">
                     <strong>Adresa:</strong><br>
-                    Interhotel Zlín<br>
-                    náměstí Práce 2512, Zlín<br>
-                    5. patro, dveře č. 512
+                    <?= nl2br(escape($contactAddress)) ?>
                 </div>
             </div>
         </div>
