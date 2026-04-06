@@ -563,3 +563,76 @@ foreach ($availabilityRows as $row) {
         ];
     }
 }
+
+$voucherTableQuery = $connection->query("SHOW TABLES LIKE 'poukazy'");
+if ($voucherTableQuery instanceof mysqli_result) {
+    $voucherModuleReady = (bool) $voucherTableQuery->fetch_row();
+    $voucherTableQuery->free();
+}
+
+if ($voucherModuleReady) {
+    $voucherQuery = $connection->query(
+        'SELECT p.id, p.kod, p.puvodni_hodnota, p.zustatek, p.status, p.issued_at, p.expires_at, p.recipient_name, p.note, p.updated_at,
+                CASE
+                    WHEN p.status = "storno" THEN "storno"
+                    WHEN p.expires_at IS NOT NULL AND p.expires_at < CURDATE() THEN "expirovan"
+                    WHEN p.zustatek <= 0 THEN "vycerpan"
+                    ELSE "aktivni"
+                END AS effective_status
+         FROM poukazy p
+         ORDER BY p.created_at DESC, p.id DESC
+         LIMIT 300'
+    );
+    if ($voucherQuery instanceof mysqli_result) {
+        while ($row = $voucherQuery->fetch_assoc()) {
+            $voucherRows[] = $row;
+        }
+        $voucherQuery->free();
+    }
+
+    if ($voucherRows !== []) {
+        $voucherIds = array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $voucherRows);
+        $voucherIds = array_values(array_filter($voucherIds, static fn(int $id): bool => $id > 0));
+
+        if ($voucherIds !== []) {
+            $idList = implode(',', $voucherIds);
+            $voucherTxQuery = $connection->query(
+                "SELECT id, poukaz_id, castka, typ, rezervace_id, poznamka, created_at
+                 FROM poukaz_cerpani
+                 WHERE poukaz_id IN ({$idList})
+                 ORDER BY created_at DESC, id DESC
+                 LIMIT 1200"
+            );
+            if ($voucherTxQuery instanceof mysqli_result) {
+                while ($row = $voucherTxQuery->fetch_assoc()) {
+                    $voucherId = (int) ($row['poukaz_id'] ?? 0);
+                    if ($voucherId <= 0) {
+                        continue;
+                    }
+                    if (! isset($voucherTransactionsByVoucher[$voucherId])) {
+                        $voucherTransactionsByVoucher[$voucherId] = [];
+                    }
+                    if (count($voucherTransactionsByVoucher[$voucherId]) >= 12) {
+                        continue;
+                    }
+                    $voucherTransactionsByVoucher[$voucherId][] = $row;
+                }
+                $voucherTxQuery->free();
+            }
+        }
+    }
+
+    $voucherReservationsQuery = $connection->query(
+        'SELECT id, jmeno, datum_cas
+         FROM rezervace
+         WHERE stav IN ("nova", "potvrzena", "dokoncena")
+         ORDER BY datum_cas DESC
+         LIMIT 250'
+    );
+    if ($voucherReservationsQuery instanceof mysqli_result) {
+        while ($row = $voucherReservationsQuery->fetch_assoc()) {
+            $voucherReservationOptions[] = $row;
+        }
+        $voucherReservationsQuery->free();
+    }
+}

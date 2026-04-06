@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-06
 
+- [feat] Přidán admin modul dárkových poukazů včetně částečného čerpání, historie transakcí a UX přehledu (commit: `this-commit`)
 - [fix] Odstraněn odkaz na sdílený kalendář studia z potvrzovacího e-mailu klientky (commit: `b3224e7`)
 - [style] Vylepšena responzivita tabulky rezervací a zkompaktněny admin akce (commit: `47ce4a9`)
 - [refactor] Kontaktní údaje přesunuty do DB nastavení a sjednoceny zdroje konfigurace (commit: `4339fbd`)
@@ -23,4 +24,3 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - [fix] Opravena normalizace URL mapy pro zachování embed odkazů z Mapy.com (commit: `36ea80e`)
 - [feat] Povolen vstup `iframe` pro mapu v admin nastavení (commit: `a38b091`)
 - [fix] Opravena práce s map embed nastavením a URL normalizací pro Mapy (commit: `b9adbbf`)
-

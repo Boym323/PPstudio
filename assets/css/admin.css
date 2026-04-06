@@ -657,6 +657,182 @@ p {
     opacity: 0;
 }
 
+.voucher-admin-table {
+    min-width: 1160px;
+    width: max-content;
+    max-width: none;
+    table-layout: auto;
+    font-size: 0.92rem;
+}
+
+.voucher-admin-table th:nth-child(1),
+.voucher-admin-table td:nth-child(1) { min-width: 170px; }
+.voucher-admin-table th:nth-child(2),
+.voucher-admin-table td:nth-child(2) { min-width: 130px; }
+.voucher-admin-table th:nth-child(3),
+.voucher-admin-table td:nth-child(3) { min-width: 120px; }
+.voucher-admin-table th:nth-child(4),
+.voucher-admin-table td:nth-child(4) { min-width: 120px; }
+.voucher-admin-table th:nth-child(5),
+.voucher-admin-table td:nth-child(5) { min-width: 120px; }
+.voucher-admin-table th:nth-child(6),
+.voucher-admin-table td:nth-child(6) { min-width: 110px; }
+.voucher-admin-table th:nth-child(7),
+.voucher-admin-table td:nth-child(7) { min-width: 200px; }
+.voucher-admin-table th:nth-child(8),
+.voucher-admin-table td:nth-child(8) { min-width: 320px; }
+
+.voucher-note {
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-soft);
+}
+
+.voucher-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0 0 0.9rem 0;
+}
+
+.voucher-summary-card {
+    border: 1px solid rgba(219, 203, 189, 0.75);
+    border-radius: 14px;
+    background: rgba(255, 251, 246, 0.72);
+    padding: 0.68rem 0.8rem;
+    display: grid;
+    gap: 0.2rem;
+}
+
+.voucher-summary-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    font-weight: 700;
+}
+
+.voucher-summary-value {
+    font-size: 1.08rem;
+    color: var(--text-dark);
+    line-height: 1.2;
+}
+
+.compact-form-voucher {
+    gap: 0.35rem;
+}
+
+.voucher-actions-grid {
+    display: grid;
+    gap: 0.34rem;
+}
+
+.voucher-actions-grid input,
+.voucher-actions-grid select {
+    padding: 0.42rem 0.54rem;
+    font-size: 0.84rem;
+}
+
+.voucher-actions-grid .button {
+    width: 100%;
+}
+
+.voucher-amount-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.38rem;
+}
+
+.voucher-amount-row .button {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.voucher-link-reservation > summary {
+    cursor: pointer;
+    font-size: 0.79rem;
+    color: var(--text-soft);
+    font-weight: 700;
+}
+
+.voucher-link-reservation select {
+    margin-top: 0.35rem;
+}
+
+.voucher-balance-meta {
+    margin-top: 0.28rem;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+}
+
+.voucher-progress {
+    margin-top: 0.28rem;
+    width: 100%;
+    height: 0.38rem;
+    border-radius: 999px;
+    background: rgba(196, 171, 145, 0.24);
+    overflow: hidden;
+}
+
+.voucher-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(132, 95, 66, 0.86), rgba(172, 130, 97, 0.92));
+}
+
+.voucher-transactions-wrap {
+    margin-top: 0.4rem;
+    border-top: 1px solid rgba(219, 203, 189, 0.65);
+    padding-top: 0.3rem;
+}
+
+.voucher-transactions-wrap > summary {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    font-weight: 700;
+}
+
+.voucher-transactions-list {
+    margin: 0.35rem 0 0 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.25rem;
+}
+
+.voucher-transactions-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    color: var(--text-soft);
+}
+
+.voucher-status-aktivni {
+    background: #eef3ea;
+    border-color: #c9d4bf;
+    color: #4e6245;
+}
+
+.voucher-status-vycerpan {
+    background: #f1ece5;
+    border-color: #d8c7b4;
+    color: #6a5948;
+}
+
+.voucher-status-storno {
+    background: #f9ece7;
+    border-color: #ddb8ab;
+    color: #8d4f3f;
+}
+
+.voucher-status-expirovan {
+    background: #f2edf4;
+    border-color: #d2c3d8;
+    color: #6a5573;
+}
+
 .pagination-separator {
     color: var(--text-soft);
     padding: 0 0.25rem;
@@ -1528,6 +1704,10 @@ body.is-sorting-categories {
 }
 
 @media (max-width: 720px) {
+    .voucher-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
     .admin-shell {
         padding: var(--section-space-mobile) 0;
     }
@@ -1661,13 +1841,15 @@ body.is-sorting-categories {
     }
 
     .service-admin-table,
-    .reservations-admin-table {
+    .reservations-admin-table,
+    .voucher-admin-table {
         table-layout: auto;
         min-width: 0;
     }
 
     .service-admin-table thead,
-    .reservations-admin-table thead {
+    .reservations-admin-table thead,
+    .voucher-admin-table thead {
         display: none;
     }
 
@@ -1676,13 +1858,17 @@ body.is-sorting-categories {
     .service-admin-table td,
     .reservations-admin-table tbody,
     .reservations-admin-table tr,
-    .reservations-admin-table td {
+    .reservations-admin-table td,
+    .voucher-admin-table tbody,
+    .voucher-admin-table tr,
+    .voucher-admin-table td {
         display: block;
         width: 100%;
     }
 
     .service-admin-table tr,
-    .reservations-admin-table tr {
+    .reservations-admin-table tr,
+    .voucher-admin-table tr {
         border: 1px solid rgba(219, 203, 189, 0.8);
         border-radius: 14px;
         margin-bottom: 0.85rem;
@@ -1691,14 +1877,16 @@ body.is-sorting-categories {
     }
 
     .service-admin-table td,
-    .reservations-admin-table td {
+    .reservations-admin-table td,
+    .voucher-admin-table td {
         border-bottom: 0;
         padding: 0.46rem 0.4rem;
         min-width: 0;
     }
 
     .service-admin-table td::before,
-    .reservations-admin-table td::before {
+    .reservations-admin-table td::before,
+    .voucher-admin-table td::before {
         content: attr(data-label);
         display: block;
         font-size: 0.73rem;
@@ -1734,6 +1922,13 @@ body.is-sorting-categories {
 
     .reservations-admin-table td,
     .reservations-admin-table td::before {
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+
+    .voucher-admin-table td,
+    .voucher-admin-table td::before {
         word-break: normal;
         overflow-wrap: normal;
         hyphens: none;
@@ -1775,14 +1970,28 @@ body.is-sorting-categories {
 }
 
 @media (max-width: 900px) {
+    .voucher-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .voucher-amount-row {
+        grid-template-columns: 1fr;
+    }
+
+    .voucher-amount-row .button {
+        width: 100%;
+    }
+
     .service-admin-table,
-    .reservations-admin-table {
+    .reservations-admin-table,
+    .voucher-admin-table {
         table-layout: auto;
         min-width: 0;
     }
 
     .service-admin-table thead,
-    .reservations-admin-table thead {
+    .reservations-admin-table thead,
+    .voucher-admin-table thead {
         display: none;
     }
 
@@ -1791,13 +2000,17 @@ body.is-sorting-categories {
     .service-admin-table td,
     .reservations-admin-table tbody,
     .reservations-admin-table tr,
-    .reservations-admin-table td {
+    .reservations-admin-table td,
+    .voucher-admin-table tbody,
+    .voucher-admin-table tr,
+    .voucher-admin-table td {
         display: block;
         width: 100%;
     }
 
     .service-admin-table tr,
-    .reservations-admin-table tr {
+    .reservations-admin-table tr,
+    .voucher-admin-table tr {
         border: 1px solid rgba(219, 203, 189, 0.8);
         border-radius: 14px;
         margin-bottom: 0.85rem;
@@ -1806,13 +2019,15 @@ body.is-sorting-categories {
     }
 
     .service-admin-table td,
-    .reservations-admin-table td {
+    .reservations-admin-table td,
+    .voucher-admin-table td {
         border-bottom: 0;
         padding: 0.46rem 0.4rem;
     }
 
     .service-admin-table td::before,
-    .reservations-admin-table td::before {
+    .reservations-admin-table td::before,
+    .voucher-admin-table td::before {
         content: attr(data-label);
         display: block;
         font-size: 0.73rem;
@@ -1843,6 +2058,13 @@ body.is-sorting-categories {
 
     .reservations-admin-table td,
     .reservations-admin-table td::before {
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+
+    .voucher-admin-table td,
+    .voucher-admin-table td::before {
         word-break: normal;
         overflow-wrap: normal;
         hyphens: none;

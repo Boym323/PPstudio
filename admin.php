@@ -139,6 +139,25 @@ $reservationRows = [];
 $serviceRows = [];
 $serviceCategoryRows = [];
 $servicePriceHistoryRows = [];
+$voucherRows = [];
+$voucherTransactionsByVoucher = [];
+$voucherReservationOptions = [];
+$voucherModuleReady = false;
+$voucherForm = [
+    'code' => '',
+    'value' => '',
+    'expires_at' => '',
+    'recipient_name' => '',
+    'note' => '',
+];
+$voucherBatchForm = [
+    'prefix' => 'PP' . date('y'),
+    'count' => '20',
+    'value' => '1000',
+    'expires_at' => '',
+    'recipient_name' => '',
+    'note' => '',
+];
 $dashboardStats = [
     'new_reservations' => 0,
     'upcoming_reservations' => 0,
@@ -254,6 +273,7 @@ $allowedAdminTabs = [
     'dostupnost',
     'rezervace-list',
     'sluzby-admin',
+    'poukazy',
     'media',
     'recenze-napojeni',
     'nastaveni',

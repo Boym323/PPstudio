@@ -81,6 +81,43 @@ CREATE TABLE IF NOT EXISTS security_events (
     KEY idx_security_events_source_created (event_source, created_at)
 );
 
+CREATE TABLE IF NOT EXISTS poukazy (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    kod VARCHAR(40) NOT NULL,
+    puvodni_hodnota DECIMAL(10,2) NOT NULL,
+    zustatek DECIMAL(10,2) NOT NULL,
+    status ENUM('aktivni', 'vycerpan', 'storno') NOT NULL DEFAULT 'aktivni',
+    issued_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATE NULL,
+    recipient_name VARCHAR(180) NULL,
+    note TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_poukazy_kod (kod),
+    KEY idx_poukazy_status (status),
+    KEY idx_poukazy_expires_at (expires_at)
+);
+
+CREATE TABLE IF NOT EXISTS poukaz_cerpani (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    poukaz_id INT UNSIGNED NOT NULL,
+    castka DECIMAL(10,2) NOT NULL,
+    typ ENUM('cerpani', 'korekce_plus', 'korekce_minus') NOT NULL DEFAULT 'cerpani',
+    rezervace_id INT UNSIGNED NULL,
+    poznamka VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_poukaz_cerpani_poukaz (poukaz_id, created_at),
+    KEY idx_poukaz_cerpani_rezervace (rezervace_id),
+    CONSTRAINT fk_poukaz_cerpani_poukaz
+        FOREIGN KEY (poukaz_id) REFERENCES poukazy(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_poukaz_cerpani_rezervace
+        FOREIGN KEY (rezervace_id) REFERENCES rezervace(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS historie_cen_sluzeb (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sluzba_id INT UNSIGNED NOT NULL,
