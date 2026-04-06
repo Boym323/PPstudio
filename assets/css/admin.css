@@ -623,6 +623,40 @@ p {
     font-size: 0.78rem;
 }
 
+.compact-form-reservation.is-busy {
+    opacity: 0.72;
+}
+
+.reservation-inline-feedback {
+    grid-column: 1 / -1;
+    min-height: 1.1rem;
+    font-size: 0.76rem;
+    line-height: 1.25;
+    color: var(--text-soft);
+    margin-top: 0.08rem;
+    padding: 0.1rem 0.05rem;
+}
+
+.reservation-inline-feedback.is-success {
+    color: var(--success-text);
+}
+
+.reservation-inline-feedback.is-error {
+    color: var(--danger-text);
+}
+
+.reservation-row {
+    transition: background-color 180ms ease, opacity 140ms ease;
+}
+
+.reservation-row.is-updated {
+    background: rgba(217, 232, 205, 0.55);
+}
+
+.reservation-row.is-removing {
+    opacity: 0;
+}
+
 .pagination-separator {
     color: var(--text-soft);
     padding: 0 0.25rem;

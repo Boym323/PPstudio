@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupRevealAnimations();
     setupAvailabilityPlanner();
     setupCategorySorting();
+    setupReservationActions();
 });
 
 function setupRevealAnimations() {
@@ -780,6 +781,174 @@ function setupCategorySorting() {
             document.addEventListener('pointermove', onPointerMove);
             document.addEventListener('pointerup', onPointerUp);
             document.addEventListener('pointercancel', onPointerUp);
+        });
+    });
+}
+
+function setupReservationActions() {
+    const root = document.querySelector('[data-reservations-root]');
+    if (!root) {
+        return;
+    }
+
+    const forms = Array.from(root.querySelectorAll('form[data-reservation-form]'));
+    if (forms.length === 0) {
+        return;
+    }
+
+    const totalNode = root.querySelector('[data-reservation-total]');
+    const tbody = root.querySelector('[data-reservation-tbody]');
+    let feedbackTimer = null;
+
+    const setFeedback = (form, message, type = 'info') => {
+        const feedback = form.querySelector('[data-reservation-feedback]');
+        if (!feedback) {
+            return;
+        }
+        feedback.textContent = message || '';
+        feedback.classList.remove('is-success', 'is-error', 'is-info');
+        feedback.classList.add(type === 'error' ? 'is-error' : type === 'success' ? 'is-success' : 'is-info');
+    };
+
+    const setFormBusy = (form, busy) => {
+        const controls = Array.from(form.querySelectorAll('input, select, button, textarea'));
+        controls.forEach((control) => {
+            control.disabled = busy;
+        });
+        form.classList.toggle('is-busy', busy);
+    };
+
+    const refreshEmptyState = () => {
+        if (!tbody) {
+            return;
+        }
+        const rows = Array.from(tbody.querySelectorAll('tr[data-reservation-row]'));
+        const currentEmpty = tbody.querySelector('tr[data-reservation-empty-row]');
+
+        if (rows.length > 0) {
+            if (currentEmpty) {
+                currentEmpty.remove();
+            }
+            return;
+        }
+
+        if (!currentEmpty) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.setAttribute('data-reservation-empty-row', '');
+            const cell = document.createElement('td');
+            cell.colSpan = 8;
+            cell.textContent = 'Zatím zde nejsou žádné rezervace.';
+            emptyRow.appendChild(cell);
+            tbody.appendChild(emptyRow);
+        }
+    };
+
+    const updateTotalAfterDelete = () => {
+        if (!totalNode) {
+            return;
+        }
+        const current = Number.parseInt(totalNode.textContent || '0', 10);
+        if (Number.isFinite(current) && current > 0) {
+            totalNode.textContent = String(current - 1);
+        }
+    };
+
+    forms.forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+            const submitter = event.submitter;
+            if (!submitter) {
+                return;
+            }
+
+            const isDelete = submitter.name === 'delete_reservation';
+            const isUpdate = submitter.name === 'update_reservation';
+            if (!isDelete && !isUpdate) {
+                return;
+            }
+
+            event.preventDefault();
+
+            if (isDelete) {
+                const row = form.closest('[data-reservation-row]');
+                const clientName = row ? String(row.dataset.reservationClient || '').trim() : '';
+                const dateTime = row ? String(row.dataset.reservationDatetime || '').trim() : '';
+                const reservationLabel = [clientName, dateTime].filter(Boolean).join(' • ');
+                const question = reservationLabel !== ''
+                    ? `Opravdu chcete trvale smazat rezervaci: ${reservationLabel}?`
+                    : 'Opravdu chcete tuto rezervaci trvale smazat?';
+                const confirmed = window.confirm(question);
+                if (!confirmed) {
+                    return;
+                }
+            }
+
+            const defaultLabel = submitter.textContent || '';
+            submitter.textContent = isDelete ? 'Mazání…' : 'Ukládám…';
+            setFeedback(form, isDelete ? 'Mažu rezervaci…' : 'Ukládám změny…', 'info');
+            setFormBusy(form, true);
+
+            try {
+                const formData = new FormData(form);
+                if (isDelete) {
+                    formData.set('delete_reservation', '1');
+                    formData.delete('update_reservation');
+                } else {
+                    formData.set('update_reservation', '1');
+                    formData.delete('delete_reservation');
+                }
+
+                const response = await fetch('/api/admin/reservation-action.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.error || 'Akci se nepodařilo dokončit.');
+                }
+
+                if (isDelete) {
+                    const row = form.closest('[data-reservation-row]');
+                    if (row) {
+                        row.classList.add('is-removing');
+                        await new Promise((resolve) => setTimeout(resolve, 120));
+                        row.remove();
+                    }
+                    updateTotalAfterDelete();
+                    refreshEmptyState();
+                    return;
+                }
+
+                const statusBadge = form.querySelector('[data-reservation-status-badge]');
+                if (statusBadge && payload.data) {
+                    statusBadge.textContent = payload.data.status_label || statusBadge.textContent;
+                    statusBadge.className = `status-badge status-${payload.data.status_key || 'nova'}`;
+                }
+
+                setFeedback(form, payload.message || 'Rezervace byla upravena.', 'success');
+                const row = form.closest('[data-reservation-row]');
+                if (row) {
+                    row.classList.add('is-updated');
+                    window.setTimeout(() => row.classList.remove('is-updated'), 1200);
+                }
+                if (feedbackTimer) {
+                    window.clearTimeout(feedbackTimer);
+                }
+                feedbackTimer = window.setTimeout(() => {
+                    setFeedback(form, '', 'info');
+                }, 2200);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Akci se nepodařilo dokončit.';
+                setFeedback(form, message, 'error');
+            } finally {
+                setFormBusy(form, false);
+                submitter.textContent = defaultLabel;
+            }
         });
     });
 }

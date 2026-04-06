@@ -1,5 +1,5 @@
                 <section class="admin-single" id="rezervace-list">
-                    <div class="admin-note">
+                    <div class="admin-note" data-reservations-root>
                         <p class="eyebrow">Rezervace</p>
                         <h2>Objednávky a jejich aktuální stav</h2>
                         <form method="get" action="<?= escape($adminBasePath ?? 'admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
@@ -37,7 +37,7 @@
                                 <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=rezervace-list#rezervace-list">Reset</a>
                             </div>
                         </form>
-                        <p class="form-hint">Nalezeno rezervací: <strong><?= escape((string) $reservationPagination['total']) ?></strong>. Stránka <?= escape((string) $reservationFilters['page']) ?> z <?= escape((string) $reservationPagination['total_pages']) ?>.</p>
+                        <p class="form-hint">Nalezeno rezervací: <strong data-reservation-total><?= escape((string) $reservationPagination['total']) ?></strong>. Stránka <?= escape((string) $reservationFilters['page']) ?> z <?= escape((string) $reservationPagination['total_pages']) ?>.</p>
                         <div class="admin-table-wrap">
                             <table class="admin-table reservations-admin-table">
                                 <thead>
@@ -52,12 +52,12 @@
                                         <th>Stav a správa</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody data-reservation-tbody>
                                     <?php if ($reservationRows === []): ?>
-                                        <tr><td colspan="8">Zatím zde nejsou žádné rezervace.</td></tr>
+                                        <tr data-reservation-empty-row><td colspan="8">Zatím zde nejsou žádné rezervace.</td></tr>
                                     <?php else: ?>
                                         <?php foreach ($reservationRows as $row): ?>
-                                            <tr class="reservation-row">
+                                            <tr class="reservation-row" data-reservation-row data-reservation-id="<?= escape((string) $row['id']) ?>" data-reservation-client="<?= escape((string) ($row['jmeno'] ?? '')) ?>" data-reservation-datetime="<?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?>">
                                                 <td data-label="Termín"><?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?></td>
                                                 <td data-label="Procedura"><?= escape((string) $row['nazev']) ?></td>
                                                 <td data-label="Cena"><?= escape(formatPrice($row['cena_v_dobe_rezervace'] ?? null)) ?></td>
@@ -70,10 +70,10 @@
                                                     </div>
                                                 </td>
                                                 <td data-label="Stav a správa">
-                                                    <form method="post" class="admin-form compact-form compact-form-reservation">
+                                                    <form method="post" class="admin-form compact-form compact-form-reservation" data-reservation-form>
                                                         <?= csrfInputField() ?>
                                                         <input type="hidden" name="reservation_id" value="<?= escape((string) $row['id']) ?>">
-                                                        <span class="status-badge status-<?= escape((string) $row['stav']) ?>"><?= escape(reservationStatusLabel((string) $row['stav'])) ?></span>
+                                                        <span class="status-badge status-<?= escape((string) $row['stav']) ?>" data-reservation-status-badge><?= escape(reservationStatusLabel((string) $row['stav'])) ?></span>
                                                         <select name="stav">
                                                             <?php foreach (reservationStatusOptions() as $statusValue => $statusLabel): ?>
                                                                 <option value="<?= escape($statusValue) ?>" <?= $statusValue === (string) $row['stav'] ? 'selected' : '' ?>><?= escape($statusLabel) ?></option>
@@ -84,6 +84,7 @@
                                                             <button class="button button-primary button-small" type="submit" name="update_reservation" value="1">Uložit</button>
                                                             <button class="button button-danger button-small" type="submit" name="delete_reservation" value="1">Smazat</button>
                                                         </div>
+                                                        <div class="reservation-inline-feedback" data-reservation-feedback role="status" aria-live="polite"></div>
                                                     </form>
                                                 </td>
                                             </tr>
