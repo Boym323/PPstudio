@@ -133,7 +133,7 @@ $connection = @new mysqli(
 
 $message = '';
 $error = $error ?? '';
-$siteSettings = DEFAULT_SETTINGS;
+$siteSettings = defaultSiteSettings();
 $availabilityRows = [];
 $reservationRows = [];
 $serviceRows = [];
@@ -179,7 +179,7 @@ $categoryForm = [
 $profileMedia = [];
 $galleryMedia = [];
 $certificateFiles = [];
-$subscriptionCalendarUrl = buildSubscriptionCalendarUrl($emailConfig);
+$subscriptionCalendarUrl = '';
 $manualReservationForm = [
     'jmeno' => '',
     'email' => '',
@@ -276,6 +276,7 @@ if (
 if (! $connection->connect_errno) {
     $connection->set_charset($dbConfig['charset']);
     $siteSettings = loadSiteSettings($connection);
+    $subscriptionCalendarUrl = buildSubscriptionCalendarUrl($emailConfig, $siteSettings);
 
     if (isset($_GET['edit_service'])) {
         $editServiceId = (int) $_GET['edit_service'];

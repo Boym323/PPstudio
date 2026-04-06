@@ -14,7 +14,7 @@ function sendReservationReceivedEmail(array $emailConfig, array $siteSettings, a
         return false;
     }
 
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $subject = $siteName . ': přijetí rezervace';
     $customerName = (string) ($reservation['jmeno'] ?? '');
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
@@ -43,7 +43,7 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
         return false;
     }
 
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $recipients = getNotificationRecipients($emailConfig, $siteSettings);
 
     if ($recipients === []) {
@@ -51,8 +51,8 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
     }
 
     $subject = $siteName . ': nová rezervace';
-    $confirmUrl = buildReservationActionUrl($emailConfig, (int) ($reservation['id'] ?? 0), 'confirm');
-    $cancelUrl = buildReservationActionUrl($emailConfig, (int) ($reservation['id'] ?? 0), 'cancel');
+    $confirmUrl = buildReservationActionUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0), 'confirm');
+    $cancelUrl = buildReservationActionUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0), 'cancel');
     $textBody = "Nová rezervace ve studiu {$siteName}\n\n"
         . "Klientka: " . (string) ($reservation['jmeno'] ?? '') . "\n"
         . "E-mail: " . (string) ($reservation['email'] ?? '') . "\n"
@@ -96,13 +96,13 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
         return false;
     }
 
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $subject = $siteName . ': potvrzení rezervace';
     $customerName = (string) ($reservation['jmeno'] ?? '');
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
     $location = setting($siteSettings, 'contact_address', 'Adresa studia');
-    $calendarUrl = buildSubscriptionCalendarUrl($emailConfig);
+    $calendarUrl = buildSubscriptionCalendarUrl($emailConfig, $siteSettings);
 
     $textBody = "Dobrý den {$customerName},\n\n"
         . "vaše rezervace byla potvrzena.\n"
@@ -144,7 +144,7 @@ function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, 
         return false;
     }
 
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $subject = $siteName . ': změna rezervace';
     $customerName = (string) ($reservation['jmeno'] ?? '');
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
@@ -166,7 +166,7 @@ function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, 
 
 function buildReservationIcal(array $siteSettings, array $reservation): string
 {
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
     $start = new DateTimeImmutable((string) ($reservation['datum_cas'] ?? 'now'));
     $duration = max(15, (int) ($reservation['service_duration'] ?? 60));
@@ -196,7 +196,7 @@ function buildReservationIcal(array $siteSettings, array $reservation): string
 
 function buildReservationsFeedIcal(mysqli $connection, array $siteSettings): string
 {
-    $siteName = setting($siteSettings, 'site_name', SITE_NAME);
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $nowUtc = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Ymd\THis\Z');
     $ics = "BEGIN:VCALENDAR\r\n"
         . "VERSION:2.0\r\n"
@@ -249,9 +249,9 @@ function buildReservationsFeedIcal(mysqli $connection, array $siteSettings): str
     return $ics . "END:VCALENDAR\r\n";
 }
 
-function buildSubscriptionCalendarUrl(array $emailConfig): string
+function buildSubscriptionCalendarUrl(array $emailConfig, array $siteSettings): string
 {
-    $siteUrl = rtrim((string) ($emailConfig['site_url'] ?? ''), '/');
+    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
     $token = (string) ($emailConfig['calendar_token'] ?? '');
 
     if ($siteUrl === '' || $token === '') {
@@ -261,9 +261,9 @@ function buildSubscriptionCalendarUrl(array $emailConfig): string
     return preg_replace('#^https://#', 'webcal://', $siteUrl) . '/reservations-feed.php?token=' . rawurlencode($token);
 }
 
-function buildReservationActionUrl(array $emailConfig, int $reservationId, string $action): string
+function buildReservationActionUrl(array $emailConfig, array $siteSettings, int $reservationId, string $action): string
 {
-    $siteUrl = rtrim((string) ($emailConfig['site_url'] ?? ''), '/');
+    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
     $secret = (string) ($emailConfig['action_secret'] ?? '');
     $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
 
@@ -383,7 +383,7 @@ function consumeReservationActionNonce(int $reservationId, string $action, int $
 
 function getNotificationRecipients(array $emailConfig, array $siteSettings): array
 {
-    $raw = setting($siteSettings, 'notification_emails', (string) ($emailConfig['admin_email'] ?? ''));
+    $raw = setting($siteSettings, 'notification_emails', '');
     $parts = preg_split('/[,;\s]+/', $raw) ?: [];
     $emails = [];
 
@@ -443,7 +443,7 @@ function buildConfiguredMailer(array $emailConfig): PHPMailer
     $mail->isHTML(true);
 
     $fromEmail = (string) ($emailConfig['from_email'] ?? 'noreply@example.com');
-    $fromName = (string) ($emailConfig['from_name'] ?? SITE_NAME);
+    $fromName = (string) ($emailConfig['from_name'] ?? defaultSiteName());
     $replyTo = (string) ($emailConfig['reply_to'] ?? $fromEmail);
     $mailerType = (string) ($emailConfig['mailer'] ?? 'mail');
 

@@ -83,18 +83,42 @@ ppstudioLoadEnvFiles([
     dirname(__DIR__) . '/.env.local',
 ]);
 
-const SITE_NAME = 'PPStudio';
-
-const DEFAULT_SETTINGS = [
-    'site_name' => 'PPStudio',
-    'site_url' => 'https://www.ppstudio.cz',
-    'contact_address' => 'Adresa studia',
-    'instagram_url' => 'https://www.instagram.com/beauty_touch_by_vp/',
-    'instagram_feed_embed' => '',
-    'google_reviews_url' => '',
-    'firmy_reviews_url' => '',
-    'firmy_reviews_embed' => '',
-    'google_place_id' => '',
-    'google_reviews_language' => 'cs',
-    'notification_emails' => 'info@ppstudio.cz',
+const SITE_SETTING_KEYS = [
+    'site_name',
+    'site_url',
+    'contact_address',
+    'instagram_url',
+    'instagram_feed_embed',
+    'google_reviews_url',
+    'firmy_reviews_url',
+    'firmy_reviews_embed',
+    'google_place_id',
+    'google_reviews_language',
+    'notification_emails',
 ];
+
+if (! function_exists('defaultSiteSettings')) {
+    function defaultSiteSettings(): array
+    {
+        return [
+            'site_name' => defaultSiteName(),
+            'site_url' => '',
+            'contact_address' => '',
+            'instagram_url' => '',
+            'instagram_feed_embed' => '',
+            'google_reviews_url' => '',
+            'firmy_reviews_url' => '',
+            'firmy_reviews_embed' => '',
+            'google_place_id' => '',
+            'google_reviews_language' => '',
+            'notification_emails' => '',
+        ];
+    }
+}
+
+if (! function_exists('defaultSiteName')) {
+    function defaultSiteName(): string
+    {
+        return trim((string) ppstudioEnv('PPSTUDIO_SITE_NAME', 'PP Studio'));
+    }
+}

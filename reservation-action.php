@@ -89,7 +89,7 @@ if (
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= escape(SITE_NAME) ?> | Rezervace</title>
+    <title><?= escape(defaultSiteName()) ?> | Rezervace</title>
     <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body>

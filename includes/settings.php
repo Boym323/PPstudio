@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 function loadSiteSettings(mysqli $connection): array
 {
-    $settings = DEFAULT_SETTINGS;
+    $settings = defaultSiteSettings();
 
     $query = $connection->query('SELECT setting_key, setting_value FROM nastaveni');
 

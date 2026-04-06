@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | <?= escape(setting($siteSettings, 'site_name', SITE_NAME)) ?></title>
+    <title>Admin | <?= escape(setting($siteSettings, 'site_name', defaultSiteName())) ?></title>
     <?php
     $adminCssVersion = (string) (@filemtime(__DIR__ . '/../../../assets/css/admin.css') ?: time());
     $adminJsVersion = (string) (@filemtime(__DIR__ . '/../../../assets/js/main.js') ?: time());

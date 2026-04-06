@@ -46,7 +46,7 @@ function ppstudioPublicLockCurrentUrl(): string
 
 function ppstudioPublicLockRenderPage(string $errorMessage = ''): never
 {
-    $siteName = trim((string) ppstudioEnv('PPSTUDIO_SITE_NAME', 'PP Studio'));
+    $siteName = defaultSiteName();
     $csrf = getCsrfToken();
     $currentUrl = ppstudioPublicLockCurrentUrl();
 

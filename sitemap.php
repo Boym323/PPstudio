@@ -7,9 +7,7 @@ require __DIR__ . '/includes/security.php';
 require __DIR__ . '/includes/settings.php';
 
 $dbConfig = require __DIR__ . '/config/database.php';
-$emailConfig = require __DIR__ . '/config/email.php';
-
-$siteUrl = rtrim((string) ($emailConfig['site_url'] ?? 'https://www.ppstudio.cz'), '/');
+$siteUrl = rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
 $lastMod = gmdate('Y-m-d');
 $pages = [
     '/',
@@ -33,6 +31,14 @@ if (! $connection->connect_errno) {
     $siteSettings = loadSiteSettings($connection);
     $siteUrl = rtrim(setting($siteSettings, 'site_url', $siteUrl), '/');
     $connection->close();
+}
+
+if ($siteUrl === '') {
+    $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+    if ($host !== '') {
+        $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $siteUrl = $scheme . '://' . $host;
+    }
 }
 
 header('Content-Type: application/xml; charset=utf-8');

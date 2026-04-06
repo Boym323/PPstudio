@@ -72,7 +72,7 @@ function renderSitePage(array $config): never
 
     $reservationAlertHtml = reservationAlertMarkupFromQuery();
     $csrfToken = getCsrfToken();
-    $siteSettings = DEFAULT_SETTINGS;
+    $siteSettings = defaultSiteSettings();
 
     $dbConfig = require __DIR__ . '/../../config/database.php';
     $connection = @new mysqli(
@@ -88,7 +88,15 @@ function renderSitePage(array $config): never
         $connection->close();
     }
 
-    $siteBaseUrl = rtrim(setting($siteSettings, 'site_url', 'https://www.ppstudio.cz'), '/');
+    $fallbackSiteUrl = rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
+    $siteBaseUrl = rtrim(setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
+    if ($siteBaseUrl === '') {
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        if ($host !== '') {
+            $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $siteBaseUrl = $scheme . '://' . $host;
+        }
+    }
     $requestPath = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
     $requestPath = $requestPath !== '' ? $requestPath : '/';
     $canonicalUrl = $siteBaseUrl . ($requestPath === '/' ? '/' : $requestPath);

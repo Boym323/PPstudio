@@ -20,21 +20,22 @@
     <title><?= escape($title) ?></title>
     <meta property="og:title" content="<?= escape($title) ?>">
     <meta property="og:description" content="<?= escape($description) ?>">
-    <meta property="og:image" content="https://www.ppstudio.cz/frontend/Paji.jpeg">
-    <meta property="og:url" content="<?= escape($canonicalUrl ?? 'https://www.ppstudio.cz/') ?>">
+    <?php $resolvedSiteBaseUrl = $siteBaseUrl ?? rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/'); ?>
+    <meta property="og:image" content="<?= escape(($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg') ?>">
+    <meta property="og:url" content="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="cs_CZ">
-    <meta property="og:site_name" content="<?= escape(setting($siteSettings ?? [], 'site_name', SITE_NAME)) ?>">
-    <link rel="canonical" href="<?= escape($canonicalUrl ?? 'https://www.ppstudio.cz/') ?>">
+    <meta property="og:site_name" content="<?= escape(setting($siteSettings ?? [], 'site_name', defaultSiteName())) ?>">
+    <link rel="canonical" href="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
 
     <script type="application/ld+json">
         <?= json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'BeautySalon',
-            'name' => setting($siteSettings ?? [], 'site_name', SITE_NAME),
-            'url' => $siteBaseUrl ?? 'https://www.ppstudio.cz',
+            'name' => setting($siteSettings ?? [], 'site_name', defaultSiteName()),
+            'url' => $resolvedSiteBaseUrl,
             'telephone' => '+420732856036',
-            'image' => 'https://www.ppstudio.cz/frontend/Paji.jpeg',
+            'image' => ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg',
             'address' => [
                 '@type' => 'PostalAddress',
                 'streetAddress' => 'náměstí Práce 2512',
