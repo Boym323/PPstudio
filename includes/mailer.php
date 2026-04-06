@@ -102,7 +102,6 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
     $location = setting($siteSettings, 'contact_address', 'Adresa studia');
-    $calendarUrl = buildSubscriptionCalendarUrl($emailConfig, $siteSettings);
 
     $textBody = "Dobrý den {$customerName},\n\n"
         . "vaše rezervace byla potvrzena.\n"
@@ -110,7 +109,6 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
         . "Termín: {$dateTime}\n"
         . "Místo: {$location}\n\n"
         . "V příloze najdete soubor pro vložení do kalendáře.\n"
-        . ($calendarUrl !== '' ? "Trvalý odběr kalendáře: {$calendarUrl}\n" : '')
         . "\n{$siteName}";
 
     $htmlBody = '<p>Dobrý den ' . escape($customerName) . ',</p>'
@@ -119,7 +117,6 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
         . '<strong>Termín:</strong> ' . escape($dateTime) . '<br>'
         . '<strong>Místo:</strong> ' . escape($location) . '</p>'
         . '<p>V příloze najdete soubor pro vložení do kalendáře.</p>'
-        . ($calendarUrl !== '' ? '<p><a href="' . escape($calendarUrl) . '">Odebírat sdílený kalendář studia</a></p>' : '')
         . '<p>' . escape($siteName) . '</p>';
 
     $icalContent = buildReservationIcal($siteSettings, $reservation);
