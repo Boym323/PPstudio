@@ -2,20 +2,27 @@
                     <div class="admin-card">
                         <p class="eyebrow">Plánovač</p>
                         <h2>Plánování dostupnosti po týdnech</h2>
-                        <div class="table-actions">
-                            <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí týden</a>
-                            <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Aktuální týden</a>
-                            <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další týden</a>
+                        <div class="availability-topbar">
+                            <p class="form-hint">Zobrazený týden: <strong><?= escape($plannerWeekLabel) ?></strong></p>
+                            <div class="table-actions availability-week-actions">
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí týden</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Aktuální týden</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další týden</a>
+                            </div>
                         </div>
-                        <p class="form-hint">Zobrazený týden: <strong><?= escape($plannerWeekLabel) ?></strong></p>
                         <form method="post" class="admin-form" data-availability-planner-form>
                             <?= csrfInputField() ?>
                             <input type="hidden" name="planner_start" value="<?= escape($plannerDays[0] ?? '') ?>">
                             <input type="hidden" name="planner_end" value="<?= escape($plannerDays[count($plannerDays) - 1] ?? '') ?>">
                             <input type="hidden" name="planner_windows" value="[]">
 
+                            <div class="availability-mode-switch" role="group" aria-label="Režim plánování">
+                                <button class="button button-secondary button-small is-active" type="button" data-planner-mode-trigger="quick">Rychlé zadání</button>
+                                <button class="button button-secondary button-small" type="button" data-planner-mode-trigger="detail">Detailní mřížka</button>
+                            </div>
+
                             <div class="availability-quick-entry" data-availability-quick-entry>
-                                <p class="eyebrow">Rychlé zadání</p>
+                                <p class="eyebrow">Rychlé zadání (doporučeno na mobilu)</p>
                                 <div class="admin-form admin-form-grid availability-quick-grid">
                                     <label>
                                         <span>Den</span>
@@ -42,14 +49,40 @@
                                         </select>
                                     </label>
                                 </div>
+                                <div class="availability-day-chips" data-quick-day-chips>
+                                    <?php foreach ($plannerDays as $day): ?>
+                                        <?php $dayNumber = (int) (new DateTimeImmutable($day))->format('N'); ?>
+                                        <?php
+                                            $shortDayNameMap = [
+                                                1 => 'Po',
+                                                2 => 'Út',
+                                                3 => 'St',
+                                                4 => 'Čt',
+                                                5 => 'Pá',
+                                                6 => 'So',
+                                                7 => 'Ne',
+                                            ];
+                                            $shortDayName = $shortDayNameMap[$dayNumber] ?? '';
+                                        ?>
+                                        <button
+                                            class="availability-day-chip"
+                                            type="button"
+                                            data-quick-day-chip="<?= escape($day) ?>"
+                                            aria-label="<?= escape($shortDayName . ' ' . formatCzechDate($day)) ?>"
+                                        >
+                                            <span class="day-chip-week"><?= escape($shortDayName) ?></span>
+                                            <span class="day-chip-date"><?= escape(formatCzechDate($day)) ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
                                 <div class="table-actions availability-quick-actions">
-                                    <button class="button button-secondary button-small" type="button" data-quick-add>+ Přidat interval</button>
-                                    <button class="button button-secondary button-small" type="button" data-quick-remove>− Odebrat interval</button>
-                                    <button class="button button-danger button-small" type="button" data-quick-clear-day>Vymazat celý den</button>
+                                    <button class="button button-primary button-small" type="button" data-quick-add>Přidat interval</button>
+                                    <button class="button button-secondary button-small" type="button" data-quick-remove>Odebrat interval</button>
                                 </div>
                                 <div class="table-actions availability-preset-actions">
                                     <button class="button button-secondary button-small" type="button" data-quick-preset-day>Vybraný den 9:00-17:00</button>
                                     <button class="button button-secondary button-small" type="button" data-quick-preset-week>Po-Pá 9:00-17:00</button>
+                                    <button class="button button-danger button-small" type="button" data-quick-clear-day>Vymazat vybraný den</button>
                                 </div>
                                 <p class="form-hint" data-quick-status>Tip: vyberte den a interval, pak přidejte nebo odeberte dostupnost jedním kliknutím.</p>
                             </div>
@@ -137,40 +170,43 @@
                                 <div class="summary-item"><span>Odebrané změny</span><strong data-summary-removed>0</strong></div>
                                 <div class="summary-item"><span>Aktivní sloty</span><strong data-summary-total>0</strong></div>
                                 <div class="table-actions">
-                                    <button class="button button-secondary button-small" type="button" data-undo-change disabled title="Vrátí jen poslední provedenou úpravu">Vrátit poslední úpravu</button>
-                                    <button class="button button-secondary button-small" type="button" data-reset-changes disabled title="Vrátí celý týden do původního stavu před úpravami">Obnovit původní stav týdne</button>
+                                    <button class="button button-secondary button-small" type="button" data-undo-change disabled title="Vrátí jen poslední provedenou úpravu">Zpět (1 krok)</button>
+                                    <button class="button button-secondary button-small" type="button" data-reset-changes disabled title="Vrátí celý týden do původního stavu před úpravami">Zahodit neuložené změny</button>
                                 </div>
                             </div>
 
-                            <div class="table-actions availability-save-actions">
+                            <div class="table-actions availability-save-actions availability-save-actions-sticky">
                                 <button class="button button-primary" type="submit" name="save_availability_grid" value="1">Uložit plánovač dostupnosti</button>
                             </div>
                         </form>
                         <p class="form-hint">Jedním tahem označíte dostupné půlhodiny myší i prstem. „Vrátit poslední úpravu“ vrátí poslední krok. „Obnovit původní stav týdne“ zahodí všechny neuložené změny v aktuálním týdnu. Uložením přepíšete dostupnost jen pro právě zobrazený týden. Rezervované termíny zůstávají v systému zachované.</p>
-                        <div class="admin-table-wrap planner-table-wrap">
-                            <table class="admin-table availability-admin-table">
-                                <thead><tr><th>Datum</th><th>Časové okno</th><th>Poznámka</th><th>Akce</th></tr></thead>
-                                <tbody>
-                                    <?php if ($availabilityRows === []): ?>
-                                        <tr><td colspan="4">Zatím nemáte zadaná žádná volná okna.</td></tr>
-                                    <?php else: ?>
-                                        <?php foreach ($availabilityRows as $row): ?>
-                                            <tr>
-                                                <td data-label="Datum"><?= escape(formatCzechDate(substr((string) $row['start_at'], 0, 10))) ?></td>
-                                                <td data-label="Časové okno"><?= escape(substr((string) $row['start_at'], 11, 5)) ?> - <?= escape(substr((string) $row['end_at'], 11, 5)) ?></td>
-                                                <td data-label="Poznámka"><?= escape((string) ($row['poznamka'] ?? '')) ?></td>
-                                                <td data-label="Akce">
-                                                    <form method="post">
-                                                        <?= csrfInputField() ?>
-                                                        <input type="hidden" name="window_id" value="<?= escape((string) $row['id']) ?>">
-                                                        <button class="button button-danger button-small" type="submit" name="delete_window" value="1">Smazat</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                        <details class="availability-list-wrap">
+                            <summary>Seznam uložených oken</summary>
+                            <div class="admin-table-wrap planner-table-wrap">
+                                <table class="admin-table availability-admin-table">
+                                    <thead><tr><th>Datum</th><th>Časové okno</th><th>Poznámka</th><th>Akce</th></tr></thead>
+                                    <tbody>
+                                        <?php if ($availabilityRows === []): ?>
+                                            <tr><td colspan="4">Zatím nemáte zadaná žádná volná okna.</td></tr>
+                                        <?php else: ?>
+                                            <?php foreach ($availabilityRows as $row): ?>
+                                                <tr>
+                                                    <td data-label="Datum"><?= escape(formatCzechDate(substr((string) $row['start_at'], 0, 10))) ?></td>
+                                                    <td data-label="Časové okno"><?= escape(substr((string) $row['start_at'], 11, 5)) ?> - <?= escape(substr((string) $row['end_at'], 11, 5)) ?></td>
+                                                    <td data-label="Poznámka"><?= escape((string) ($row['poznamka'] ?? '')) ?></td>
+                                                    <td data-label="Akce">
+                                                        <form method="post">
+                                                            <?= csrfInputField() ?>
+                                                            <input type="hidden" name="window_id" value="<?= escape((string) $row['id']) ?>">
+                                                            <button class="button button-danger button-small" type="submit" name="delete_window" value="1">Smazat</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
                     </div>
                 </section>

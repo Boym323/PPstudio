@@ -58,6 +58,9 @@ function setupAvailabilityPlanner() {
     const quickPresetDay = quickEntry ? quickEntry.querySelector('[data-quick-preset-day]') : null;
     const quickPresetWeek = quickEntry ? quickEntry.querySelector('[data-quick-preset-week]') : null;
     const quickStatus = quickEntry ? quickEntry.querySelector('[data-quick-status]') : null;
+    const quickDayChipButtons = quickEntry ? Array.from(quickEntry.querySelectorAll('[data-quick-day-chip]')) : [];
+    const detailWrap = form.querySelector('.availability-detail-wrap');
+    const modeTriggers = Array.from(form.querySelectorAll('[data-planner-mode-trigger]'));
     const activeSlots = new Set();
     const cellsByKey = new Map();
     const undoStack = [];
@@ -157,6 +160,32 @@ function setupAvailabilityPlanner() {
     const updateQuickStatus = (message) => {
         if (quickStatus) {
             quickStatus.textContent = message;
+        }
+    };
+
+    const syncQuickDayChips = () => {
+        if (!quickDay || quickDayChipButtons.length === 0) {
+            return;
+        }
+        const selectedDay = String(quickDay.value || '');
+        quickDayChipButtons.forEach((button) => {
+            const chipDay = String(button.dataset.quickDayChip || '');
+            const isActive = chipDay === selectedDay;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    };
+
+    const setPlannerMode = (mode) => {
+        const normalized = mode === 'detail' ? 'detail' : 'quick';
+        form.dataset.plannerMode = normalized;
+        modeTriggers.forEach((trigger) => {
+            const triggerMode = String(trigger.dataset.plannerModeTrigger || 'quick');
+            trigger.classList.toggle('is-active', triggerMode === normalized);
+            trigger.setAttribute('aria-pressed', triggerMode === normalized ? 'true' : 'false');
+        });
+        if (detailWrap) {
+            detailWrap.open = normalized === 'detail';
         }
     };
 
@@ -267,6 +296,11 @@ function setupAvailabilityPlanner() {
         const selectedDay = String(quickDay.value || '');
         if (!selectedDay) {
             updateQuickStatus('Vyberte den.');
+            return;
+        }
+
+        const shouldClear = window.confirm(`Opravdu chcete vymazat dostupnost pro den ${selectedDay}?`);
+        if (!shouldClear) {
             return;
         }
 
@@ -523,6 +557,37 @@ function setupAvailabilityPlanner() {
     if (quickClearDay) {
         quickClearDay.addEventListener('click', clearQuickDay);
     }
+
+    if (quickDay) {
+        quickDay.addEventListener('change', syncQuickDayChips);
+    }
+
+    if (quickDayChipButtons.length > 0 && quickDay) {
+        quickDayChipButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const day = String(button.dataset.quickDayChip || '');
+                if (!day) {
+                    return;
+                }
+                quickDay.value = day;
+                syncQuickDayChips();
+                updateQuickStatus(`Vybrán den ${day}.`);
+            });
+        });
+    }
+
+    if (modeTriggers.length > 0) {
+        modeTriggers.forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                const mode = String(trigger.dataset.plannerModeTrigger || 'quick');
+                setPlannerMode(mode);
+            });
+        });
+    }
+
+    const isMobileViewport = window.matchMedia('(max-width: 720px)').matches;
+    setPlannerMode(isMobileViewport ? 'quick' : 'detail');
+    syncQuickDayChips();
 
     if (quickPresetDay) {
         quickPresetDay.addEventListener('click', () => {
