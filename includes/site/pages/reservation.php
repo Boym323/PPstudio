@@ -129,7 +129,7 @@
                 </details>
                 <details>
                     <summary>Mohu termín změnit nebo zrušit?</summary>
-                    <p>Ano, stačí odpovědět na potvrzovací e-mail nebo mě kontaktovat telefonicky. Ideálně co nejdříve.</p>
+                    <p>Ano. V potvrzovacím e-mailu najdete tlačítko pro bezpečné zrušení rezervace, případně mě můžete kontaktovat telefonicky.</p>
                 </details>
                 <details>
                     <summary>Co když si nejsem jistá výběrem služby?</summary>

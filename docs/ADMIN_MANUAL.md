@@ -27,6 +27,7 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 - Úprava stavu rezervace.
 - Interní poznámka k rezervaci.
 - Smazání rezervace (chráněno potvrzením).
+- Potvrzovací e-mail klientce obsahuje bezpečný odkaz na zrušení (s mezikrokem potvrzení).
 
 #### Stavy rezervace
 

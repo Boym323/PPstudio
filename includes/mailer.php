@@ -102,13 +102,20 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
     $location = setting($siteSettings, 'contact_address', 'Adresa studia');
+    $cancelUrl = buildReservationCustomerCancelUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0));
 
     $textBody = "Dobrý den {$customerName},\n\n"
         . "vaše rezervace byla potvrzena.\n"
         . "Procedura: {$serviceName}\n"
         . "Termín: {$dateTime}\n"
         . "Místo: {$location}\n\n"
-        . "V příloze najdete soubor pro vložení do kalendáře.\n"
+        . "V příloze najdete soubor pro vložení do kalendáře.\n";
+
+    if ($cancelUrl !== '') {
+        $textBody .= "\nPokud potřebujete termín zrušit, použijte tento odkaz:\n{$cancelUrl}\n";
+    }
+
+    $textBody .= "\n"
         . "\n{$siteName}";
 
     $htmlBody = '<p>Dobrý den ' . escape($customerName) . ',</p>'
@@ -116,8 +123,19 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
         . '<p><strong>Procedura:</strong> ' . escape($serviceName) . '<br>'
         . '<strong>Termín:</strong> ' . escape($dateTime) . '<br>'
         . '<strong>Místo:</strong> ' . escape($location) . '</p>'
-        . '<p>V příloze najdete soubor pro vložení do kalendáře.</p>'
-        . '<p>' . escape($siteName) . '</p>';
+        . '<p>V příloze najdete soubor pro vložení do kalendáře.</p>';
+
+    if ($cancelUrl !== '') {
+        $htmlBody .= '<div style="margin:18px 0;padding-top:14px;border-top:1px solid #e4d6c5;">'
+            . '<p style="margin:0 0 10px 0;">Pokud potřebujete termín zrušit, použijte bezpečné tlačítko níže:</p>'
+            . '<a href="'
+            . escape($cancelUrl)
+            . '" style="display:inline-block;padding:10px 16px;background:#b86a59;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Zrušit rezervaci</a>'
+            . '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.</p>'
+            . '</div>';
+    }
+
+    $htmlBody .= '<p>' . escape($siteName) . '</p>';
 
     $icalContent = buildReservationIcal($siteSettings, $reservation);
 
@@ -133,6 +151,29 @@ function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, 
             'content_type' => 'text/calendar; method=REQUEST; charset=UTF-8',
         ]
     );
+}
+
+function buildReservationCustomerCancelUrl(array $emailConfig, array $siteSettings, int $reservationId): string
+{
+    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
+    $secret = (string) ($emailConfig['action_secret'] ?? '');
+    $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
+
+    if ($siteUrl === '' || $secret === '' || $reservationId <= 0) {
+        return '';
+    }
+
+    $expiresAt = time() + max(300, $ttl);
+    $nonce = bin2hex(random_bytes(16));
+    $action = 'cancel';
+    $payload = $action . '|' . $reservationId . '|' . $expiresAt . '|' . $nonce;
+    $signature = hash_hmac('sha256', $payload, $secret);
+
+    return $siteUrl . '/reservation-cancel.php?id=' . $reservationId
+        . '&action=' . rawurlencode($action)
+        . '&exp=' . $expiresAt
+        . '&nonce=' . rawurlencode($nonce)
+        . '&sig=' . rawurlencode($signature);
 }
 
 function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, array $reservation): bool
