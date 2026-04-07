@@ -594,6 +594,7 @@ if ($voucherModuleReady) {
     if ($voucherRows !== []) {
         $voucherIds = array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $voucherRows);
         $voucherIds = array_values(array_filter($voucherIds, static fn(int $id): bool => $id > 0));
+        $reservationIdsFromTransactions = [];
 
         if ($voucherIds !== []) {
             $idList = implode(',', $voucherIds);
@@ -616,9 +617,37 @@ if ($voucherModuleReady) {
                     if (count($voucherTransactionsByVoucher[$voucherId]) >= 12) {
                         continue;
                     }
+                    $reservationId = (int) ($row['rezervace_id'] ?? 0);
+                    if ($reservationId > 0) {
+                        $reservationIdsFromTransactions[$reservationId] = $reservationId;
+                    }
                     $voucherTransactionsByVoucher[$voucherId][] = $row;
                 }
                 $voucherTxQuery->free();
+            }
+
+            if ($reservationIdsFromTransactions !== []) {
+                $reservationIdList = implode(',', array_values($reservationIdsFromTransactions));
+                $voucherReservationLookupQuery = $connection->query(
+                    "SELECT r.id, r.jmeno, r.datum_cas, s.nazev AS sluzba_nazev
+                     FROM rezervace r
+                     LEFT JOIN sluzby s ON s.id = r.sluzba
+                     WHERE r.id IN ({$reservationIdList})"
+                );
+                if ($voucherReservationLookupQuery instanceof mysqli_result) {
+                    while ($lookupRow = $voucherReservationLookupQuery->fetch_assoc()) {
+                        $lookupId = (int) ($lookupRow['id'] ?? 0);
+                        if ($lookupId <= 0) {
+                            continue;
+                        }
+                        $voucherReservationLookup[$lookupId] = [
+                            'jmeno' => (string) ($lookupRow['jmeno'] ?? ''),
+                            'datum_cas' => (string) ($lookupRow['datum_cas'] ?? ''),
+                            'sluzba_nazev' => (string) ($lookupRow['sluzba_nazev'] ?? ''),
+                        ];
+                    }
+                    $voucherReservationLookupQuery->free();
+                }
             }
         }
     }

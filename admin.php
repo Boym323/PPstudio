@@ -144,6 +144,7 @@ $servicePriceHistoryRows = [];
 $voucherRows = [];
 $voucherTransactionsByVoucher = [];
 $voucherReservationOptions = [];
+$voucherReservationLookup = [];
 $voucherModuleReady = false;
 $voucherForm = [
     'code' => '',

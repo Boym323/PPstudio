@@ -196,13 +196,33 @@
                                                                 <ul class="voucher-transactions-list">
                                                                     <?php foreach ($voucherTransactions as $transaction): ?>
                                                                         <li>
-                                                                            <strong><?= escape(formatPrice($transaction['castka'] ?? null)) ?></strong>
-                                                                            <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
+                                                                            <div class="voucher-transaction-main">
+                                                                                <strong><?= escape(formatPrice($transaction['castka'] ?? null)) ?></strong>
+                                                                                <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
+                                                                            </div>
                                                                             <?php if ((int) ($transaction['rezervace_id'] ?? 0) > 0): ?>
-                                                                                <span>Rezervace #<?= escape((string) $transaction['rezervace_id']) ?></span>
+                                                                                <?php
+                                                                                $txReservationId = (int) $transaction['rezervace_id'];
+                                                                                $reservationInfo = $voucherReservationLookup[$txReservationId] ?? null;
+                                                                                $reservationLabel = '';
+                                                                                if (is_array($reservationInfo)) {
+                                                                                    $labelParts = [];
+                                                                                    if ((string) ($reservationInfo['datum_cas'] ?? '') !== '') {
+                                                                                        $labelParts[] = formatCzechDateTime((string) $reservationInfo['datum_cas']);
+                                                                                    }
+                                                                                    if ((string) ($reservationInfo['jmeno'] ?? '') !== '') {
+                                                                                        $labelParts[] = (string) $reservationInfo['jmeno'];
+                                                                                    }
+                                                                                    $reservationLabel = implode(' • ', $labelParts);
+                                                                                }
+                                                                                ?>
+                                                                                <span class="voucher-transaction-reservation">
+                                                                                    Rezervace:
+                                                                                    <?= escape($reservationLabel !== '' ? $reservationLabel : ('#' . (string) $txReservationId)) ?>
+                                                                                </span>
                                                                             <?php endif; ?>
                                                                             <?php if (trim((string) ($transaction['poznamka'] ?? '')) !== ''): ?>
-                                                                                <span><?= escape((string) $transaction['poznamka']) ?></span>
+                                                                                <span class="voucher-transaction-note"><?= escape((string) $transaction['poznamka']) ?></span>
                                                                             <?php endif; ?>
                                                                         </li>
                                                                     <?php endforeach; ?>

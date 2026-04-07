@@ -658,29 +658,35 @@ p {
 }
 
 .voucher-admin-table {
-    min-width: 1160px;
-    width: max-content;
+    min-width: 0;
+    width: 100%;
     max-width: none;
     table-layout: auto;
     font-size: 0.92rem;
 }
 
 .voucher-admin-table th:nth-child(1),
-.voucher-admin-table td:nth-child(1) { min-width: 170px; }
+.voucher-admin-table td:nth-child(1) { width: 12%; min-width: 0; }
 .voucher-admin-table th:nth-child(2),
-.voucher-admin-table td:nth-child(2) { min-width: 130px; }
+.voucher-admin-table td:nth-child(2) { width: 11%; min-width: 0; }
 .voucher-admin-table th:nth-child(3),
-.voucher-admin-table td:nth-child(3) { min-width: 120px; }
+.voucher-admin-table td:nth-child(3) { width: 10%; min-width: 0; }
 .voucher-admin-table th:nth-child(4),
-.voucher-admin-table td:nth-child(4) { min-width: 120px; }
+.voucher-admin-table td:nth-child(4) { width: 9%; min-width: 0; }
 .voucher-admin-table th:nth-child(5),
-.voucher-admin-table td:nth-child(5) { min-width: 120px; }
+.voucher-admin-table td:nth-child(5) { width: 11%; min-width: 0; }
 .voucher-admin-table th:nth-child(6),
-.voucher-admin-table td:nth-child(6) { min-width: 110px; }
+.voucher-admin-table td:nth-child(6) { width: 9%; min-width: 0; }
 .voucher-admin-table th:nth-child(7),
-.voucher-admin-table td:nth-child(7) { min-width: 200px; }
+.voucher-admin-table td:nth-child(7) { width: 14%; min-width: 0; }
 .voucher-admin-table th:nth-child(8),
-.voucher-admin-table td:nth-child(8) { min-width: 320px; }
+.voucher-admin-table td:nth-child(8) { width: 24%; min-width: 0; }
+
+.voucher-admin-table th,
+.voucher-admin-table td {
+    white-space: normal;
+    vertical-align: top;
+}
 
 .voucher-note {
     margin-top: 0.3rem;
@@ -739,13 +745,14 @@ p {
 
 .voucher-amount-row {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.38rem;
 }
 
 .voucher-amount-row .button {
-    min-width: 140px;
-    white-space: nowrap;
+    min-width: 0;
+    width: 100%;
+    white-space: normal;
 }
 
 .voucher-link-reservation > summary {
@@ -802,11 +809,30 @@ p {
 }
 
 .voucher-transactions-list li {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    display: grid;
+    gap: 0.18rem;
     font-size: 0.78rem;
     color: var(--text-soft);
+    line-height: 1.28;
+}
+
+.voucher-transaction-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: baseline;
+}
+
+.voucher-transaction-reservation,
+.voucher-transaction-note {
+    display: block;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.voucher-transaction-reservation {
+    color: var(--text);
+    opacity: 0.9;
 }
 
 .voucher-status-aktivni {
