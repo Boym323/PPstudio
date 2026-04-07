@@ -74,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login']) && $lo
         ]);
     } elseif ($username === $storedUsername && $passwordMatches) {
         $_SESSION['ppstudio_admin_authenticated'] = true;
+        $_SESSION['ppstudio_admin_username'] = $username;
         ppstudioLoginThrottleReset('admin', $loginIp, $username);
         securityEventLog('admin_login_success', 'admin_login', 'info', [
             'username' => $username,
@@ -107,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login']) && $lo
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_logout']) && isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
     unset($_SESSION['ppstudio_admin_authenticated']);
+    unset($_SESSION['ppstudio_admin_username']);
     header('Location: admin.php');
     exit;
 }

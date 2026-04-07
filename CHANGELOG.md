@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-06
 
+- [feat] Doplněn audit zrušení rezervací (důvod, kdo zrušil, účet, čas) pro admin i zákaznický odkaz (commit: `this-commit`)
 - [feat] Přidán bezpečný odkaz na zrušení rezervace pro klientku (potvrzovací mezikrok + jednorázový token) (commit: `this-commit`)
 - [feat] Přidán admin modul dárkových poukazů včetně částečného čerpání, historie transakcí a UX přehledu (commit: `this-commit`)
 - [fix] Odstraněn odkaz na sdílený kalendář studia z potvrzovacího e-mailu klientky (commit: `b3224e7`)

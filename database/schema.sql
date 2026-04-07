@@ -36,7 +36,12 @@ CREATE TABLE IF NOT EXISTS rezervace (
     cena_v_dobe_rezervace DECIMAL(10,2) NULL,
     datum_cas DATETIME NOT NULL,
     stav ENUM('nova', 'potvrzena', 'dokoncena', 'zrusena') NOT NULL DEFAULT 'nova',
+    duvod_zruseni VARCHAR(255) NULL,
+    zruseno_kym VARCHAR(40) NULL,
+    zruseno_uzivatel VARCHAR(120) NULL,
+    zruseno_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_rezervace_zruseno_at (zruseno_at),
     CONSTRAINT fk_rezervace_sluzba
         FOREIGN KEY (sluzba) REFERENCES sluzby(id)
         ON UPDATE CASCADE

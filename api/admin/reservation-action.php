@@ -117,6 +117,7 @@ if ($isDelete) {
 
 $status = trim((string) ($_POST['stav'] ?? 'nova'));
 $adminNote = trim((string) ($_POST['poznamka_admina'] ?? ''));
+$cancelReason = trim((string) ($_POST['duvod_zruseni'] ?? ''));
 $allowedStatuses = reservationStatusOptions();
 
 if (! array_key_exists($status, $allowedStatuses)) {
@@ -130,7 +131,50 @@ if (! array_key_exists($status, $allowedStatuses)) {
 }
 
 $reservationBeforeUpdate = loadReservationDetails($connection, $reservationId);
-$statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+if ($reservationBeforeUpdate === null) {
+    $connection->close();
+    http_response_code(404);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Rezervace nebyla nalezena.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+$previousStatus = (string) ($reservationBeforeUpdate['stav'] ?? '');
+if ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
+    $connection->close();
+    http_response_code(422);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Při zrušení rezervace vyplňte důvod zrušení.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+$cancelledBy = $isAdmin ? 'admin_full' : 'admin_lite';
+$cancelledByUser = $isAdmin
+    ? trim((string) ($_SESSION['ppstudio_admin_username'] ?? 'admin'))
+    : trim((string) ($_SESSION['ppstudio_admin_lite_username'] ?? 'staff'));
+
+$statement = null;
+if ($status === 'zrusena') {
+    if ($previousStatus === 'zrusena') {
+        $statement = $connection->prepare(
+            'UPDATE rezervace
+             SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
+             WHERE id = ?'
+        );
+    } else {
+        $statement = $connection->prepare(
+            'UPDATE rezervace
+             SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
+             WHERE id = ?'
+        );
+    }
+} else {
+    $statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+}
 
 if (! $statement) {
     $connection->close();
@@ -142,7 +186,15 @@ if (! $statement) {
     exit;
 }
 
-$statement->bind_param('ssi', $status, $adminNote, $reservationId);
+if ($status === 'zrusena') {
+    if ($previousStatus === 'zrusena') {
+        $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+    } else {
+        $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+    }
+} else {
+    $statement->bind_param('ssi', $status, $adminNote, $reservationId);
+}
 $ok = $statement->execute();
 $statement->close();
 
@@ -158,7 +210,6 @@ if (! $ok) {
 
 $reservationAfterUpdate = loadReservationDetails($connection, $reservationId);
 if ($reservationBeforeUpdate !== null && $reservationAfterUpdate !== null) {
-    $previousStatus = (string) ($reservationBeforeUpdate['stav'] ?? '');
     $newStatus = (string) ($reservationAfterUpdate['stav'] ?? '');
 
     if ($previousStatus !== 'potvrzena' && $newStatus === 'potvrzena') {
@@ -167,6 +218,12 @@ if ($reservationBeforeUpdate !== null && $reservationAfterUpdate !== null) {
 
     if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
         sendReservationCancelledEmail($emailConfig, $siteSettings, $reservationAfterUpdate);
+        securityEventLog('reservation_admin_cancelled', 'admin_reservation', 'warning', [
+            'reservation_id' => $reservationId,
+            'cancelled_by' => $cancelledBy,
+            'cancelled_by_user' => $cancelledByUser,
+            'cancel_reason' => $cancelReason,
+        ]);
     }
 }
 
@@ -180,6 +237,6 @@ echo json_encode([
         'status_key' => $status,
         'status_label' => reservationStatusLabel($status),
         'admin_note' => $adminNote,
+        'cancel_reason' => $cancelReason,
     ],
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-

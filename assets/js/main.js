@@ -813,6 +813,9 @@ function setupReservationActions() {
     const setFormBusy = (form, busy) => {
         const controls = Array.from(form.querySelectorAll('input, select, button, textarea'));
         controls.forEach((control) => {
+            if (control instanceof HTMLInputElement && control.type === 'hidden' && control.name === '_csrf') {
+                return;
+            }
             control.disabled = busy;
         });
         form.classList.toggle('is-busy', busy);
@@ -885,7 +888,6 @@ function setupReservationActions() {
             const defaultLabel = submitter.textContent || '';
             submitter.textContent = isDelete ? 'Mazání…' : 'Ukládám…';
             setFeedback(form, isDelete ? 'Mažu rezervaci…' : 'Ukládám změny…', 'info');
-            setFormBusy(form, true);
 
             try {
                 const formData = new FormData(form);
@@ -896,6 +898,7 @@ function setupReservationActions() {
                     formData.set('update_reservation', '1');
                     formData.delete('delete_reservation');
                 }
+                setFormBusy(form, true);
 
                 const response = await fetch('/api/admin/reservation-action.php', {
                     method: 'POST',

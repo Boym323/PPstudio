@@ -57,6 +57,15 @@
                                         <tr data-reservation-empty-row><td colspan="8">Zatím zde nejsou žádné rezervace.</td></tr>
                                     <?php else: ?>
                                         <?php foreach ($reservationRows as $row): ?>
+                                            <?php
+                                            $cancelledByKey = (string) ($row['zruseno_kym'] ?? '');
+                                            $cancelledByLabel = match ($cancelledByKey) {
+                                                'customer_link' => 'Zákazník přes e-mailový odkaz',
+                                                'admin_full' => 'Admin',
+                                                'admin_lite' => 'User admin',
+                                                default => ($cancelledByKey !== '' ? $cancelledByKey : ''),
+                                            };
+                                            ?>
                                             <tr class="reservation-row" data-reservation-row data-reservation-id="<?= escape((string) $row['id']) ?>" data-reservation-client="<?= escape((string) ($row['jmeno'] ?? '')) ?>" data-reservation-datetime="<?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?>">
                                                 <td data-label="Termín"><?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?></td>
                                                 <td data-label="Procedura"><?= escape((string) $row['nazev']) ?></td>
@@ -68,6 +77,23 @@
                                                     <div class="reservation-note-client">
                                                         <strong>Klientka:</strong> <?= escape((string) ($row['poznamka_klienta'] ?? '')) ?>
                                                     </div>
+                                                    <?php if ((string) ($row['stav'] ?? '') === 'zrusena'): ?>
+                                                        <div class="reservation-note-client">
+                                                            <strong>Důvod zrušení:</strong> <?= escape((string) ($row['duvod_zruseni'] ?? 'neuvedeno')) ?>
+                                                        </div>
+                                                        <?php if ($cancelledByLabel !== '' || (string) ($row['zruseno_at'] ?? '') !== ''): ?>
+                                                            <div class="reservation-note-client">
+                                                                <strong>Zrušeno:</strong>
+                                                                <?= escape($cancelledByLabel !== '' ? $cancelledByLabel : 'neznámý zdroj') ?>
+                                                                <?php if ((string) ($row['zruseno_uzivatel'] ?? '') !== ''): ?>
+                                                                    (<?= escape((string) $row['zruseno_uzivatel']) ?>)
+                                                                <?php endif; ?>
+                                                                <?php if ((string) ($row['zruseno_at'] ?? '') !== ''): ?>
+                                                                    dne <?= escape(formatCzechDateTime((string) $row['zruseno_at'])) ?>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td data-label="Stav a správa">
                                                     <form method="post" class="admin-form compact-form compact-form-reservation" data-reservation-form>
@@ -80,6 +106,7 @@
                                                             <?php endforeach; ?>
                                                         </select>
                                                         <input type="text" name="poznamka_admina" value="<?= escape((string) ($row['poznamka_admina'] ?? '')) ?>" placeholder="Interní poznámka">
+                                                        <input type="text" name="duvod_zruseni" value="<?= escape((string) ($row['duvod_zruseni'] ?? '')) ?>" placeholder="Důvod zrušení (povinný při stavu Zrušená)">
                                                         <div class="table-actions">
                                                             <button class="button button-primary button-small" type="submit" name="update_reservation" value="1">Uložit</button>
                                                             <button class="button button-danger button-small" type="submit" name="delete_reservation" value="1">Smazat</button>

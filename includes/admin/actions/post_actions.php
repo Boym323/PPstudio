@@ -703,11 +703,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
     $reservationId = (int) ($_POST['reservation_id'] ?? 0);
     $status = trim((string) ($_POST['stav'] ?? 'nova'));
     $adminNote = trim((string) ($_POST['poznamka_admina'] ?? ''));
+    $cancelReason = trim((string) ($_POST['duvod_zruseni'] ?? ''));
     if (array_key_exists($status, reservationStatusOptions()) && $reservationId > 0) {
         $reservationBeforeUpdate = loadReservationDetails($connection, $reservationId);
-        $statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+        if ($reservationBeforeUpdate === null) {
+            $error = 'Rezervace nebyla nalezena.';
+            $statement = null;
+        } else {
+            $previousStatus = (string) ($reservationBeforeUpdate['stav'] ?? '');
+            if ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
+                $error = 'Při zrušení rezervace vyplňte důvod zrušení.';
+                $statement = null;
+            } elseif ($status === 'zrusena') {
+                $cancelledBy = (bool) ($_SESSION['ppstudio_admin_authenticated'] ?? false) ? 'admin_full' : 'admin_lite';
+                $cancelledByUser = (bool) ($_SESSION['ppstudio_admin_authenticated'] ?? false)
+                    ? trim((string) ($_SESSION['ppstudio_admin_username'] ?? 'admin'))
+                    : trim((string) ($_SESSION['ppstudio_admin_lite_username'] ?? 'staff'));
+                if ($previousStatus === 'zrusena') {
+                    $statement = $connection->prepare(
+                        'UPDATE rezervace
+                         SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
+                         WHERE id = ?'
+                    );
+                } else {
+                    $statement = $connection->prepare(
+                        'UPDATE rezervace
+                         SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
+                         WHERE id = ?'
+                    );
+                }
+            } else {
+                $statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+            }
+        }
         if ($statement) {
-            $statement->bind_param('ssi', $status, $adminNote, $reservationId);
+            if ($status === 'zrusena') {
+                $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+            } else {
+                $statement->bind_param('ssi', $status, $adminNote, $reservationId);
+            }
             if ($statement->execute()) {
                 $reservationAfterUpdate = loadReservationDetails($connection, $reservationId);
 
@@ -721,6 +755,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
 
                     if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
                         sendReservationCancelledEmail($emailConfig, $siteSettings, $reservationAfterUpdate);
+                        securityEventLog('reservation_admin_cancelled', 'admin_reservation', 'warning', [
+                            'reservation_id' => $reservationId,
+                            'cancelled_by' => $cancelledBy,
+                            'cancelled_by_user' => $cancelledByUser,
+                            'cancel_reason' => $cancelReason,
+                        ]);
                     }
                 }
 

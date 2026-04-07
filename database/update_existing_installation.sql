@@ -4,7 +4,13 @@ ALTER TABLE rezervace
     ADD COLUMN IF NOT EXISTS poznamka_klienta TEXT NULL AFTER telefon,
     ADD COLUMN IF NOT EXISTS poznamka_admina TEXT NULL AFTER poznamka_klienta,
     ADD COLUMN IF NOT EXISTS cena_v_dobe_rezervace DECIMAL(10,2) NULL AFTER sluzba,
-    ADD COLUMN IF NOT EXISTS stav ENUM('nova', 'potvrzena', 'dokoncena', 'zrusena') NOT NULL DEFAULT 'nova' AFTER datum_cas;
+    ADD COLUMN IF NOT EXISTS stav ENUM('nova', 'potvrzena', 'dokoncena', 'zrusena') NOT NULL DEFAULT 'nova' AFTER datum_cas,
+    ADD COLUMN IF NOT EXISTS duvod_zruseni VARCHAR(255) NULL AFTER stav,
+    ADD COLUMN IF NOT EXISTS zruseno_kym VARCHAR(40) NULL AFTER duvod_zruseni,
+    ADD COLUMN IF NOT EXISTS zruseno_uzivatel VARCHAR(120) NULL AFTER zruseno_kym,
+    ADD COLUMN IF NOT EXISTS zruseno_at DATETIME NULL AFTER zruseno_uzivatel;
+
+CREATE INDEX IF NOT EXISTS idx_rezervace_zruseno_at ON rezervace (zruseno_at);
 
 CREATE TABLE IF NOT EXISTS kategorie (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

@@ -74,13 +74,25 @@ if (! $linkIsValid) {
                     $message = 'Rezervace je již dokončená a nelze ji zrušit tímto odkazem.';
                     $messageType = 'error';
                 } else {
-                    $update = $connection->prepare('UPDATE rezervace SET stav = "zrusena" WHERE id = ? LIMIT 1');
+                    $cancelReason = 'Zrušeno zákazníkem přes odkaz v potvrzovacím e-mailu';
+                    $cancelledBy = 'customer_link';
+                    $cancelledByUser = 'customer';
+                    $update = $connection->prepare(
+                        'UPDATE rezervace
+                         SET stav = "zrusena",
+                             duvod_zruseni = ?,
+                             zruseno_kym = ?,
+                             zruseno_uzivatel = ?,
+                             zruseno_at = NOW()
+                         WHERE id = ?
+                         LIMIT 1'
+                    );
                     if (! $update) {
                         http_response_code(500);
                         $message = 'Rezervaci se nepodařilo zrušit.';
                         $messageType = 'error';
                     } else {
-                        $update->bind_param('i', $reservationId);
+                        $update->bind_param('sssi', $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
                         if (! $update->execute()) {
                             http_response_code(500);
                             $message = 'Rezervaci se nepodařilo zrušit.';

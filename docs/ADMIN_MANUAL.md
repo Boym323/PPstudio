@@ -26,6 +26,7 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 - Filtrování podle jména/e-mailu/telefonu/stavu/období.
 - Úprava stavu rezervace.
 - Interní poznámka k rezervaci.
+- Důvod zrušení (povinný při změně na stav `zrusena`).
 - Smazání rezervace (chráněno potvrzením).
 - Potvrzovací e-mail klientce obsahuje bezpečný odkaz na zrušení (s mezikrokem potvrzení).
 
@@ -39,6 +40,7 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 Praktický dopad:
 - Stav ovlivňuje přehledy, filtry a provozní statistiky.
 - Stav `zrusena` se nezapočítává jako aktivní termín.
+- U zrušené rezervace se eviduje audit: důvod, kdo zrušil, účet a čas.
 
 ### Kalendář
 
