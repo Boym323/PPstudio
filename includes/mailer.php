@@ -183,14 +183,26 @@ function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, 
     }
 
     $siteName = setting($siteSettings, 'site_name', defaultSiteName());
-    $subject = $siteName . ': změna rezervace';
+    $subject = $siteName . ': rezervace byla zrušena';
     $customerName = (string) ($reservation['jmeno'] ?? '');
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+    $cancelledBy = trim((string) ($reservation['zruseno_kym'] ?? ''));
+    $cancelledByLabel = match ($cancelledBy) {
+        'customer_link' => 'zákazníkem přes e-mailový odkaz',
+        'admin_full' => 'studiem (admin)',
+        'admin_lite' => 'studiem',
+        default => '',
+    };
 
     $textBody = "Dobrý den {$customerName},\n\n"
-        . "rezervace pro proceduru {$serviceName} v termínu {$dateTime} byla zrušena nebo upravena.\n"
-        . "Pokud budete chtít nový termín, stačí si vybrat další datum na webu.\n\n"
+        . "vaše rezervace pro proceduru {$serviceName} v termínu {$dateTime} byla zrušena.\n";
+
+    if ($cancelledByLabel !== '') {
+        $textBody .= "Zrušení provedeno: {$cancelledByLabel}.\n";
+    }
+
+    $textBody .= "Pokud budete chtít nový termín, stačí si vybrat další datum na webu.\n\n"
         . "{$siteName}";
 
     return sendPhpMailerMessage(
