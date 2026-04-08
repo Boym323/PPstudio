@@ -65,8 +65,14 @@
                                                 'admin_lite' => 'User admin',
                                                 default => ($cancelledByKey !== '' ? $cancelledByKey : ''),
                                             };
+                                            $dateTimeLocalValue = '';
+                                            $dateTimeTimestamp = strtotime((string) ($row['datum_cas'] ?? ''));
+                                            if ($dateTimeTimestamp) {
+                                                $dateTimeLocalValue = date('Y-m-d\TH:i', $dateTimeTimestamp);
+                                            }
+                                            $serviceId = (int) ($row['service_id'] ?? 0);
                                             ?>
-                                            <tr class="reservation-row" data-reservation-row data-reservation-id="<?= escape((string) $row['id']) ?>" data-reservation-client="<?= escape((string) ($row['jmeno'] ?? '')) ?>" data-reservation-datetime="<?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?>">
+                                            <tr class="reservation-row" data-reservation-row data-reservation-id="<?= escape((string) $row['id']) ?>" data-reservation-client="<?= escape((string) ($row['jmeno'] ?? '')) ?>" data-reservation-datetime="<?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?>" data-reservation-service-id="<?= escape((string) $serviceId) ?>" data-reservation-datetime-local="<?= escape($dateTimeLocalValue) ?>">
                                                 <td data-label="Termín"><?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?></td>
                                                 <td data-label="Procedura"><?= escape((string) $row['nazev']) ?></td>
                                                 <td data-label="Cena"><?= escape(formatPrice($row['cena_v_dobe_rezervace'] ?? null)) ?></td>
@@ -99,6 +105,7 @@
                                                     <form method="post" class="admin-form compact-form compact-form-reservation" data-reservation-form>
                                                         <?= csrfInputField() ?>
                                                         <input type="hidden" name="reservation_id" value="<?= escape((string) $row['id']) ?>">
+                                                        <input type="hidden" name="datum_cas" value="<?= escape($dateTimeLocalValue) ?>" data-reschedule-datetime>
                                                         <span class="status-badge status-<?= escape((string) $row['stav']) ?>" data-reservation-status-badge><?= escape(reservationStatusLabel((string) $row['stav'])) ?></span>
                                                         <select name="stav">
                                                             <?php foreach (reservationStatusOptions() as $statusValue => $statusLabel): ?>
@@ -107,6 +114,22 @@
                                                         </select>
                                                         <input type="text" name="poznamka_admina" value="<?= escape((string) ($row['poznamka_admina'] ?? '')) ?>" placeholder="Interní poznámka">
                                                         <input type="text" name="duvod_zruseni" value="<?= escape((string) ($row['duvod_zruseni'] ?? '')) ?>" placeholder="Důvod zrušení (povinný při stavu Zrušená)">
+                                                        <button class="button button-secondary button-small" type="button" data-reschedule-toggle>Přeplánovat</button>
+                                                        <div class="reservation-reschedule-box" data-reschedule-box hidden>
+                                                            <label>
+                                                                <span>Dostupný den</span>
+                                                                <select data-reschedule-day>
+                                                                    <option value="">Vyberte den</option>
+                                                                </select>
+                                                            </label>
+                                                            <label>
+                                                                <span>Dostupný čas</span>
+                                                                <select data-reschedule-time disabled>
+                                                                    <option value="">Nejprve vyberte den</option>
+                                                                </select>
+                                                            </label>
+                                                            <div class="form-hint" data-reschedule-picked>Nový termín zatím není vybraný.</div>
+                                                        </div>
                                                         <div class="table-actions">
                                                             <button class="button button-primary button-small" type="submit" name="update_reservation" value="1">Uložit</button>
                                                             <button class="button button-danger button-small" type="submit" name="delete_reservation" value="1">Smazat</button>

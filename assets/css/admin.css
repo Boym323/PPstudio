@@ -617,6 +617,37 @@ p {
     gap: 0.3rem;
 }
 
+.compact-form-reservation [data-reschedule-toggle] {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: auto;
+    min-width: 0;
+}
+
+.reservation-reschedule-box {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.52rem;
+    border: 1px dashed rgba(170, 146, 126, 0.5);
+    border-radius: 10px;
+    background: rgba(255, 251, 246, 0.65);
+}
+
+.reservation-reschedule-box[hidden] {
+    display: none;
+}
+
+.reservation-reschedule-box label {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.reservation-reschedule-box .form-hint {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+}
+
 .compact-form-reservation .button.button-small {
     min-height: 1.85rem;
     padding: 0.32rem 0.45rem;
@@ -680,7 +711,7 @@ p {
 .voucher-admin-table th:nth-child(7),
 .voucher-admin-table td:nth-child(7) { width: 14%; min-width: 0; }
 .voucher-admin-table th:nth-child(8),
-.voucher-admin-table td:nth-child(8) { width: 24%; min-width: 0; }
+.voucher-admin-table td:nth-child(8) { width: 20%; min-width: 0; }
 
 .voucher-admin-table th,
 .voucher-admin-table td {
@@ -726,6 +757,7 @@ p {
 
 .compact-form-voucher {
     gap: 0.35rem;
+    margin-top: 0.45rem;
 }
 
 .voucher-actions-grid {
@@ -766,6 +798,27 @@ p {
     margin-top: 0.35rem;
 }
 
+.voucher-manage-wrap {
+    margin: 0;
+}
+
+.voucher-manage-wrap > summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.45rem;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.86rem;
+}
+
+.voucher-manage-count {
+    font-size: 0.74rem;
+    color: var(--text-soft);
+    font-weight: 600;
+}
+
 .voucher-balance-meta {
     margin-top: 0.28rem;
     font-size: 0.78rem;
@@ -792,6 +845,7 @@ p {
     margin-top: 0.4rem;
     border-top: 1px solid rgba(219, 203, 189, 0.65);
     padding-top: 0.3rem;
+    max-width: 100%;
 }
 
 .voucher-transactions-wrap > summary {
@@ -806,6 +860,7 @@ p {
     padding-left: 1rem;
     display: grid;
     gap: 0.25rem;
+    max-width: 100%;
 }
 
 .voucher-transactions-list li {
@@ -833,6 +888,7 @@ p {
 .voucher-transaction-reservation {
     color: var(--text);
     opacity: 0.9;
+    font-size: 0.74rem;
 }
 
 .voucher-status-aktivni {

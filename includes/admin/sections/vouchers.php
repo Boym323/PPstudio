@@ -164,71 +164,81 @@
                                                         <?php endif; ?>
                                                     </td>
                                                     <td data-label="Akce a historie">
-                                                        <?php if ($effectiveStatus === 'aktivni'): ?>
-                                                            <form method="post" class="admin-form compact-form compact-form-voucher">
-                                                                <?= csrfInputField() ?>
-                                                                <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
-                                                                <div class="voucher-actions-grid">
-                                                                    <div class="voucher-amount-row">
-                                                                        <input type="number" name="redeem_amount" min="1" step="1" placeholder="Částka (Kč)" required>
-                                                                        <button class="button button-primary button-small" type="submit" name="redeem_voucher" value="1">Uložit čerpání</button>
+                                                        <details class="voucher-manage-wrap">
+                                                            <summary>
+                                                                Správa poukazu
+                                                                <?php if ($voucherTransactions !== []): ?>
+                                                                    <span class="voucher-manage-count"><?= escape((string) count($voucherTransactions)) ?>x čerpání</span>
+                                                                <?php else: ?>
+                                                                    <span class="voucher-manage-count">Bez čerpání</span>
+                                                                <?php endif; ?>
+                                                            </summary>
+                                                            <?php if ($effectiveStatus === 'aktivni'): ?>
+                                                                <form method="post" class="admin-form compact-form compact-form-voucher">
+                                                                    <?= csrfInputField() ?>
+                                                                    <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
+                                                                    <div class="voucher-actions-grid">
+                                                                        <div class="voucher-amount-row">
+                                                                            <input type="number" name="redeem_amount" min="1" step="1" placeholder="Částka (Kč)" required>
+                                                                            <button class="button button-primary button-small" type="submit" name="redeem_voucher" value="1">Uložit čerpání</button>
+                                                                        </div>
+                                                                        <input type="text" name="redeem_note" placeholder="Poznámka čerpání (volitelné)">
+                                                                        <details class="voucher-link-reservation">
+                                                                            <summary>Připojit k rezervaci (volitelné)</summary>
+                                                                            <select name="redeem_reservation_id">
+                                                                                <option value="">Bez vazby na rezervaci</option>
+                                                                                <?php foreach ($voucherReservationOptions as $reservationOption): ?>
+                                                                                    <option value="<?= escape((string) $reservationOption['id']) ?>">
+                                                                                        <?= escape(formatCzechDateTime((string) $reservationOption['datum_cas']) . ' - ' . (string) $reservationOption['jmeno']) ?>
+                                                                                    </option>
+                                                                                <?php endforeach; ?>
+                                                                            </select>
+                                                                        </details>
                                                                     </div>
-                                                                    <input type="text" name="redeem_note" placeholder="Poznámka čerpání (volitelné)">
-                                                                    <details class="voucher-link-reservation">
-                                                                        <summary>Připojit k rezervaci (volitelné)</summary>
-                                                                        <select name="redeem_reservation_id">
-                                                                            <option value="">Bez vazby na rezervaci</option>
-                                                                            <?php foreach ($voucherReservationOptions as $reservationOption): ?>
-                                                                                <option value="<?= escape((string) $reservationOption['id']) ?>">
-                                                                                    <?= escape(formatCzechDateTime((string) $reservationOption['datum_cas']) . ' - ' . (string) $reservationOption['jmeno']) ?>
-                                                                                </option>
-                                                                            <?php endforeach; ?>
-                                                                        </select>
-                                                                    </details>
-                                                                </div>
-                                                            </form>
-                                                        <?php else: ?>
-                                                            <p class="form-hint">Čerpání není dostupné: poukaz má stav <strong><?= escape(mb_strtolower($statusLabel)) ?></strong>.</p>
-                                                        <?php endif; ?>
-                                                        <?php if ($voucherTransactions !== []): ?>
-                                                            <details class="voucher-transactions-wrap">
-                                                                <summary>Historie čerpání (<?= escape((string) count($voucherTransactions)) ?>)</summary>
-                                                                <ul class="voucher-transactions-list">
-                                                                    <?php foreach ($voucherTransactions as $transaction): ?>
-                                                                        <li>
-                                                                            <div class="voucher-transaction-main">
-                                                                                <strong><?= escape(formatPrice($transaction['castka'] ?? null)) ?></strong>
-                                                                                <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
-                                                                            </div>
-                                                                            <?php if ((int) ($transaction['rezervace_id'] ?? 0) > 0): ?>
-                                                                                <?php
-                                                                                $txReservationId = (int) $transaction['rezervace_id'];
-                                                                                $reservationInfo = $voucherReservationLookup[$txReservationId] ?? null;
-                                                                                $reservationLabel = '';
-                                                                                if (is_array($reservationInfo)) {
-                                                                                    $labelParts = [];
-                                                                                    if ((string) ($reservationInfo['datum_cas'] ?? '') !== '') {
-                                                                                        $labelParts[] = formatCzechDateTime((string) $reservationInfo['datum_cas']);
+                                                                </form>
+                                                            <?php else: ?>
+                                                                <p class="form-hint">Čerpání není dostupné: poukaz má stav <strong><?= escape(mb_strtolower($statusLabel)) ?></strong>.</p>
+                                                            <?php endif; ?>
+                                                            <?php if ($voucherTransactions !== []): ?>
+                                                                <details class="voucher-transactions-wrap">
+                                                                    <summary>Historie čerpání (<?= escape((string) count($voucherTransactions)) ?>)</summary>
+                                                                    <ul class="voucher-transactions-list">
+                                                                        <?php foreach ($voucherTransactions as $transaction): ?>
+                                                                            <li>
+                                                                                <div class="voucher-transaction-main">
+                                                                                    <strong><?= escape(formatPrice($transaction['castka'] ?? null)) ?></strong>
+                                                                                    <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
+                                                                                </div>
+                                                                                <?php if ((int) ($transaction['rezervace_id'] ?? 0) > 0): ?>
+                                                                                    <?php
+                                                                                    $txReservationId = (int) $transaction['rezervace_id'];
+                                                                                    $reservationInfo = $voucherReservationLookup[$txReservationId] ?? null;
+                                                                                    $reservationLabel = '';
+                                                                                    if (is_array($reservationInfo)) {
+                                                                                        $labelParts = [];
+                                                                                        if ((string) ($reservationInfo['datum_cas'] ?? '') !== '') {
+                                                                                            $labelParts[] = formatCzechDateTime((string) $reservationInfo['datum_cas']);
+                                                                                        }
+                                                                                        if ((string) ($reservationInfo['jmeno'] ?? '') !== '') {
+                                                                                            $labelParts[] = (string) $reservationInfo['jmeno'];
+                                                                                        }
+                                                                                        $reservationLabel = implode(' • ', $labelParts);
                                                                                     }
-                                                                                    if ((string) ($reservationInfo['jmeno'] ?? '') !== '') {
-                                                                                        $labelParts[] = (string) $reservationInfo['jmeno'];
-                                                                                    }
-                                                                                    $reservationLabel = implode(' • ', $labelParts);
-                                                                                }
-                                                                                ?>
-                                                                                <span class="voucher-transaction-reservation">
-                                                                                    Rezervace:
-                                                                                    <?= escape($reservationLabel !== '' ? $reservationLabel : ('#' . (string) $txReservationId)) ?>
-                                                                                </span>
-                                                                            <?php endif; ?>
-                                                                            <?php if (trim((string) ($transaction['poznamka'] ?? '')) !== ''): ?>
-                                                                                <span class="voucher-transaction-note"><?= escape((string) $transaction['poznamka']) ?></span>
-                                                                            <?php endif; ?>
-                                                                        </li>
-                                                                    <?php endforeach; ?>
-                                                                </ul>
-                                                            </details>
-                                                        <?php endif; ?>
+                                                                                    ?>
+                                                                                    <span class="voucher-transaction-reservation">
+                                                                                        Rezervace:
+                                                                                        <?= escape($reservationLabel !== '' ? $reservationLabel : ('#' . (string) $txReservationId)) ?>
+                                                                                    </span>
+                                                                                <?php endif; ?>
+                                                                                <?php if (trim((string) ($transaction['poznamka'] ?? '')) !== ''): ?>
+                                                                                    <span class="voucher-transaction-note"><?= escape((string) $transaction['poznamka']) ?></span>
+                                                                                <?php endif; ?>
+                                                                            </li>
+                                                                        <?php endforeach; ?>
+                                                                    </ul>
+                                                                </details>
+                                                            <?php endif; ?>
+                                                        </details>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

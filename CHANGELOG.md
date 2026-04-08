@@ -9,6 +9,19 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - Typy: `feat`, `fix`, `refactor`, `style`, `docs`, `chore`, `perf`, `security`.
 - Nejnovější záznamy zapisuj nahoru.
 
+## 2026-04-07
+
+- [feat] Přidána klientská samoobsluha pro přesun termínu přes podepsaný odkaz (`/reservation-reschedule.php`) včetně kalendáře a výběru času (commit: `this-commit`)
+- [feat] Do potvrzovacího e-mailu doplněno tlačítko „Přesunout termín“ vedle zrušení rezervace (commit: `this-commit`)
+- [security] Rozšířena data rezervace o `service_id` a přidán audit event `reservation_customer_rescheduled` (commit: `this-commit`)
+
+## 2026-04-08
+
+- [feat] Potvrzovací e-mail po přesunu termínu nyní obsahuje přehled „původní termín -> nový termín“ a upravený předmět zprávy (commit: `this-commit`)
+- [feat] V admin sekci rezervací přidána možnost přeplánovat termín existující rezervace (validace dostupnosti, audit, live update tabulky) (commit: `this-commit`)
+- [ux] Přeplánování v adminu přesunuto pod vedlejší tlačítko „Přeplánovat“ s výběrem pouze z dostupných dní a časů (commit: `this-commit`)
+- [security] Přidán server hardening proti WordPress scanům v `.htaccess` + provedena rotace `PPSTUDIO_CALENDAR_TOKEN` po detekci tokenu v server logu (commit: `this-commit`)
+
 ## 2026-04-06
 
 - [feat] Doplněn audit zrušení rezervací (důvod, kdo zrušil, účet, čas) pro admin i zákaznický odkaz (commit: `this-commit`)

@@ -90,48 +90,75 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
     return $sent;
 }
 
-function sendReservationConfirmedEmail(array $emailConfig, array $siteSettings, array $reservation): bool
+function sendReservationConfirmedEmail(
+    array $emailConfig,
+    array $siteSettings,
+    array $reservation,
+    array $context = []
+): bool
 {
     if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
         return false;
     }
 
     $siteName = setting($siteSettings, 'site_name', defaultSiteName());
-    $subject = $siteName . ': potvrzení rezervace';
+    $previousDateTimeRaw = trim((string) ($context['previous_datetime'] ?? ''));
+    $isRescheduled = $previousDateTimeRaw !== '';
+    $previousDateTime = $previousDateTimeRaw !== '' ? formatCzechDateTime($previousDateTimeRaw) : '';
+
+    $subject = $isRescheduled
+        ? $siteName . ': potvrzení změny termínu rezervace'
+        : $siteName . ': potvrzení rezervace';
     $customerName = (string) ($reservation['jmeno'] ?? '');
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
     $location = setting($siteSettings, 'contact_address', 'Adresa studia');
+    $rescheduleUrl = buildReservationCustomerRescheduleUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0));
     $cancelUrl = buildReservationCustomerCancelUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0));
 
     $textBody = "Dobrý den {$customerName},\n\n"
-        . "vaše rezervace byla potvrzena.\n"
+        . ($isRescheduled ? "váš termín rezervace byl změněn.\n" : "vaše rezervace byla potvrzena.\n")
         . "Procedura: {$serviceName}\n"
-        . "Termín: {$dateTime}\n"
+        . ($isRescheduled
+            ? "Původní termín: {$previousDateTime}\nNový termín: {$dateTime}\n"
+            : "Termín: {$dateTime}\n")
         . "Místo: {$location}\n\n"
         . "V příloze najdete soubor pro vložení do kalendáře.\n";
 
     if ($cancelUrl !== '') {
         $textBody .= "\nPokud potřebujete termín zrušit, použijte tento odkaz:\n{$cancelUrl}\n";
     }
+    if ($rescheduleUrl !== '') {
+        $textBody .= "\nPokud potřebujete termín přesunout, použijte tento odkaz:\n{$rescheduleUrl}\n";
+    }
 
     $textBody .= "\n"
         . "\n{$siteName}";
 
     $htmlBody = '<p>Dobrý den ' . escape($customerName) . ',</p>'
-        . '<p>vaše rezervace byla potvrzena.</p>'
+        . '<p>' . escape($isRescheduled ? 'váš termín rezervace byl změněn.' : 'vaše rezervace byla potvrzena.') . '</p>'
         . '<p><strong>Procedura:</strong> ' . escape($serviceName) . '<br>'
-        . '<strong>Termín:</strong> ' . escape($dateTime) . '<br>'
+        . ($isRescheduled
+            ? '<strong>Původní termín:</strong> ' . escape($previousDateTime) . '<br><strong>Nový termín:</strong> ' . escape($dateTime) . '<br>'
+            : '<strong>Termín:</strong> ' . escape($dateTime) . '<br>')
         . '<strong>Místo:</strong> ' . escape($location) . '</p>'
         . '<p>V příloze najdete soubor pro vložení do kalendáře.</p>';
 
-    if ($cancelUrl !== '') {
+    if ($cancelUrl !== '' || $rescheduleUrl !== '') {
         $htmlBody .= '<div style="margin:18px 0;padding-top:14px;border-top:1px solid #e4d6c5;">'
-            . '<p style="margin:0 0 10px 0;">Pokud potřebujete termín zrušit, použijte bezpečné tlačítko níže:</p>'
-            . '<a href="'
-            . escape($cancelUrl)
-            . '" style="display:inline-block;padding:10px 16px;background:#b86a59;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Zrušit rezervaci</a>'
-            . '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.</p>'
+            . '<p style="margin:0 0 10px 0;">Potřebujete změnu? Použijte bezpečná tlačítka níže:</p>';
+        if ($rescheduleUrl !== '') {
+            $htmlBody .= '<a href="'
+                . escape($rescheduleUrl)
+                . '" style="display:inline-block;padding:10px 16px;background:#6f4d34;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Přesunout termín</a>';
+        }
+        if ($cancelUrl !== '') {
+            $htmlBody .= ($rescheduleUrl !== '' ? '<span style="display:inline-block;width:24px;"></span>' : '')
+                . '<a href="'
+                . escape($cancelUrl)
+                . '" style="display:inline-block;padding:10px 16px;background:#b86a59;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Zrušit rezervaci</a>';
+        }
+        $htmlBody .= '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.</p>'
             . '</div>';
     }
 
@@ -170,6 +197,29 @@ function buildReservationCustomerCancelUrl(array $emailConfig, array $siteSettin
     $signature = hash_hmac('sha256', $payload, $secret);
 
     return $siteUrl . '/reservation-cancel.php?id=' . $reservationId
+        . '&action=' . rawurlencode($action)
+        . '&exp=' . $expiresAt
+        . '&nonce=' . rawurlencode($nonce)
+        . '&sig=' . rawurlencode($signature);
+}
+
+function buildReservationCustomerRescheduleUrl(array $emailConfig, array $siteSettings, int $reservationId): string
+{
+    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
+    $secret = (string) ($emailConfig['action_secret'] ?? '');
+    $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
+
+    if ($siteUrl === '' || $secret === '' || $reservationId <= 0) {
+        return '';
+    }
+
+    $expiresAt = time() + max(300, $ttl);
+    $nonce = bin2hex(random_bytes(16));
+    $action = 'reschedule';
+    $payload = $action . '|' . $reservationId . '|' . $expiresAt . '|' . $nonce;
+    $signature = hash_hmac('sha256', $payload, $secret);
+
+    return $siteUrl . '/reservation-reschedule.php?id=' . $reservationId
         . '&action=' . rawurlencode($action)
         . '&exp=' . $expiresAt
         . '&nonce=' . rawurlencode($nonce)
@@ -522,7 +572,7 @@ function buildConfiguredMailer(array $emailConfig): PHPMailer
 function loadReservationDetails(mysqli $connection, int $reservationId): ?array
 {
     $statement = $connection->prepare(
-        'SELECT r.id, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
+        'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
                 r.cena_v_dobe_rezervace, s.nazev, s.doba_trvani
          FROM rezervace r
          INNER JOIN sluzby s ON s.id = r.sluzba
@@ -536,12 +586,13 @@ function loadReservationDetails(mysqli $connection, int $reservationId): ?array
 
     $statement->bind_param('i', $reservationId);
     $statement->execute();
-    $statement->bind_result($id, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $serviceName, $serviceDuration);
+    $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $serviceName, $serviceDuration);
     $reservation = null;
 
     if ($statement->fetch()) {
         $reservation = [
             'id' => $id,
+            'service_id' => (int) $serviceId,
             'jmeno' => $name,
             'email' => $email,
             'telefon' => $phone,

@@ -799,6 +799,19 @@ function setupReservationActions() {
     const totalNode = root.querySelector('[data-reservation-total]');
     const tbody = root.querySelector('[data-reservation-tbody]');
     let feedbackTimer = null;
+    const fetchJson = async (url) => {
+        const response = await fetch(url, {
+            headers: {
+                'X-Requested-With': 'fetch',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+        if (!response.ok) {
+            throw new Error('Dostupné termíny se nepodařilo načíst.');
+        }
+        return response.json();
+    };
 
     const setFeedback = (form, message, type = 'info') => {
         const feedback = form.querySelector('[data-reservation-feedback]');
@@ -857,6 +870,142 @@ function setupReservationActions() {
     };
 
     forms.forEach((form) => {
+        const row = form.closest('[data-reservation-row]');
+        const toggleButton = form.querySelector('[data-reschedule-toggle]');
+        const rescheduleBox = form.querySelector('[data-reschedule-box]');
+        const daySelect = form.querySelector('[data-reschedule-day]');
+        const timeSelect = form.querySelector('[data-reschedule-time]');
+        const pickedNode = form.querySelector('[data-reschedule-picked]');
+        const hiddenDateTimeInput = form.querySelector('[data-reschedule-datetime]');
+        const serviceId = row ? String(row.dataset.reservationServiceId || '').trim() : '';
+        let originalDateTimeValue = hiddenDateTimeInput ? String(hiddenDateTimeInput.value || '').trim() : '';
+        let daysLoaded = false;
+
+        const setHiddenDateTime = (day, time) => {
+            if (!hiddenDateTimeInput) return;
+            if (!day || !time) return;
+            hiddenDateTimeInput.value = `${day}T${time}`;
+        };
+
+        const updatePickedLabel = () => {
+            if (!pickedNode || !daySelect || !timeSelect || !hiddenDateTimeInput) return;
+            const dayOption = daySelect.options[daySelect.selectedIndex];
+            const timeOption = timeSelect.options[timeSelect.selectedIndex];
+            if (!daySelect.value || !timeSelect.value) {
+                pickedNode.textContent = 'Nový termín zatím není vybraný.';
+                return;
+            }
+            const selectedValue = `${daySelect.value}T${timeSelect.value}`;
+            pickedNode.textContent = selectedValue === originalDateTimeValue
+                ? 'Vybraný termín je stejný jako aktuální.'
+                : `Nový termín: ${String(dayOption?.textContent || daySelect.value)} v ${String(timeOption?.textContent || timeSelect.value)}`;
+        };
+
+        const resetTimes = () => {
+            if (!timeSelect) return;
+            timeSelect.innerHTML = '<option value="">Nejprve vyberte den</option>';
+            timeSelect.disabled = true;
+            updatePickedLabel();
+        };
+
+        const loadTimes = async (dayValue) => {
+            if (!timeSelect || !serviceId || !dayValue) {
+                resetTimes();
+                return;
+            }
+
+            timeSelect.disabled = true;
+            timeSelect.innerHTML = '<option value="">Načítám časy…</option>';
+            try {
+                const payload = await fetchJson(`/api/availability.php?service_id=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(dayValue)}`);
+                const times = Array.isArray(payload.times) ? payload.times : [];
+                if (times.length === 0) {
+                    timeSelect.innerHTML = '<option value="">Bez volného času</option>';
+                    timeSelect.disabled = true;
+                    updatePickedLabel();
+                    return;
+                }
+
+                timeSelect.innerHTML = '<option value="">Vyberte čas</option>';
+                times.forEach((slot) => {
+                    const value = String(slot?.value || '');
+                    if (!value) return;
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = String(slot?.label || value);
+                    timeSelect.appendChild(option);
+                });
+                timeSelect.disabled = false;
+            } catch (_) {
+                timeSelect.innerHTML = '<option value="">Časy nelze načíst</option>';
+                timeSelect.disabled = true;
+            }
+            updatePickedLabel();
+        };
+
+        const loadDays = async () => {
+            if (!daySelect || !serviceId) return;
+            daySelect.disabled = true;
+            daySelect.innerHTML = '<option value="">Načítám dny…</option>';
+            resetTimes();
+            try {
+                const payload = await fetchJson(`/api/availability.php?service_id=${encodeURIComponent(serviceId)}`);
+                const days = Array.isArray(payload.days) ? payload.days : [];
+                daySelect.innerHTML = '';
+                const first = document.createElement('option');
+                first.value = '';
+                first.textContent = days.length > 0 ? 'Vyberte den' : 'Bez volných dnů';
+                daySelect.appendChild(first);
+                days.forEach((day) => {
+                    const value = String(day?.value || '');
+                    if (!value) return;
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = String(day?.label || value);
+                    daySelect.appendChild(option);
+                });
+                daySelect.disabled = days.length === 0;
+                daysLoaded = true;
+            } catch (_) {
+                daySelect.innerHTML = '<option value="">Dny nelze načíst</option>';
+                daySelect.disabled = true;
+            }
+            updatePickedLabel();
+        };
+
+        if (toggleButton && rescheduleBox) {
+            toggleButton.addEventListener('click', async () => {
+                const shouldOpen = rescheduleBox.hidden;
+                rescheduleBox.hidden = !shouldOpen;
+                toggleButton.textContent = shouldOpen ? 'Skrýt přeplánování' : 'Přeplánovat';
+                if (shouldOpen && !daysLoaded) {
+                    await loadDays();
+                }
+            });
+        }
+
+        if (daySelect) {
+            daySelect.addEventListener('change', () => {
+                const value = String(daySelect.value || '');
+                if (!value) {
+                    resetTimes();
+                    return;
+                }
+                loadTimes(value);
+            });
+        }
+
+        if (timeSelect) {
+            timeSelect.addEventListener('change', () => {
+                const dayValue = daySelect ? String(daySelect.value || '') : '';
+                const timeValue = String(timeSelect.value || '');
+                if (dayValue && timeValue) {
+                    setHiddenDateTime(dayValue, timeValue);
+                }
+                updatePickedLabel();
+            });
+        }
+
         form.addEventListener('submit', async (event) => {
             const submitter = event.submitter;
             if (!submitter) {
@@ -932,9 +1081,28 @@ function setupReservationActions() {
                     statusBadge.textContent = payload.data.status_label || statusBadge.textContent;
                     statusBadge.className = `status-badge status-${payload.data.status_key || 'nova'}`;
                 }
+                const row = form.closest('[data-reservation-row]');
+                if (row && payload.data) {
+                    const datetimeLabel = String(payload.data.datetime_label || '').trim();
+                    if (datetimeLabel !== '') {
+                        row.dataset.reservationDatetime = datetimeLabel;
+                        const termCell = row.querySelector('td[data-label="Termín"]') || row.querySelector('td');
+                        if (termCell) {
+                            termCell.textContent = datetimeLabel;
+                        }
+                    }
+                    const hiddenDateTimeInput = form.querySelector('[data-reschedule-datetime]');
+                    if (hiddenDateTimeInput) {
+                        const localDateTime = String(payload.data.datetime_local || '').trim();
+                        if (localDateTime !== '') {
+                            hiddenDateTimeInput.value = localDateTime;
+                            row.dataset.reservationDatetimeLocal = localDateTime;
+                            originalDateTimeValue = localDateTime;
+                        }
+                    }
+                }
 
                 setFeedback(form, payload.message || 'Rezervace byla upravena.', 'success');
-                const row = form.closest('[data-reservation-row]');
                 if (row) {
                     row.classList.add('is-updated');
                     window.setTimeout(() => row.classList.remove('is-updated'), 1200);

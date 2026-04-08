@@ -704,6 +704,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
     $status = trim((string) ($_POST['stav'] ?? 'nova'));
     $adminNote = trim((string) ($_POST['poznamka_admina'] ?? ''));
     $cancelReason = trim((string) ($_POST['duvod_zruseni'] ?? ''));
+    $dateTimeRaw = trim((string) ($_POST['datum_cas'] ?? ''));
     if (array_key_exists($status, reservationStatusOptions()) && $reservationId > 0) {
         $reservationBeforeUpdate = loadReservationDetails($connection, $reservationId);
         if ($reservationBeforeUpdate === null) {
@@ -711,7 +712,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
             $statement = null;
         } else {
             $previousStatus = (string) ($reservationBeforeUpdate['stav'] ?? '');
-            if ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
+            $previousDateTime = (string) ($reservationBeforeUpdate['datum_cas'] ?? '');
+            $serviceId = (int) ($reservationBeforeUpdate['service_id'] ?? 0);
+            $dateTimeForSave = str_replace('T', ' ', $dateTimeRaw);
+            if (strlen($dateTimeForSave) === 16) {
+                $dateTimeForSave .= ':00';
+            }
+            $dateTimeChanged = $dateTimeForSave !== '' && $dateTimeForSave !== $previousDateTime;
+
+            if ($dateTimeForSave === '') {
+                $error = 'Vyplňte prosím termín rezervace.';
+                $statement = null;
+            } elseif ($dateTimeChanged && in_array($previousStatus, ['zrusena', 'dokoncena'], true)) {
+                $error = 'Zrušenou nebo dokončenou rezervaci nelze přesunout.';
+                $statement = null;
+            } elseif ($dateTimeChanged && ! isValidReservationSlot($connection, $serviceId, $dateTimeForSave)) {
+                $error = 'Vybraný termín už není volný nebo neodpovídá dostupnosti.';
+                $statement = null;
+            } elseif ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
                 $error = 'Při zrušení rezervace vyplňte důvod zrušení.';
                 $statement = null;
             } elseif ($status === 'zrusena') {
@@ -722,25 +740,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
                 if ($previousStatus === 'zrusena') {
                     $statement = $connection->prepare(
                         'UPDATE rezervace
-                         SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
+                         SET datum_cas = ?, stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
                          WHERE id = ?'
                     );
                 } else {
                     $statement = $connection->prepare(
                         'UPDATE rezervace
-                         SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
+                         SET datum_cas = ?, stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
                          WHERE id = ?'
                     );
                 }
             } else {
-                $statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+                $statement = $connection->prepare('UPDATE rezervace SET datum_cas = ?, stav = ?, poznamka_admina = ? WHERE id = ?');
             }
         }
         if ($statement) {
             if ($status === 'zrusena') {
-                $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+                $statement->bind_param('ssssssi', $dateTimeForSave, $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
             } else {
-                $statement->bind_param('ssi', $status, $adminNote, $reservationId);
+                $statement->bind_param('sssi', $dateTimeForSave, $status, $adminNote, $reservationId);
             }
             if ($statement->execute()) {
                 $reservationAfterUpdate = loadReservationDetails($connection, $reservationId);
@@ -751,6 +769,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
 
                     if ($previousStatus !== 'potvrzena' && $newStatus === 'potvrzena') {
                         sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservationAfterUpdate);
+                    }
+                    $newDateTime = (string) ($reservationAfterUpdate['datum_cas'] ?? '');
+                    if ($newStatus !== 'zrusena' && $newDateTime !== '' && $previousDateTime !== '' && $newDateTime !== $previousDateTime) {
+                        sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservationAfterUpdate, [
+                            'previous_datetime' => $previousDateTime,
+                        ]);
+                        securityEventLog('reservation_admin_rescheduled', 'admin_reservation', 'info', [
+                            'reservation_id' => $reservationId,
+                            'old_datetime' => $previousDateTime,
+                            'new_datetime' => $newDateTime,
+                        ]);
                     }
 
                     if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {

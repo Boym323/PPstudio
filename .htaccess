@@ -3,6 +3,11 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Synology hardening: boti často skenují WordPress cesty, i když WP nepoužíváme.
+    # Vracíme Gone (410), aby se minimalizovaly opakované scan pokusy a hluk v logu.
+    RewriteRule ^(?:wordpress|wp-admin|wp-content|wp-includes)(?:/|$) - [G,L,NC]
+    RewriteRule ^(?:wp-login\.php|wp-signup\.php|wp-config\.php|xmlrpc\.php)$ - [G,L,NC]
+
     RewriteRule ^(config|includes|database|vendor)/ - [F,L,NC]
     RewriteRule ^var/ - [F,L,NC]
     RewriteRule ^uploads/.*\.(php|phtml|phar)$ - [F,L,NC]

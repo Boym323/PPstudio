@@ -7,6 +7,7 @@ require __DIR__ . '/../../includes/security.php';
 require_once __DIR__ . '/../../includes/security_events.php';
 require __DIR__ . '/../../includes/settings.php';
 require __DIR__ . '/../../includes/mailer.php';
+require __DIR__ . '/../../includes/availability.php';
 
 startSecureSession();
 
@@ -118,6 +119,7 @@ if ($isDelete) {
 $status = trim((string) ($_POST['stav'] ?? 'nova'));
 $adminNote = trim((string) ($_POST['poznamka_admina'] ?? ''));
 $cancelReason = trim((string) ($_POST['duvod_zruseni'] ?? ''));
+$dateTimeRaw = trim((string) ($_POST['datum_cas'] ?? ''));
 $allowedStatuses = reservationStatusOptions();
 
 if (! array_key_exists($status, $allowedStatuses)) {
@@ -142,6 +144,44 @@ if ($reservationBeforeUpdate === null) {
 }
 
 $previousStatus = (string) ($reservationBeforeUpdate['stav'] ?? '');
+$previousDateTime = (string) ($reservationBeforeUpdate['datum_cas'] ?? '');
+$serviceId = (int) ($reservationBeforeUpdate['service_id'] ?? 0);
+$dateTimeForSave = str_replace('T', ' ', $dateTimeRaw);
+if (strlen($dateTimeForSave) === 16) {
+    $dateTimeForSave .= ':00';
+}
+$dateTimeChanged = $dateTimeForSave !== '' && $dateTimeForSave !== $previousDateTime;
+
+if ($dateTimeForSave === '') {
+    $connection->close();
+    http_response_code(422);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Vyplňte prosím termín rezervace.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($dateTimeChanged && in_array($previousStatus, ['zrusena', 'dokoncena'], true)) {
+    $connection->close();
+    http_response_code(422);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Zrušenou nebo dokončenou rezervaci nelze přesunout.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($dateTimeChanged && ! isValidReservationSlot($connection, $serviceId, $dateTimeForSave)) {
+    $connection->close();
+    http_response_code(422);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Vybraný termín už není volný nebo neodpovídá dostupnosti.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
     $connection->close();
     http_response_code(422);
@@ -162,18 +202,18 @@ if ($status === 'zrusena') {
     if ($previousStatus === 'zrusena') {
         $statement = $connection->prepare(
             'UPDATE rezervace
-             SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
+             SET datum_cas = ?, stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = COALESCE(zruseno_uzivatel, ?), zruseno_at = COALESCE(zruseno_at, NOW())
              WHERE id = ?'
         );
     } else {
         $statement = $connection->prepare(
             'UPDATE rezervace
-             SET stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
+             SET datum_cas = ?, stav = ?, poznamka_admina = ?, duvod_zruseni = ?, zruseno_kym = ?, zruseno_uzivatel = ?, zruseno_at = NOW()
              WHERE id = ?'
         );
     }
 } else {
-    $statement = $connection->prepare('UPDATE rezervace SET stav = ?, poznamka_admina = ? WHERE id = ?');
+    $statement = $connection->prepare('UPDATE rezervace SET datum_cas = ?, stav = ?, poznamka_admina = ? WHERE id = ?');
 }
 
 if (! $statement) {
@@ -188,12 +228,12 @@ if (! $statement) {
 
 if ($status === 'zrusena') {
     if ($previousStatus === 'zrusena') {
-        $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+        $statement->bind_param('ssssssi', $dateTimeForSave, $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
     } else {
-        $statement->bind_param('sssssi', $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+        $statement->bind_param('ssssssi', $dateTimeForSave, $status, $adminNote, $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
     }
 } else {
-    $statement->bind_param('ssi', $status, $adminNote, $reservationId);
+    $statement->bind_param('sssi', $dateTimeForSave, $status, $adminNote, $reservationId);
 }
 $ok = $statement->execute();
 $statement->close();
@@ -209,11 +249,26 @@ if (! $ok) {
 }
 
 $reservationAfterUpdate = loadReservationDetails($connection, $reservationId);
+$responseDateTimeLabel = formatCzechDateTime($dateTimeForSave);
+$responseDateTimeLocal = substr($dateTimeForSave, 0, 16);
 if ($reservationBeforeUpdate !== null && $reservationAfterUpdate !== null) {
     $newStatus = (string) ($reservationAfterUpdate['stav'] ?? '');
+    $newDateTime = (string) ($reservationAfterUpdate['datum_cas'] ?? '');
+    $responseDateTimeLabel = formatCzechDateTime($newDateTime);
+    $responseDateTimeLocal = str_replace(' ', 'T', substr($newDateTime, 0, 16));
 
     if ($previousStatus !== 'potvrzena' && $newStatus === 'potvrzena') {
         sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservationAfterUpdate);
+    }
+    if ($newStatus !== 'zrusena' && $newDateTime !== '' && $previousDateTime !== '' && $newDateTime !== $previousDateTime) {
+        sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservationAfterUpdate, [
+            'previous_datetime' => $previousDateTime,
+        ]);
+        securityEventLog('reservation_admin_rescheduled', 'admin_reservation', 'info', [
+            'reservation_id' => $reservationId,
+            'old_datetime' => $previousDateTime,
+            'new_datetime' => $newDateTime,
+        ]);
     }
 
     if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
@@ -238,5 +293,7 @@ echo json_encode([
         'status_label' => reservationStatusLabel($status),
         'admin_note' => $adminNote,
         'cancel_reason' => $cancelReason,
+        'datetime_label' => $responseDateTimeLabel,
+        'datetime_local' => $responseDateTimeLocal,
     ],
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

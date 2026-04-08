@@ -98,3 +98,10 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - Odeslání testovací rezervace (SMTP + notifikace).
 - Zobrazení rezervačního formuláře a dostupnosti termínů.
 - Kontrola widgetu recenzí a případných externích embedů.
+
+## 6) Synology hardening (Web Station)
+
+- V kořenovém `.htaccess` jsou blokované WordPress scan cesty (`/wp-admin`, `/wp-login.php`, `/xmlrpc.php`, `/wordpress/*`) návratovým kódem `410 Gone`.
+- Cílem je snížit log noise a eliminovat opakované bot pokusy na neexistující WP endpointy.
+- `PPSTUDIO_CALENDAR_TOKEN` je tajný klíč pro `/reservations-feed.php?token=...`; při úniku (např. v logu) token vždy otočte.
+- Po rotaci tokenu je potřeba znovu přidat odběr kalendáře na všech zařízeních, protože starý odkaz přestane fungovat.
