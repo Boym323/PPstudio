@@ -179,12 +179,8 @@ securityEventLog('voucher_verify_ok', 'voucher_verify', 'info', [
         </div>
 
         <div class="tools">
-            <?php if ($isPrivileged): ?>
-                <a class="btn" href="/admin.php?tab=poukazy#poukazy">Otevřít poukazy v adminu</a>
-            <?php else: ?>
-                <a class="btn" href="/admin-lite.php">Přihlásit do adminu</a>
-            <?php endif; ?>
-            <a class="btn" href="/index.php">Zpět na web</a>
+            <a class="btn" href="/rezervace.php">Přejít na rezervaci termínu</a>
+            <a class="btn" href="/index.php">Přejít na hlavní stránku</a>
         </div>
     </section>
 </main>

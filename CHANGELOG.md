@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-08
 
+- [ux] Na stránce ověření poukazu odstraněny admin CTA a nahrazeny dvojicí klientských akcí: „Přejít na rezervaci termínu“ a „Přejít na hlavní stránku“ (commit: `this-commit`)
 - [feat] Potvrzovací e-mail po přesunu termínu nyní obsahuje přehled „původní termín -> nový termín“ a upravený předmět zprávy (commit: `this-commit`)
 - [feat] V admin sekci rezervací přidána možnost přeplánovat termín existující rezervace (validace dostupnosti, audit, live update tabulky) (commit: `this-commit`)
 - [ux] Přeplánování v adminu přesunuto pod vedlejší tlačítko „Přeplánovat“ s výběrem pouze z dostupných dní a časů (commit: `this-commit`)
