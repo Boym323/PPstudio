@@ -64,6 +64,7 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `PPSTUDIO_REPLY_TO`
 - `PPSTUDIO_CALENDAR_TOKEN`
 - `PPSTUDIO_ACTION_SECRET`
+- `PPSTUDIO_VOUCHER_VERIFY_SECRET`
 - `PPSTUDIO_ACTION_TTL_SECONDS`
 
 ### Integrace a bezpečnost

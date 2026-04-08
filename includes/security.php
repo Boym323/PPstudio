@@ -272,3 +272,64 @@ function ppstudioLoginThrottleReset(string $scope, string $ipAddress, string $us
 
     ppstudioSaveRateLimitMap($handle, $map);
 }
+
+function ppstudioVoucherVerifySecret(): string
+{
+    $secret = trim((string) ppstudioEnv('PPSTUDIO_VOUCHER_VERIFY_SECRET', ''));
+    if ($secret !== '') {
+        return $secret;
+    }
+
+    return trim((string) ppstudioEnv('PPSTUDIO_ACTION_SECRET', ''));
+}
+
+function buildVoucherVerifySignature(string $secret, int $voucherId, string $voucherCode): string
+{
+    if ($secret === '' || $voucherId <= 0 || $voucherCode === '') {
+        return '';
+    }
+
+    $payload = 'voucher_verify|' . $voucherId . '|' . $voucherCode;
+
+    return hash_hmac('sha256', $payload, $secret);
+}
+
+function isValidVoucherVerifySignature(string $secret, int $voucherId, string $voucherCode, string $signature): bool
+{
+    $signature = trim($signature);
+    if ($signature === '' || ! preg_match('/^[a-f0-9]{64}$/i', $signature)) {
+        return false;
+    }
+
+    $expected = buildVoucherVerifySignature($secret, $voucherId, $voucherCode);
+    if ($expected === '') {
+        return false;
+    }
+
+    return hash_equals($expected, $signature);
+}
+
+function buildVoucherVerifyUrl(array $siteSettings, int $voucherId, string $voucherCode, ?string $secret = null): string
+{
+    $secret = trim((string) ($secret ?? ppstudioVoucherVerifySecret()));
+    if ($voucherId <= 0 || $voucherCode === '' || $secret === '') {
+        return '';
+    }
+
+    $signature = buildVoucherVerifySignature($secret, $voucherId, $voucherCode);
+    if ($signature === '') {
+        return '';
+    }
+
+    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
+    if ($siteUrl === '') {
+        $scheme = isHttpsRequest() ? 'https' : 'http';
+        $host = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        if ($host === '') {
+            return '';
+        }
+        $siteUrl = $scheme . '://' . $host;
+    }
+
+    return $siteUrl . '/voucher/verify?v=' . $voucherId . '&sig=' . rawurlencode($signature);
+}

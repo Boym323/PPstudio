@@ -173,8 +173,11 @@
                                                                     <span class="voucher-manage-count">Bez čerpání</span>
                                                                 <?php endif; ?>
                                                             </summary>
+                                                            <div class="table-actions" style="margin-bottom: .55rem;">
+                                                                <a class="button button-secondary button-small" href="/admin-voucher-dl.php?id=<?= escape((string) $voucherId) ?>" target="_blank" rel="noopener noreferrer">DL tisk / PDF</a>
+                                                            </div>
                                                             <?php if ($effectiveStatus === 'aktivni'): ?>
-                                                                <form method="post" class="admin-form compact-form compact-form-voucher">
+                                                                <form method="post" class="admin-form compact-form compact-form-voucher" data-voucher-redeem-form data-voucher-remaining="<?= escape(number_format($remainingAmount, 2, '.', '')) ?>">
                                                                     <?= csrfInputField() ?>
                                                                     <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
                                                                     <div class="voucher-actions-grid">
@@ -185,14 +188,31 @@
                                                                         <input type="text" name="redeem_note" placeholder="Poznámka čerpání (volitelné)">
                                                                         <details class="voucher-link-reservation">
                                                                             <summary>Připojit k rezervaci (volitelné)</summary>
-                                                                            <select name="redeem_reservation_id">
-                                                                                <option value="">Bez vazby na rezervaci</option>
-                                                                                <?php foreach ($voucherReservationOptions as $reservationOption): ?>
-                                                                                    <option value="<?= escape((string) $reservationOption['id']) ?>">
-                                                                                        <?= escape(formatCzechDateTime((string) $reservationOption['datum_cas']) . ' - ' . (string) $reservationOption['jmeno']) ?>
-                                                                                    </option>
-                                                                                <?php endforeach; ?>
-                                                                            </select>
+                                                                            <input type="search" data-voucher-reservation-search placeholder="Hledat: jméno, telefon, služba, datum">
+                                                                            <div class="voucher-reservation-results" data-voucher-search-results></div>
+                                                                            <details class="voucher-native-select-wrap">
+                                                                                <summary>Ruční výběr ze selectu</summary>
+                                                                                <select name="redeem_reservation_id">
+                                                                                    <option value="">Bez vazby na rezervaci</option>
+                                                                                    <?php foreach ($voucherReservationOptions as $reservationOption): ?>
+                                                                                        <?php
+                                                                                        $reservationPrice = (float) ($reservationOption['reservation_price'] ?? 0);
+                                                                                        $reservationLabelParts = [
+                                                                                            formatCzechDateTime((string) ($reservationOption['datum_cas'] ?? '')),
+                                                                                            (string) ($reservationOption['jmeno'] ?? ''),
+                                                                                            (string) ($reservationOption['service_name'] ?? ''),
+                                                                                        ];
+                                                                                        $reservationLabel = implode(' - ', array_values(array_filter($reservationLabelParts, static fn(string $part): bool => trim($part) !== '')));
+                                                                                        $reservationSearch = mb_strtolower(trim((string) (($reservationOption['jmeno'] ?? '') . ' ' . ($reservationOption['telefon'] ?? '') . ' ' . ($reservationOption['service_name'] ?? '') . ' ' . ($reservationOption['datum_cas'] ?? ''))));
+                                                                                        ?>
+                                                                                        <option value="<?= escape((string) $reservationOption['id']) ?>" data-reservation-price="<?= escape(number_format($reservationPrice, 2, '.', '')) ?>" data-search="<?= escape($reservationSearch) ?>">
+                                                                                            <?= escape($reservationLabel) ?>
+                                                                                        </option>
+                                                                                    <?php endforeach; ?>
+                                                                                </select>
+                                                                            </details>
+                                                                            <div class="form-hint voucher-redeem-hint" data-voucher-redeem-hint></div>
+                                                                            <div class="form-hint" data-voucher-search-hint>Zobrazeny jsou budoucí rezervace a posledních 90 dní.</div>
                                                                         </details>
                                                                     </div>
                                                                 </form>

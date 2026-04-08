@@ -21,6 +21,13 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - [feat] V admin sekci rezervací přidána možnost přeplánovat termín existující rezervace (validace dostupnosti, audit, live update tabulky) (commit: `this-commit`)
 - [ux] Přeplánování v adminu přesunuto pod vedlejší tlačítko „Přeplánovat“ s výběrem pouze z dostupných dní a časů (commit: `this-commit`)
 - [security] Přidán server hardening proti WordPress scanům v `.htaccess` + provedena rotace `PPSTUDIO_CALENDAR_TOKEN` po detekci tokenu v server logu (commit: `this-commit`)
+- [ux] U čerpání poukazů se při vazbě na rezervaci automaticky předvyplní částka z ceny rezervace (s respektem k aktuálnímu zůstatku poukazu) (commit: `this-commit`)
+- [ux] U vazby čerpání poukazu přidáno vyhledávání rezervací (jméno/telefon/služba/datum) a omezení nabídky na budoucí + posledních 90 dní (commit: `this-commit`)
+- [ux] Vyhledávání rezervací u poukazů nyní zobrazuje viditelný seznam výsledků (klikací položky), select zůstává jako fallback (commit: `this-commit`)
+- [feat] Přidána DL tisková šablona poukazu (`/admin-voucher-dl.php`) s QR a akcí „Tisk / Uložit jako PDF“ z adminu (commit: `this-commit`)
+- [security] QR na poukazu nově používá podepsaný odkaz na `/voucher/verify` místo otevřených dat (commit: `this-commit`)
+- [feat] Přidána stránka `/voucher-verify.php` s veřejným ověřením poukazu a rozšířeným detailem po přihlášení do adminu (commit: `this-commit`)
+- [docs] Aktualizován `ADMIN_MANUAL.md` o práci s vyhledáváním rezervací u poukazů a DL šablonou (commit: `this-commit`)
 
 ## 2026-04-06
 

@@ -653,10 +653,12 @@ if ($voucherModuleReady) {
     }
 
     $voucherReservationsQuery = $connection->query(
-        'SELECT id, jmeno, datum_cas
-         FROM rezervace
-         WHERE stav IN ("nova", "potvrzena", "dokoncena")
-         ORDER BY datum_cas DESC
+        'SELECT r.id, r.jmeno, r.telefon, r.datum_cas, s.nazev AS service_name, COALESCE(r.cena_v_dobe_rezervace, s.cena, 0) AS reservation_price
+         FROM rezervace r
+         LEFT JOIN sluzby s ON s.id = r.sluzba
+         WHERE r.stav IN ("nova", "potvrzena", "dokoncena")
+           AND r.datum_cas >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+         ORDER BY r.datum_cas DESC
          LIMIT 250'
     );
     if ($voucherReservationsQuery instanceof mysqli_result) {

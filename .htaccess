@@ -11,6 +11,7 @@ Options -Indexes
     RewriteRule ^(config|includes|database|vendor)/ - [F,L,NC]
     RewriteRule ^var/ - [F,L,NC]
     RewriteRule ^uploads/.*\.(php|phtml|phar)$ - [F,L,NC]
+    RewriteRule ^voucher/verify/?$ voucher-verify.php [L,NC]
     RewriteRule ^sitemap\.xml$ sitemap.php [L,NC]
 </IfModule>
 

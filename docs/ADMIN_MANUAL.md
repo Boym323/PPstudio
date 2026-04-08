@@ -74,6 +74,17 @@ Praktický dopad:
 - Hromadné generování kódů poukazů.
 - Ruční vytvoření poukazu.
 - Částečné čerpání se zůstatkem a historií transakcí.
+- Vazba čerpání na rezervaci:
+- vyhledání rezervace podle jména/telefonu/služby/data,
+- automatické předvyplnění částky podle ceny rezervace (max do výše zůstatku poukazu).
+- DL šablona poukazu:
+- v detailu poukazu tlačítko `DL tisk / PDF`,
+- otevře tiskovou šablonu formátu DL (210 × 99 mm) s QR a údaji poukazu,
+- finální PDF se uloží přes systémové `Tisk / Uložit jako PDF`.
+- QR ověření:
+- QR vede na podepsaný odkaz `/voucher/verify?v=...&sig=...`,
+- bez přihlášení ukáže jen základní ověření platnosti,
+- po přihlášení v adminu zobrazí i detail (včetně zůstatku).
 
 Pravidlo:
 - Čerpání je účetní operace, vždy přidávej poznámku, pokud jde o nestandardní případ.

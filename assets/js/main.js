@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAvailabilityPlanner();
     setupCategorySorting();
     setupReservationActions();
+    setupVoucherRedeemAssist();
 });
 
 function setupRevealAnimations() {
@@ -1121,5 +1122,158 @@ function setupReservationActions() {
                 submitter.textContent = defaultLabel;
             }
         });
+    });
+}
+
+function setupVoucherRedeemAssist() {
+    const forms = Array.from(document.querySelectorAll('[data-voucher-redeem-form]'));
+    if (forms.length === 0) {
+        return;
+    }
+
+    const formatPrice = (value) => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) {
+            return '0 Kč';
+        }
+        return new Intl.NumberFormat('cs-CZ', {
+            style: 'currency',
+            currency: 'CZK',
+            maximumFractionDigits: 0,
+        }).format(number);
+    };
+
+    forms.forEach((form) => {
+        const amountInput = form.querySelector('input[name="redeem_amount"]');
+        const reservationSelect = form.querySelector('select[name="redeem_reservation_id"]');
+        const reservationSearch = form.querySelector('[data-voucher-reservation-search]');
+        const resultList = form.querySelector('[data-voucher-search-results]');
+        const hint = form.querySelector('[data-voucher-redeem-hint]');
+        const searchHint = form.querySelector('[data-voucher-search-hint]');
+        const remainingRaw = Number.parseFloat(String(form.getAttribute('data-voucher-remaining') || '0'));
+        const remaining = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
+        const baseOptions = Array.from(reservationSelect ? reservationSelect.options : []).slice(1).map((option) => ({
+            value: String(option.value || ''),
+            text: String(option.textContent || ''),
+            price: String(option.getAttribute('data-reservation-price') || '0'),
+            search: String(option.getAttribute('data-search') || '').toLowerCase(),
+        }));
+
+        if (!amountInput || !reservationSelect) {
+            return;
+        }
+
+        const renderResultItems = (items) => {
+            if (!resultList) {
+                return;
+            }
+            resultList.innerHTML = '';
+
+            if (items.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'form-hint';
+                empty.textContent = 'Žádné odpovídající rezervace.';
+                resultList.appendChild(empty);
+                return;
+            }
+
+            const activeValue = String(reservationSelect.value || '');
+            items.forEach((item) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `voucher-reservation-result${item.value === activeValue ? ' is-selected' : ''}`;
+                button.setAttribute('data-reservation-id', item.value);
+                button.innerHTML = `<span class="voucher-reservation-result-main">${item.text}</span><span class="voucher-reservation-result-meta">Cena rezervace: ${formatPrice(item.price)}</span>`;
+                button.addEventListener('click', () => {
+                    reservationSelect.value = item.value;
+                    updateByReservation();
+                    renderResultItems(items);
+                });
+                resultList.appendChild(button);
+            });
+        };
+
+        const refreshReservationOptions = (queryRaw) => {
+            const query = String(queryRaw || '').trim().toLowerCase();
+            const prevValue = String(reservationSelect.value || '');
+            reservationSelect.innerHTML = '<option value="">Bez vazby na rezervaci</option>';
+            let matched = 0;
+            const matchedItems = [];
+
+            baseOptions.forEach((item) => {
+                if (query !== '' && !item.search.includes(query)) {
+                    return;
+                }
+                const option = document.createElement('option');
+                option.value = item.value;
+                option.textContent = item.text;
+                option.setAttribute('data-reservation-price', item.price);
+                option.setAttribute('data-search', item.search);
+                reservationSelect.appendChild(option);
+                matched += 1;
+                matchedItems.push(item);
+            });
+
+            if (prevValue !== '') {
+                const hasPrevious = Array.from(reservationSelect.options).some((opt) => String(opt.value || '') === prevValue);
+                reservationSelect.value = hasPrevious ? prevValue : '';
+            } else {
+                reservationSelect.value = '';
+            }
+
+            if (searchHint) {
+                searchHint.textContent = query === ''
+                    ? 'Zobrazeny jsou budoucí rezervace a posledních 90 dní.'
+                    : `Nalezeno rezervací: ${matched}.`;
+            }
+
+            const itemsToRender = query === '' ? matchedItems.slice(0, 12) : matchedItems.slice(0, 30);
+            renderResultItems(itemsToRender);
+        };
+
+        const updateByReservation = () => {
+            const selected = reservationSelect.options[reservationSelect.selectedIndex];
+            const selectedId = String(reservationSelect.value || '').trim();
+            if (!selectedId || !selected) {
+                if (hint) {
+                    hint.textContent = '';
+                }
+                return;
+            }
+
+            const reservationPriceRaw = Number.parseFloat(String(selected.getAttribute('data-reservation-price') || '0'));
+            const reservationPrice = Number.isFinite(reservationPriceRaw) ? Math.max(0, reservationPriceRaw) : 0;
+            if (reservationPrice <= 0) {
+                if (hint) {
+                    hint.textContent = 'Cena rezervace není k dispozici, částku zadejte ručně.';
+                }
+                return;
+            }
+
+            const allowedAmount = Math.min(reservationPrice, remaining);
+            amountInput.value = String(Math.max(1, Math.round(allowedAmount)));
+
+            if (hint) {
+                if (reservationPrice > remaining) {
+                    hint.textContent = `Cena rezervace ${formatPrice(reservationPrice)} je vyšší než zůstatek poukazu ${formatPrice(remaining)}. Předvyplněn byl maximální možný zůstatek.`;
+                } else {
+                    hint.textContent = `Předvyplněno podle ceny rezervace: ${formatPrice(reservationPrice)}.`;
+                }
+            }
+        };
+
+        reservationSelect.addEventListener('change', () => {
+            updateByReservation();
+            if (reservationSearch) {
+                refreshReservationOptions(reservationSearch.value);
+            }
+        });
+        if (reservationSearch) {
+            reservationSearch.addEventListener('input', () => {
+                refreshReservationOptions(reservationSearch.value);
+                updateByReservation();
+            });
+        }
+        refreshReservationOptions('');
     });
 }
