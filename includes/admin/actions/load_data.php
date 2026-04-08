@@ -71,11 +71,17 @@ if (! in_array($antispamFilters['limit'], $antispamLimitOptions, true)) {
     $antispamFilters['limit'] = 100;
 }
 
+if (($antispamFilters['page'] ?? 0) < 1) {
+    $antispamFilters['page'] = 1;
+}
+
 $antispamLogStats = [
     'total' => 0,
     'shown' => 0,
     'source' => 'db',
+    'coverage' => 'all',
 ];
+$antispamFilteredRows = [];
 
 $securityEventsTableExists = false;
 $securityEventsTableQuery = $connection->query("SHOW TABLES LIKE 'security_events'");
@@ -86,6 +92,7 @@ if ($securityEventsTableQuery instanceof mysqli_result) {
 
 if (! $securityEventsTableExists) {
     $antispamLogStats['source'] = 'file_fallback';
+    $antispamLogStats['coverage'] = 'reservation_form_only';
     $antispamLogPath = function_exists('reservationAntispamLogPath')
         ? reservationAntispamLogPath()
         : dirname(__DIR__, 3) . '/var/security/reservation-antispam.log';
@@ -93,9 +100,8 @@ if (! $securityEventsTableExists) {
     if (is_file($antispamLogPath) && is_readable($antispamLogPath)) {
         $lines = @file($antispamLogPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if (is_array($lines)) {
-            $antispamLogStats['total'] = count($lines);
-            $lineSample = array_reverse(array_slice($lines, -3000));
-            foreach ($lineSample as $line) {
+            $reversedLines = array_reverse($lines);
+            foreach ($reversedLines as $line) {
                 $decoded = json_decode((string) $line, true);
                 if (! is_array($decoded)) {
                     continue;
@@ -129,7 +135,7 @@ if (! $securityEventsTableExists) {
                     }
                 }
 
-                $antispamRows[] = [
+                $antispamFilteredRows[] = [
                     'time' => (string) ($decoded['time'] ?? ''),
                     'reason' => $reason !== '' ? $reason : 'neznamy',
                     'source' => 'reservation_form',
@@ -137,11 +143,11 @@ if (! $securityEventsTableExists) {
                     'ua' => trim((string) ($decoded['ua'] ?? '')),
                     'context' => $contextString,
                 ];
-
-                if (count($antispamRows) >= $antispamFilters['limit']) {
-                    break;
-                }
             }
+
+            $antispamLogStats['total'] = count($antispamFilteredRows);
+            $offset = max(0, ($antispamFilters['page'] - 1) * $antispamFilters['limit']);
+            $antispamRows = array_slice($antispamFilteredRows, $offset, $antispamFilters['limit']);
         }
     }
 
@@ -182,6 +188,7 @@ if ($antispamFilters['q'] !== '') {
 }
 
 $whereSqlEvents = implode(' AND ', $conditions);
+$antispamOffset = max(0, ($antispamFilters['page'] - 1) * $antispamFilters['limit']);
 
 $antispamCountQuery = $connection->query(
     "SELECT COUNT(*) AS total
@@ -199,7 +206,8 @@ $antispamRowsQuery = $connection->query(
      FROM security_events
      WHERE {$whereSqlEvents}
      ORDER BY created_at DESC
-     LIMIT " . (int) $antispamFilters['limit']
+     LIMIT " . (int) $antispamFilters['limit'] . "
+     OFFSET " . $antispamOffset
 );
 if ($antispamRowsQuery instanceof mysqli_result) {
     while ($row = $antispamRowsQuery->fetch_assoc()) {
@@ -225,6 +233,50 @@ if ($antispamRowsQuery instanceof mysqli_result) {
 }
 
 $antispamLogStats['shown'] = count($antispamRows);
+}
+
+$antispamPagination['total_pages'] = max(1, (int) ceil(((int) $antispamLogStats['total']) / max(1, (int) $antispamFilters['limit'])));
+if ($antispamFilters['page'] > $antispamPagination['total_pages']) {
+    $antispamFilters['page'] = $antispamPagination['total_pages'];
+    if ($antispamLogStats['source'] === 'file_fallback') {
+        $offset = max(0, ($antispamFilters['page'] - 1) * $antispamFilters['limit']);
+        $antispamRows = array_slice($antispamFilteredRows, $offset, $antispamFilters['limit']);
+        $antispamLogStats['shown'] = count($antispamRows);
+    } elseif ($securityEventsTableExists) {
+        $antispamOffset = max(0, ($antispamFilters['page'] - 1) * $antispamFilters['limit']);
+        $antispamRows = [];
+        $antispamRowsQuery = $connection->query(
+            "SELECT created_at, event_type, event_source, ip_address, user_agent, context_json
+             FROM security_events
+             WHERE {$whereSqlEvents}
+             ORDER BY created_at DESC
+             LIMIT " . (int) $antispamFilters['limit'] . "
+             OFFSET " . $antispamOffset
+        );
+        if ($antispamRowsQuery instanceof mysqli_result) {
+            while ($row = $antispamRowsQuery->fetch_assoc()) {
+                $contextRaw = trim((string) ($row['context_json'] ?? ''));
+                $contextString = $contextRaw;
+                if ($contextRaw !== '') {
+                    $decodedContext = json_decode($contextRaw, true);
+                    if (is_array($decodedContext)) {
+                        $contextString = (string) (json_encode($decodedContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
+                    }
+                }
+
+                $antispamRows[] = [
+                    'time' => (string) ($row['created_at'] ?? ''),
+                    'reason' => (string) ($row['event_type'] ?? ''),
+                    'source' => (string) ($row['event_source'] ?? ''),
+                    'ip' => (string) ($row['ip_address'] ?? ''),
+                    'ua' => (string) ($row['user_agent'] ?? ''),
+                    'context' => $contextString,
+                ];
+            }
+            $antispamRowsQuery->free();
+        }
+        $antispamLogStats['shown'] = count($antispamRows);
+    }
 }
 
 $where = ['1=1'];

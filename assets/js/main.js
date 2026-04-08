@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     setupRevealAnimations();
     setupAvailabilityPlanner();
+    setupAntispamLogDetails();
     setupCategorySorting();
     setupReservationActions();
     setupVoucherRedeemAssist();
@@ -1392,6 +1393,34 @@ function setupReservationActions() {
             if (summaryRow) {
                 summaryRow.classList.toggle('is-open', shouldOpen);
             }
+            button.textContent = shouldOpen
+                ? String(button.dataset.closeLabel || 'Skrýt detail')
+                : String(button.dataset.openLabel || 'Detail');
+            button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        });
+    });
+}
+
+function setupAntispamLogDetails() {
+    const buttons = Array.from(document.querySelectorAll('[data-antispam-detail-toggle]'));
+    if (buttons.length === 0) {
+        return;
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const summaryRow = button.closest('tr');
+            if (!summaryRow) {
+                return;
+            }
+
+            const detailRow = summaryRow.nextElementSibling;
+            if (!detailRow || !detailRow.hasAttribute('data-antispam-detail-row')) {
+                return;
+            }
+
+            const shouldOpen = detailRow.hidden;
+            detailRow.hidden = !shouldOpen;
             button.textContent = shouldOpen
                 ? String(button.dataset.closeLabel || 'Skrýt detail')
                 : String(button.dataset.openLabel || 'Detail');

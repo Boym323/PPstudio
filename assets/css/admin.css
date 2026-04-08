@@ -335,11 +335,80 @@ p {
     white-space: nowrap;
 }
 
+.antispam-admin-table {
+    min-width: 780px;
+}
+
+.antispam-summary-actions {
+    white-space: nowrap;
+}
+
+.antispam-detail-row[hidden] {
+    display: none;
+}
+
+.antispam-detail-cell {
+    padding: 0 !important;
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(250, 244, 236, 0.9));
+}
+
+.antispam-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.antispam-detail-block {
+    border: 1px solid rgba(219, 203, 189, 0.72);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.82);
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    box-shadow: 0 14px 30px rgba(123, 93, 70, 0.05);
+}
+
+.antispam-detail-block h3 {
+    margin: 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    opacity: 0.88;
+}
+
+.antispam-detail-list,
+.antispam-detail-notes {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.antispam-detail-list > div,
+.antispam-detail-notes > div {
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    background: rgba(247, 241, 233, 0.68);
+    display: grid;
+    gap: 0.18rem;
+}
+
+.antispam-detail-list strong,
+.antispam-detail-notes strong {
+    color: var(--text);
+    font-size: 0.76rem;
+    letter-spacing: 0.04rem;
+    text-transform: uppercase;
+}
+
+.antispam-detail-list span,
+.antispam-detail-notes span,
 .antispam-admin-table .antispam-ua,
 .antispam-admin-table .antispam-context {
-    max-width: 460px;
-    overflow-wrap: anywhere;
     color: var(--text-soft);
+    overflow-wrap: anywhere;
+    line-height: 1.45;
 }
 
 .antispam-reason-badge {
@@ -2327,14 +2396,16 @@ body.is-sorting-categories {
 
     .service-admin-table,
     .reservations-admin-table,
-    .voucher-admin-table {
+    .voucher-admin-table,
+    .antispam-admin-table {
         table-layout: auto;
         min-width: 0;
     }
 
     .service-admin-table thead,
     .reservations-admin-table thead,
-    .voucher-admin-table thead {
+    .voucher-admin-table thead,
+    .antispam-admin-table thead {
         display: none;
     }
 
@@ -2346,14 +2417,18 @@ body.is-sorting-categories {
     .reservations-admin-table td,
     .voucher-admin-table tbody,
     .voucher-admin-table tr,
-    .voucher-admin-table td {
+    .voucher-admin-table td,
+    .antispam-admin-table tbody,
+    .antispam-admin-table tr,
+    .antispam-admin-table td {
         display: block;
         width: 100%;
     }
 
     .service-admin-table tr,
     .reservations-admin-table tr,
-    .voucher-admin-table tr {
+    .voucher-admin-table tr,
+    .antispam-admin-table tr {
         border: 1px solid rgba(219, 203, 189, 0.8);
         border-radius: 14px;
         margin-bottom: 0.85rem;
@@ -2363,7 +2438,8 @@ body.is-sorting-categories {
 
     .service-admin-table td,
     .reservations-admin-table td,
-    .voucher-admin-table td {
+    .voucher-admin-table td,
+    .antispam-admin-table td {
         border-bottom: 0;
         padding: 0.46rem 0.4rem;
         min-width: 0;
@@ -2371,7 +2447,8 @@ body.is-sorting-categories {
 
     .service-admin-table td::before,
     .reservations-admin-table td::before,
-    .voucher-admin-table td::before {
+    .voucher-admin-table td::before,
+    .antispam-admin-table td::before {
         content: attr(data-label);
         display: block;
         font-size: 0.73rem;
@@ -2414,6 +2491,13 @@ body.is-sorting-categories {
 
     .voucher-admin-table td,
     .voucher-admin-table td::before {
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+
+    .antispam-admin-table td,
+    .antispam-admin-table td::before {
         word-break: normal;
         overflow-wrap: normal;
         hyphens: none;
@@ -2468,6 +2552,23 @@ body.is-sorting-categories {
         min-width: 0;
     }
 
+    .antispam-detail-row {
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: -0.35rem 0 0.85rem !important;
+    }
+
+    .antispam-detail-cell {
+        border: 0 !important;
+        padding: 0 !important;
+    }
+
+    .antispam-detail-grid {
+        grid-template-columns: 1fr;
+        padding: 0.7rem 0.3rem 0.25rem;
+    }
+
     .reservations-pagination {
         gap: 0.45rem;
     }
@@ -2494,14 +2595,16 @@ body.is-sorting-categories {
 
     .service-admin-table,
     .reservations-admin-table,
-    .voucher-admin-table {
+    .voucher-admin-table,
+    .antispam-admin-table {
         table-layout: auto;
         min-width: 0;
     }
 
     .service-admin-table thead,
     .reservations-admin-table thead,
-    .voucher-admin-table thead {
+    .voucher-admin-table thead,
+    .antispam-admin-table thead {
         display: none;
     }
 
@@ -2513,14 +2616,18 @@ body.is-sorting-categories {
     .reservations-admin-table td,
     .voucher-admin-table tbody,
     .voucher-admin-table tr,
-    .voucher-admin-table td {
+    .voucher-admin-table td,
+    .antispam-admin-table tbody,
+    .antispam-admin-table tr,
+    .antispam-admin-table td {
         display: block;
         width: 100%;
     }
 
     .service-admin-table tr,
     .reservations-admin-table tr,
-    .voucher-admin-table tr {
+    .voucher-admin-table tr,
+    .antispam-admin-table tr {
         border: 1px solid rgba(219, 203, 189, 0.8);
         border-radius: 14px;
         margin-bottom: 0.85rem;
@@ -2530,14 +2637,16 @@ body.is-sorting-categories {
 
     .service-admin-table td,
     .reservations-admin-table td,
-    .voucher-admin-table td {
+    .voucher-admin-table td,
+    .antispam-admin-table td {
         border-bottom: 0;
         padding: 0.46rem 0.4rem;
     }
 
     .service-admin-table td::before,
     .reservations-admin-table td::before,
-    .voucher-admin-table td::before {
+    .voucher-admin-table td::before,
+    .antispam-admin-table td::before {
         content: attr(data-label);
         display: block;
         font-size: 0.73rem;
@@ -2580,6 +2689,13 @@ body.is-sorting-categories {
         hyphens: none;
     }
 
+    .antispam-admin-table td,
+    .antispam-admin-table td::before {
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+
     .reservation-detail-row {
         border: 0 !important;
         background: transparent !important;
@@ -2613,6 +2729,27 @@ body.is-sorting-categories {
     }
 
     .reservation-summary-actions .button {
+        width: 100%;
+    }
+
+    .antispam-detail-row {
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: -0.35rem 0 0.85rem !important;
+    }
+
+    .antispam-detail-cell {
+        border: 0 !important;
+        padding: 0 !important;
+    }
+
+    .antispam-detail-grid {
+        grid-template-columns: 1fr;
+        padding: 0.65rem 0.2rem 0.2rem;
+    }
+
+    .antispam-summary-actions .button {
         width: 100%;
     }
 

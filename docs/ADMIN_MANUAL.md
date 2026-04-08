@@ -24,10 +24,13 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 ### Rezervace
 
 - Filtrování podle jména/e-mailu/telefonu/stavu/období.
-- Úprava stavu rezervace.
-- Interní poznámka k rezervaci.
-- Důvod zrušení (povinný při změně na stav `zrusena`).
-- Smazání rezervace (chráněno potvrzením).
+- Přehled je nově kompaktní seznam s tlačítkem `Detail`.
+- V detailu rezervace lze:
+- upravit stav rezervace,
+- doplnit interní poznámku,
+- zadat důvod zrušení (povinný při změně na stav `zrusena`),
+- přeplánovat rezervaci na dostupný den a čas,
+- trvale smazat rezervaci v oddělené „nebezpečné“ sekci.
 - Potvrzovací e-mail klientce obsahuje bezpečný odkaz na zrušení (s mezikrokem potvrzení).
 
 #### Stavy rezervace
@@ -54,13 +57,24 @@ Praktický dopad:
 
 ### Antispam log
 
-- Přehled antispam událostí rezervačního formuláře.
-- Kontrola falešných/robotických pokusů.
+- Přehled bezpečnostních událostí s filtrem podle důvodu, textu a počtu řádků.
+- Seznam je zjednodušený, detail události se otevírá přes tlačítko `Detail`.
+- V detailu je vidět:
+- čas,
+- důvod,
+- sekce,
+- IP adresa,
+- user-agent,
+- plný kontext události.
+- Je přidané stránkování, takže lze procházet i starší události.
+- Pokud systém běží ve fallback režimu bez DB tabulky `security_events`, zobrazuje pouze události rezervačního formuláře.
 
 ### Dostupnost
 
 - Plánování dostupných intervalů po týdnech.
-- Rychlá tlačítka pro pracovní režimy.
+- Nově i `Denní režim` pro rychlou správu slotů hlavně z mobilu.
+- V denním režimu vybereš den a jedním klikem zapínáš/vypínáš jednotlivé časy.
+- Týdenní režim zůstává pro širší plánování.
 - Cíl: definovat volné sloty, ze kterých se generují časy v rezervaci.
 
 ### Služby

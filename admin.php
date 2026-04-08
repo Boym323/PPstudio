@@ -267,6 +267,10 @@ $antispamFilters = [
     'reason' => (string) ($_GET['antispam_reason'] ?? 'all'),
     'q' => trim((string) ($_GET['antispam_q'] ?? '')),
     'limit' => (int) ($_GET['antispam_limit'] ?? 100),
+    'page' => max(1, (int) ($_GET['antispam_page'] ?? 1)),
+];
+$antispamPagination = [
+    'total_pages' => 1,
 ];
 $allowedAdminTabs = [
     'dashboard',
