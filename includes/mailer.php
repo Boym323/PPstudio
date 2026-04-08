@@ -68,17 +68,21 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
     if ($confirmUrl !== '' || $cancelUrl !== '') {
         $actions = '<div style="margin-top:20px;padding-top:16px;border-top:1px solid #e4d6c5;">';
         if ($confirmUrl !== '') {
-            $actions .= '<a href="'
+            $actions .= '<div style="margin-bottom:18px;">'
+                . '<a href="'
                 . escape($confirmUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#6f4d34;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Potvrdit rezervaci</a>';
+                . '" style="display:inline-block;padding:11px 18px;background:#6f4d34;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;">Potvrdit rezervaci</a>'
+                . '</div>';
         }
         if ($cancelUrl !== '') {
-            $actions .= ($confirmUrl !== '' ? '<span style="display:inline-block;width:34px;"></span>' : '')
+            $actions .= '<div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e5d9ca;">'
+                . '<p style="margin:0 0 10px 0;font-size:12px;color:#7b6959;">Pozor: následující akce rezervaci okamžitě zruší.</p>'
                 . '<a href="'
                 . escape($cancelUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#b86a59;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Zrušit rezervaci</a>';
+                . '" style="display:inline-block;padding:10px 16px;background:#ffffff;color:#9a4c3f;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d8b2a9;">Zrušit rezervaci</a>'
+                . '</div>';
         }
-        $actions .= '<p style="margin:12px 0 0 0;font-size:12px;color:#6e5f52;">Tlačítko „Zrušit rezervaci“ je záměrně oddělené kvůli bezpečnosti kliknutí.</p></div>';
+        $actions .= '</div>';
         $htmlBody .= $actions;
     }
 

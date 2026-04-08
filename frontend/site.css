@@ -2445,6 +2445,11 @@
         }
 
         .reservation-back {
+            border-radius: 999px !important;
+            padding: .72rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
             border: 1px solid #d9c6b0 !important;
             background: #fff8ef !important;
             color: #624937 !important;
