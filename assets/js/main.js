@@ -50,6 +50,19 @@ function setupAvailabilityPlanner() {
 
     const hiddenWindows = form.querySelector('input[name="planner_windows"]');
     const cells = Array.from(planner.querySelectorAll('.planner-cell'));
+    const dailyEntry = form.querySelector('[data-availability-daily-entry]');
+    const dailyDay = dailyEntry ? dailyEntry.querySelector('[data-daily-day]') : null;
+    const dailyStart = dailyEntry ? dailyEntry.querySelector('[data-daily-start]') : null;
+    const dailyEnd = dailyEntry ? dailyEntry.querySelector('[data-daily-end]') : null;
+    const dailyAdd = dailyEntry ? dailyEntry.querySelector('[data-daily-add]') : null;
+    const dailyRemove = dailyEntry ? dailyEntry.querySelector('[data-daily-remove]') : null;
+    const dailyClearDay = dailyEntry ? dailyEntry.querySelector('[data-daily-clear-day]') : null;
+    const dailyPresetDay = dailyEntry ? dailyEntry.querySelector('[data-daily-preset-day]') : null;
+    const dailyStatus = dailyEntry ? dailyEntry.querySelector('[data-daily-status]') : null;
+    const dailySlots = dailyEntry ? dailyEntry.querySelector('[data-daily-slots]') : null;
+    const dailySummaryDay = dailyEntry ? dailyEntry.querySelector('[data-daily-summary-day]') : null;
+    const dailySummaryTotal = dailyEntry ? dailyEntry.querySelector('[data-daily-summary-total]') : null;
+    const dailyDayChipButtons = dailyEntry ? Array.from(dailyEntry.querySelectorAll('[data-daily-day-chip]')) : [];
     const quickEntry = form.querySelector('[data-availability-quick-entry]');
     const quickDay = quickEntry ? quickEntry.querySelector('[data-quick-day]') : null;
     const quickStart = quickEntry ? quickEntry.querySelector('[data-quick-start]') : null;
@@ -62,6 +75,7 @@ function setupAvailabilityPlanner() {
     const quickStatus = quickEntry ? quickEntry.querySelector('[data-quick-status]') : null;
     const quickDayChipButtons = quickEntry ? Array.from(quickEntry.querySelectorAll('[data-quick-day-chip]')) : [];
     const detailWrap = form.querySelector('.availability-detail-wrap');
+    const weeklyEditor = form.querySelector('[data-availability-weekly-editor]');
     const modeTriggers = Array.from(form.querySelectorAll('[data-planner-mode-trigger]'));
     const activeSlots = new Set();
     const cellsByKey = new Map();
@@ -163,15 +177,30 @@ function setupAvailabilityPlanner() {
         if (quickStatus) {
             quickStatus.textContent = message;
         }
+        if (dailyStatus) {
+            dailyStatus.textContent = message;
+        }
+    };
+
+    const syncSelectedDay = (selectedDay) => {
+        if (quickDay && selectedDay !== '' && quickDay.value !== selectedDay) {
+            quickDay.value = selectedDay;
+        }
+        if (dailyDay && selectedDay !== '' && dailyDay.value !== selectedDay) {
+            dailyDay.value = selectedDay;
+        }
     };
 
     const syncQuickDayChips = () => {
-        if (!quickDay || quickDayChipButtons.length === 0) {
-            return;
-        }
-        const selectedDay = String(quickDay.value || '');
+        const selectedDay = String((dailyDay && dailyDay.value) || (quickDay && quickDay.value) || '');
         quickDayChipButtons.forEach((button) => {
             const chipDay = String(button.dataset.quickDayChip || '');
+            const isActive = chipDay === selectedDay;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        dailyDayChipButtons.forEach((button) => {
+            const chipDay = String(button.dataset.dailyDayChip || '');
             const isActive = chipDay === selectedDay;
             button.classList.toggle('is-active', isActive);
             button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
@@ -179,15 +208,21 @@ function setupAvailabilityPlanner() {
     };
 
     const setPlannerMode = (mode) => {
-        const normalized = mode === 'detail' ? 'detail' : 'quick';
+        const normalized = mode === 'weekly' ? 'weekly' : 'daily';
         form.dataset.plannerMode = normalized;
         modeTriggers.forEach((trigger) => {
-            const triggerMode = String(trigger.dataset.plannerModeTrigger || 'quick');
+            const triggerMode = String(trigger.dataset.plannerModeTrigger || 'daily');
             trigger.classList.toggle('is-active', triggerMode === normalized);
             trigger.setAttribute('aria-pressed', triggerMode === normalized ? 'true' : 'false');
         });
+        if (dailyEntry) {
+            dailyEntry.hidden = normalized !== 'daily';
+        }
+        if (weeklyEditor) {
+            weeklyEditor.hidden = normalized !== 'weekly';
+        }
         if (detailWrap) {
-            detailWrap.open = normalized === 'detail';
+            detailWrap.open = normalized === 'weekly';
         }
     };
 
@@ -260,6 +295,81 @@ function setupAvailabilityPlanner() {
         }
     };
 
+    const renderDailySlots = () => {
+        if (!dailySlots) {
+            return;
+        }
+
+        const selectedDay = String((dailyDay && dailyDay.value) || (quickDay && quickDay.value) || '');
+        if (!selectedDay) {
+            dailySlots.innerHTML = '<div class="availability-daily-empty">Vyberte den.</div>';
+            if (dailySummaryDay) dailySummaryDay.textContent = 'Nevybráno';
+            if (dailySummaryTotal) dailySummaryTotal.textContent = '0';
+            return;
+        }
+
+        if (dailySummaryDay) {
+            const activeOption = (dailyDay || quickDay)?.selectedOptions?.[0];
+            dailySummaryDay.textContent = activeOption ? activeOption.textContent.trim() : selectedDay;
+        }
+
+        const dayCells = cells
+            .filter((cell) => String(cell.dataset.date || '') === selectedDay)
+            .sort((a, b) => String(a.dataset.time || '').localeCompare(String(b.dataset.time || '')));
+
+        let activeCount = 0;
+        dailySlots.innerHTML = dayCells.map((cell) => {
+            const time = String(cell.dataset.time || '');
+            const isActive = cell.classList.contains('is-active');
+            const isBooked = cell.classList.contains('is-booked');
+            const isPast = cell.classList.contains('is-past');
+            const isEditable = isEditableCell(cell);
+            if (isActive) {
+                activeCount += 1;
+            }
+
+            let status = 'Vypnuto';
+            if (isBooked) {
+                status = 'Obsazeno';
+            } else if (isPast) {
+                status = 'Minulé';
+            } else if (isActive) {
+                status = 'Volné';
+            }
+
+            const classes = ['availability-slot-chip'];
+            if (isActive) classes.push('is-active');
+            if (isBooked) classes.push('is-booked');
+            if (isPast) classes.push('is-past');
+            if (!isEditable) classes.push('is-disabled');
+
+            return `<button type="button" class="${classes.join(' ')}" data-daily-slot="${time}" ${isEditable ? '' : 'disabled'} aria-pressed="${isActive ? 'true' : 'false'}"><span class="availability-slot-time">${time}</span><span class="availability-slot-state">${status}</span></button>`;
+        }).join('');
+
+        if (dailySummaryTotal) {
+            dailySummaryTotal.textContent = String(activeCount);
+        }
+
+        dailySlots.querySelectorAll('[data-daily-slot]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const time = String(button.getAttribute('data-daily-slot') || '');
+                if (!selectedDay || !time) {
+                    return;
+                }
+                const cell = cellsByKey.get(slotKey(selectedDay, time));
+                if (!cell || !isEditableCell(cell)) {
+                    return;
+                }
+                pushUndoSnapshot();
+                setCellState(cell, !cell.classList.contains('is-active'));
+                serializeWindows();
+                updateSummary();
+                renderDailySlots();
+                updateQuickStatus(`Slot ${time} pro ${selectedDay} byl ${cell.classList.contains('is-active') ? 'přidán' : 'odebrán'}.`);
+            });
+        });
+    };
+
     const applyRangeForDay = (selectedDay, startTime, endTime, mode = 'add') => {
         const startMinutes = timeToMinutes(startTime);
         const endMinutes = timeToMinutes(endTime);
@@ -329,6 +439,7 @@ function setupAvailabilityPlanner() {
         } else {
             updateQuickStatus('Pro vybraný den nebyly dostupné sloty ke smazání.');
         }
+        renderDailySlots();
     };
 
     const applyCell = (cell) => {
@@ -533,6 +644,7 @@ function setupAvailabilityPlanner() {
         isDragging = false;
         serializeWindows();
         updateSummary();
+        renderDailySlots();
     };
 
     planner.addEventListener('pointerup', finishDragging);
@@ -549,19 +661,40 @@ function setupAvailabilityPlanner() {
     );
     serializeWindows();
     updateSummary();
+    syncSelectedDay(String((dailyDay && dailyDay.value) || (quickDay && quickDay.value) || ''));
+    renderDailySlots();
 
     if (quickAdd) {
-        quickAdd.addEventListener('click', () => applyRangeByQuickForm('add'));
+        quickAdd.addEventListener('click', () => {
+            applyRangeByQuickForm('add');
+            renderDailySlots();
+        });
     }
     if (quickRemove) {
-        quickRemove.addEventListener('click', () => applyRangeByQuickForm('remove'));
+        quickRemove.addEventListener('click', () => {
+            applyRangeByQuickForm('remove');
+            renderDailySlots();
+        });
     }
     if (quickClearDay) {
         quickClearDay.addEventListener('click', clearQuickDay);
     }
 
     if (quickDay) {
-        quickDay.addEventListener('change', syncQuickDayChips);
+        quickDay.addEventListener('change', () => {
+            syncSelectedDay(String(quickDay.value || ''));
+            syncQuickDayChips();
+            renderDailySlots();
+        });
+    }
+
+    if (dailyDay) {
+        dailyDay.addEventListener('change', () => {
+            syncSelectedDay(String(dailyDay.value || ''));
+            syncQuickDayChips();
+            renderDailySlots();
+            updateQuickStatus(`Vybrán den ${String(dailyDay.value || '')}.`);
+        });
     }
 
     if (quickDayChipButtons.length > 0 && quickDay) {
@@ -571,8 +704,24 @@ function setupAvailabilityPlanner() {
                 if (!day) {
                     return;
                 }
-                quickDay.value = day;
+                syncSelectedDay(day);
                 syncQuickDayChips();
+                renderDailySlots();
+                updateQuickStatus(`Vybrán den ${day}.`);
+            });
+        });
+    }
+
+    if (dailyDayChipButtons.length > 0) {
+        dailyDayChipButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const day = String(button.dataset.dailyDayChip || '');
+                if (!day) {
+                    return;
+                }
+                syncSelectedDay(day);
+                syncQuickDayChips();
+                renderDailySlots();
                 updateQuickStatus(`Vybrán den ${day}.`);
             });
         });
@@ -582,13 +731,16 @@ function setupAvailabilityPlanner() {
         modeTriggers.forEach((trigger) => {
             trigger.addEventListener('click', () => {
                 const mode = String(trigger.dataset.plannerModeTrigger || 'quick');
+                if (mode === 'weekly' && quickDay && dailyDay) {
+                    syncSelectedDay(String((dailyDay.value || quickDay.value || '')));
+                }
                 setPlannerMode(mode);
             });
         });
     }
 
     const isMobileViewport = window.matchMedia('(max-width: 720px)').matches;
-    setPlannerMode(isMobileViewport ? 'quick' : 'detail');
+    setPlannerMode(isMobileViewport ? 'daily' : 'weekly');
     syncQuickDayChips();
 
     if (quickPresetDay) {
@@ -606,6 +758,7 @@ function setupAvailabilityPlanner() {
                     ? `Předvolba 9:00-17:00 byla nastavena pro ${selectedDay}.`
                     : 'Předvolbu nebylo možné aplikovat (sloty jsou už obsazené/minulé).'
             );
+            renderDailySlots();
         });
     }
 
@@ -633,6 +786,55 @@ function setupAvailabilityPlanner() {
                     ? 'Předvolba Po-Pá 9:00-17:00 byla nastavena.'
                     : 'Předvolbu nebylo možné aplikovat (sloty jsou už obsazené/minulé).'
             );
+            renderDailySlots();
+        });
+    }
+
+    if (dailyAdd) {
+        dailyAdd.addEventListener('click', () => {
+            if (dailyDay && quickDay) quickDay.value = dailyDay.value;
+            if (dailyStart && quickStart) quickStart.value = dailyStart.value;
+            if (dailyEnd && quickEnd) quickEnd.value = dailyEnd.value;
+            applyRangeByQuickForm('add');
+            renderDailySlots();
+        });
+    }
+
+    if (dailyRemove) {
+        dailyRemove.addEventListener('click', () => {
+            if (dailyDay && quickDay) quickDay.value = dailyDay.value;
+            if (dailyStart && quickStart) quickStart.value = dailyStart.value;
+            if (dailyEnd && quickEnd) quickEnd.value = dailyEnd.value;
+            applyRangeByQuickForm('remove');
+            renderDailySlots();
+        });
+    }
+
+    if (dailyClearDay) {
+        dailyClearDay.addEventListener('click', () => {
+            if (dailyDay && quickDay) quickDay.value = dailyDay.value;
+            clearQuickDay();
+            renderDailySlots();
+        });
+    }
+
+    if (dailyPresetDay) {
+        dailyPresetDay.addEventListener('click', () => {
+            if (!dailyDay) {
+                return;
+            }
+            if (quickDay) quickDay.value = dailyDay.value;
+            pushUndoSnapshot();
+            const selectedDay = String(dailyDay.value || '');
+            const changed = applyRangeForDay(selectedDay, '09:00', '17:00', 'add');
+            serializeWindows();
+            updateSummary();
+            renderDailySlots();
+            updateQuickStatus(
+                changed > 0
+                    ? `Předvolba 9:00-17:00 byla nastavena pro ${selectedDay}.`
+                    : 'Předvolbu nebylo možné aplikovat (sloty jsou už obsazené/minulé).'
+            );
         });
     }
 
@@ -646,6 +848,7 @@ function setupAvailabilityPlanner() {
             restoreSnapshot(snapshot);
             serializeWindows();
             updateSummary();
+            renderDailySlots();
             updateQuickStatus('Vrácena poslední úprava.');
         });
     }
@@ -659,6 +862,7 @@ function setupAvailabilityPlanner() {
             restoreSnapshot(Array.from(initialEditableSlots));
             serializeWindows();
             updateSummary();
+            renderDailySlots();
             updateQuickStatus('Týden byl obnoven do původního stavu.');
         });
     });
@@ -853,7 +1057,7 @@ function setupReservationActions() {
             const emptyRow = document.createElement('tr');
             emptyRow.setAttribute('data-reservation-empty-row', '');
             const cell = document.createElement('td');
-            cell.colSpan = 8;
+            cell.colSpan = 7;
             cell.textContent = 'Zatím zde nejsou žádné rezervace.';
             emptyRow.appendChild(cell);
             tbody.appendChild(emptyRow);
@@ -871,16 +1075,35 @@ function setupReservationActions() {
     };
 
     forms.forEach((form) => {
-        const row = form.closest('[data-reservation-row]');
+        const detailRow = form.closest('[data-reservation-detail-row]');
+        const reservationId = String((form.querySelector('input[name="reservation_id"]')?.value) || '');
+        const row = reservationId !== ''
+            ? root.querySelector(`[data-reservation-row][data-reservation-id="${reservationId}"]`)
+            : null;
         const toggleButton = form.querySelector('[data-reschedule-toggle]');
         const rescheduleBox = form.querySelector('[data-reschedule-box]');
         const daySelect = form.querySelector('[data-reschedule-day]');
         const timeSelect = form.querySelector('[data-reschedule-time]');
         const pickedNode = form.querySelector('[data-reschedule-picked]');
         const hiddenDateTimeInput = form.querySelector('[data-reschedule-datetime]');
+        const statusSelect = form.querySelector('[data-reservation-status-select]');
+        const cancelReasonWrap = form.querySelector('[data-cancel-reason-wrap]');
         const serviceId = row ? String(row.dataset.reservationServiceId || '').trim() : '';
         let originalDateTimeValue = hiddenDateTimeInput ? String(hiddenDateTimeInput.value || '').trim() : '';
         let daysLoaded = false;
+
+        const syncCancelReasonVisibility = () => {
+            if (!statusSelect || !cancelReasonWrap) {
+                return;
+            }
+            const shouldShow = String(statusSelect.value || '') === 'zrusena';
+            cancelReasonWrap.classList.toggle('is-hidden', !shouldShow);
+        };
+
+        syncCancelReasonVisibility();
+        if (statusSelect) {
+            statusSelect.addEventListener('change', syncCancelReasonVisibility);
+        }
 
         const setHiddenDateTime = (day, time) => {
             if (!hiddenDateTimeInput) return;
@@ -1007,6 +1230,20 @@ function setupReservationActions() {
             });
         }
 
+        const syncStatusBadges = (statusKey, statusLabel) => {
+            const safeKey = String(statusKey || 'nova');
+            const safeLabel = String(statusLabel || '').trim();
+            [row, form].forEach((scope) => {
+                if (!scope) {
+                    return;
+                }
+                scope.querySelectorAll('[data-reservation-status-badge]').forEach((badge) => {
+                    badge.textContent = safeLabel || badge.textContent;
+                    badge.className = `status-badge status-${safeKey}`;
+                });
+            });
+        };
+
         form.addEventListener('submit', async (event) => {
             const submitter = event.submitter;
             if (!submitter) {
@@ -1022,7 +1259,6 @@ function setupReservationActions() {
             event.preventDefault();
 
             if (isDelete) {
-                const row = form.closest('[data-reservation-row]');
                 const clientName = row ? String(row.dataset.reservationClient || '').trim() : '';
                 const dateTime = row ? String(row.dataset.reservationDatetime || '').trim() : '';
                 const reservationLabel = [clientName, dateTime].filter(Boolean).join(' • ');
@@ -1066,23 +1302,27 @@ function setupReservationActions() {
                 }
 
                 if (isDelete) {
-                    const row = form.closest('[data-reservation-row]');
                     if (row) {
                         row.classList.add('is-removing');
-                        await new Promise((resolve) => setTimeout(resolve, 120));
+                    }
+                    if (detailRow) {
+                        detailRow.classList.add('is-removing');
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 120));
+                    if (row) {
                         row.remove();
+                    }
+                    if (detailRow) {
+                        detailRow.remove();
                     }
                     updateTotalAfterDelete();
                     refreshEmptyState();
                     return;
                 }
 
-                const statusBadge = form.querySelector('[data-reservation-status-badge]');
-                if (statusBadge && payload.data) {
-                    statusBadge.textContent = payload.data.status_label || statusBadge.textContent;
-                    statusBadge.className = `status-badge status-${payload.data.status_key || 'nova'}`;
+                if (payload.data) {
+                    syncStatusBadges(payload.data.status_key, payload.data.status_label);
                 }
-                const row = form.closest('[data-reservation-row]');
                 if (row && payload.data) {
                     const datetimeLabel = String(payload.data.datetime_label || '').trim();
                     if (datetimeLabel !== '') {
@@ -1090,6 +1330,10 @@ function setupReservationActions() {
                         const termCell = row.querySelector('td[data-label="Termín"]') || row.querySelector('td');
                         if (termCell) {
                             termCell.textContent = datetimeLabel;
+                        }
+                        const detailDatetimeNode = form.querySelector('[data-reservation-datetime-text]');
+                        if (detailDatetimeNode) {
+                            detailDatetimeNode.textContent = datetimeLabel;
                         }
                     }
                     const hiddenDateTimeInput = form.querySelector('[data-reschedule-datetime]');
@@ -1103,10 +1347,16 @@ function setupReservationActions() {
                     }
                 }
 
+                syncCancelReasonVisibility();
+
                 setFeedback(form, payload.message || 'Rezervace byla upravena.', 'success');
                 if (row) {
                     row.classList.add('is-updated');
                     window.setTimeout(() => row.classList.remove('is-updated'), 1200);
+                }
+                if (detailRow) {
+                    detailRow.classList.add('is-updated');
+                    window.setTimeout(() => detailRow.classList.remove('is-updated'), 1200);
                 }
                 if (feedbackTimer) {
                     window.clearTimeout(feedbackTimer);
@@ -1121,6 +1371,31 @@ function setupReservationActions() {
                 setFormBusy(form, false);
                 submitter.textContent = defaultLabel;
             }
+        });
+    });
+
+    const detailButtons = Array.from(root.querySelectorAll('[data-reservation-detail-toggle]'));
+    detailButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const summaryRow = button.closest('[data-reservation-row]');
+            const reservationId = summaryRow ? String(summaryRow.dataset.reservationId || '') : '';
+            if (!reservationId) {
+                return;
+            }
+            const detailRow = root.querySelector(`[data-reservation-detail-row][data-reservation-id="${reservationId}"]`);
+            if (!detailRow) {
+                return;
+            }
+            const shouldOpen = detailRow.hidden;
+            detailRow.hidden = !shouldOpen;
+            detailRow.classList.toggle('is-open', shouldOpen);
+            if (summaryRow) {
+                summaryRow.classList.toggle('is-open', shouldOpen);
+            }
+            button.textContent = shouldOpen
+                ? String(button.dataset.closeLabel || 'Skrýt detail')
+                : String(button.dataset.openLabel || 'Detail');
+            button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         });
     });
 }

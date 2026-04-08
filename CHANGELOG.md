@@ -17,6 +17,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-08
 
+- [ux] Admin rezervace přepracovány do kompaktního seznamu s rozbalovacím detailem, bezpečnějšími akcemi a lepším mobilním layoutem (commit: `this-commit`)
+- [feat] Plánování dostupnosti doplněno o denní režim pro rychlou správu slotů z mobilu (commit: `this-commit`)
 - [ux] Na stránce ověření poukazu odstraněny admin CTA a nahrazeny dvojicí klientských akcí: „Přejít na rezervaci termínu“ a „Přejít na hlavní stránku“ (commit: `this-commit`)
 - [feat] Potvrzovací e-mail po přesunu termínu nyní obsahuje přehled „původní termín -> nový termín“ a upravený předmět zprávy (commit: `this-commit`)
 - [feat] V admin sekci rezervací přidána možnost přeplánovat termín existující rezervace (validace dostupnosti, audit, live update tabulky) (commit: `this-commit`)

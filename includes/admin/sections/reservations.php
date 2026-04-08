@@ -43,18 +43,17 @@
                                 <thead>
                                     <tr>
                                         <th>Termín</th>
+                                        <th>Klientka</th>
                                         <th>Procedura</th>
                                         <th>Cena</th>
-                                        <th>Klientka</th>
+                                        <th>Stav</th>
                                         <th>Kontakt</th>
-                                        <th>Zdroj</th>
-                                        <th>Poznámka</th>
-                                        <th>Stav a správa</th>
+                                        <th>Akce</th>
                                     </tr>
                                 </thead>
                                 <tbody data-reservation-tbody>
                                     <?php if ($reservationRows === []): ?>
-                                        <tr data-reservation-empty-row><td colspan="8">Zatím zde nejsou žádné rezervace.</td></tr>
+                                        <tr data-reservation-empty-row><td colspan="7">Zatím zde nejsou žádné rezervace.</td></tr>
                                     <?php else: ?>
                                         <?php foreach ($reservationRows as $row): ?>
                                             <?php
@@ -71,69 +70,124 @@
                                                 $dateTimeLocalValue = date('Y-m-d\TH:i', $dateTimeTimestamp);
                                             }
                                             $serviceId = (int) ($row['service_id'] ?? 0);
+                                            $statusKey = (string) ($row['stav'] ?? 'nova');
+                                            $statusLabel = reservationStatusLabel($statusKey);
+                                            $sourceLabel = $reservationSourceOptions[(string) ($row['zdroj'] ?? '')] ?? ucfirst((string) ($row['zdroj'] ?? 'web'));
+                                            $clientNote = trim((string) ($row['poznamka_klienta'] ?? ''));
+                                            $adminNote = trim((string) ($row['poznamka_admina'] ?? ''));
+                                            $cancelReason = trim((string) ($row['duvod_zruseni'] ?? ''));
                                             ?>
                                             <tr class="reservation-row" data-reservation-row data-reservation-id="<?= escape((string) $row['id']) ?>" data-reservation-client="<?= escape((string) ($row['jmeno'] ?? '')) ?>" data-reservation-datetime="<?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?>" data-reservation-service-id="<?= escape((string) $serviceId) ?>" data-reservation-datetime-local="<?= escape($dateTimeLocalValue) ?>">
                                                 <td data-label="Termín"><?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?></td>
-                                                <td data-label="Procedura"><?= escape((string) $row['nazev']) ?></td>
-                                                <td data-label="Cena"><?= escape(formatPrice($row['cena_v_dobe_rezervace'] ?? null)) ?></td>
                                                 <td data-label="Klientka"><?= escape((string) $row['jmeno']) ?></td>
-                                                <td data-label="Kontakt" class="reservation-contact"><div><?= escape((string) $row['email']) ?></div><div><?= escape((string) ($row['telefon'] ?? '')) ?></div></td>
-                                                <td data-label="Zdroj"><?= escape($reservationSourceOptions[(string) ($row['zdroj'] ?? '')] ?? ucfirst((string) ($row['zdroj'] ?? 'web'))) ?></td>
-                                                <td data-label="Poznámka" class="reservation-note-cell">
-                                                    <div class="reservation-note-client">
-                                                        <strong>Klientka:</strong> <?= escape((string) ($row['poznamka_klienta'] ?? '')) ?>
-                                                    </div>
-                                                    <?php if ((string) ($row['stav'] ?? '') === 'zrusena'): ?>
-                                                        <div class="reservation-note-client">
-                                                            <strong>Důvod zrušení:</strong> <?= escape((string) ($row['duvod_zruseni'] ?? 'neuvedeno')) ?>
-                                                        </div>
-                                                        <?php if ($cancelledByLabel !== '' || (string) ($row['zruseno_at'] ?? '') !== ''): ?>
-                                                            <div class="reservation-note-client">
-                                                                <strong>Zrušeno:</strong>
-                                                                <?= escape($cancelledByLabel !== '' ? $cancelledByLabel : 'neznámý zdroj') ?>
-                                                                <?php if ((string) ($row['zruseno_uzivatel'] ?? '') !== ''): ?>
-                                                                    (<?= escape((string) $row['zruseno_uzivatel']) ?>)
-                                                                <?php endif; ?>
-                                                                <?php if ((string) ($row['zruseno_at'] ?? '') !== ''): ?>
-                                                                    dne <?= escape(formatCzechDateTime((string) $row['zruseno_at'])) ?>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        <?php endif; ?>
-                                                    <?php endif; ?>
+                                                <td data-label="Procedura">
+                                                    <div class="reservation-service-main"><?= escape((string) $row['nazev']) ?></div>
+                                                    <div class="reservation-service-meta"><?= escape($sourceLabel) ?></div>
                                                 </td>
-                                                <td data-label="Stav a správa">
+                                                <td data-label="Cena"><?= escape(formatPrice($row['cena_v_dobe_rezervace'] ?? null)) ?></td>
+                                                <td data-label="Stav" class="reservation-status-cell"><span class="status-badge status-<?= escape($statusKey) ?>" data-reservation-status-badge><?= escape($statusLabel) ?></span></td>
+                                                <td data-label="Kontakt" class="reservation-contact"><div><?= escape((string) $row['email']) ?></div><div><?= escape((string) ($row['telefon'] ?? '')) ?></div></td>
+                                                <td data-label="Akce" class="reservation-summary-actions">
+                                                    <button class="button button-secondary button-small" type="button" data-reservation-detail-toggle data-open-label="Detail" data-close-label="Skrýt detail" aria-expanded="false">Detail</button>
+                                                </td>
+                                            </tr>
+                                            <tr class="reservation-detail-row" data-reservation-detail-row data-reservation-id="<?= escape((string) $row['id']) ?>" hidden>
+                                                <td colspan="7" class="reservation-detail-cell">
                                                     <form method="post" class="admin-form compact-form compact-form-reservation" data-reservation-form>
                                                         <?= csrfInputField() ?>
                                                         <input type="hidden" name="reservation_id" value="<?= escape((string) $row['id']) ?>">
                                                         <input type="hidden" name="datum_cas" value="<?= escape($dateTimeLocalValue) ?>" data-reschedule-datetime>
-                                                        <span class="status-badge status-<?= escape((string) $row['stav']) ?>" data-reservation-status-badge><?= escape(reservationStatusLabel((string) $row['stav'])) ?></span>
-                                                        <select name="stav">
-                                                            <?php foreach (reservationStatusOptions() as $statusValue => $statusLabel): ?>
-                                                                <option value="<?= escape($statusValue) ?>" <?= $statusValue === (string) $row['stav'] ? 'selected' : '' ?>><?= escape($statusLabel) ?></option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                        <input type="text" name="poznamka_admina" value="<?= escape((string) ($row['poznamka_admina'] ?? '')) ?>" placeholder="Interní poznámka">
-                                                        <input type="text" name="duvod_zruseni" value="<?= escape((string) ($row['duvod_zruseni'] ?? '')) ?>" placeholder="Důvod zrušení (povinný při stavu Zrušená)">
-                                                        <button class="button button-secondary button-small" type="button" data-reschedule-toggle>Přeplánovat</button>
-                                                        <div class="reservation-reschedule-box" data-reschedule-box hidden>
-                                                            <label>
-                                                                <span>Dostupný den</span>
-                                                                <select data-reschedule-day>
-                                                                    <option value="">Vyberte den</option>
-                                                                </select>
-                                                            </label>
-                                                            <label>
-                                                                <span>Dostupný čas</span>
-                                                                <select data-reschedule-time disabled>
-                                                                    <option value="">Nejprve vyberte den</option>
-                                                                </select>
-                                                            </label>
-                                                            <div class="form-hint" data-reschedule-picked>Nový termín zatím není vybraný.</div>
+                                                        <div class="reservation-detail-grid">
+                                                            <div class="reservation-detail-block">
+                                                                <h3>Souhrn rezervace</h3>
+                                                                <div class="reservation-overview-hero">
+                                                                    <div class="reservation-overview-datetime">
+                                                                        <span>Termín</span>
+                                                                        <strong data-reservation-datetime-text><?= escape(formatCzechDateTime((string) $row['datum_cas'])) ?></strong>
+                                                                    </div>
+                                                                    <div class="reservation-overview-price">
+                                                                        <span>Cena</span>
+                                                                        <strong><?= escape(formatPrice($row['cena_v_dobe_rezervace'] ?? null)) ?></strong>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="reservation-detail-list reservation-detail-list-grid">
+                                                                    <div><strong>Procedura</strong><span><?= escape((string) $row['nazev']) ?></span></div>
+                                                                    <div><strong>Klientka</strong><span><?= escape((string) $row['jmeno']) ?></span></div>
+                                                                    <div><strong>Kontakt</strong><span><?= escape((string) $row['email']) ?><?php if ((string) ($row['telefon'] ?? '') !== ''): ?><br><?= escape((string) $row['telefon']) ?><?php endif; ?></span></div>
+                                                                    <div><strong>Zdroj</strong><span><?= escape($sourceLabel) ?></span></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="reservation-detail-block">
+                                                                <h3>Poznámky</h3>
+                                                                <div class="reservation-detail-notes">
+                                                                    <div><strong>Poznámka klientky</strong><span><?= escape($clientNote !== '' ? $clientNote : 'Bez poznámky') ?></span></div>
+                                                                    <label>
+                                                                        <span>Interní poznámka</span>
+                                                                        <input type="text" name="poznamka_admina" value="<?= escape($adminNote) ?>" placeholder="Interní poznámka">
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="reservation-detail-block">
+                                                                <h3>Stav rezervace</h3>
+                                                                <div class="reservation-status-editor">
+                                                                    <div class="reservation-status-current">
+                                                                        <span>Aktuální stav</span>
+                                                                        <span class="status-badge status-<?= escape($statusKey) ?>" data-reservation-status-badge><?= escape($statusLabel) ?></span>
+                                                                    </div>
+                                                                    <label>
+                                                                        <span>Nový stav</span>
+                                                                        <select name="stav" data-reservation-status-select>
+                                                                            <?php foreach (reservationStatusOptions() as $statusValue => $statusLabelOption): ?>
+                                                                                <option value="<?= escape($statusValue) ?>" <?= $statusValue === $statusKey ? 'selected' : '' ?>><?= escape($statusLabelOption) ?></option>
+                                                                            <?php endforeach; ?>
+                                                                        </select>
+                                                                    </label>
+                                                                    <label class="reservation-cancel-reason-wrap<?= $statusKey === 'zrusena' ? '' : ' is-hidden' ?>" data-cancel-reason-wrap>
+                                                                        <span>Důvod zrušení</span>
+                                                                        <input type="text" name="duvod_zruseni" value="<?= escape($cancelReason) ?>" placeholder="Povinné při zrušení rezervace">
+                                                                    </label>
+                                                                </div>
+                                                                <?php if ($statusKey === 'zrusena' && ($cancelledByLabel !== '' || (string) ($row['zruseno_at'] ?? '') !== '')): ?>
+                                                                    <div class="reservation-cancel-meta">
+                                                                        <strong>Zrušeno:</strong>
+                                                                        <?= escape($cancelledByLabel !== '' ? $cancelledByLabel : 'neznámý zdroj') ?>
+                                                                        <?php if ((string) ($row['zruseno_uzivatel'] ?? '') !== ''): ?>
+                                                                            (<?= escape((string) $row['zruseno_uzivatel']) ?>)
+                                                                        <?php endif; ?>
+                                                                        <?php if ((string) ($row['zruseno_at'] ?? '') !== ''): ?>
+                                                                            dne <?= escape(formatCzechDateTime((string) ($row['zruseno_at'] ?? ''))) ?>
+                                                                        <?php endif; ?>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                            <div class="reservation-detail-block">
+                                                                <h3>Přeplánování</h3>
+                                                                <button class="button button-secondary button-small" type="button" data-reschedule-toggle>Přeplánovat</button>
+                                                                <div class="reservation-reschedule-box" data-reschedule-box hidden>
+                                                                    <label>
+                                                                        <span>Dostupný den</span>
+                                                                        <select data-reschedule-day>
+                                                                            <option value="">Vyberte den</option>
+                                                                        </select>
+                                                                    </label>
+                                                                    <label>
+                                                                        <span>Dostupný čas</span>
+                                                                        <select data-reschedule-time disabled>
+                                                                            <option value="">Nejprve vyberte den</option>
+                                                                        </select>
+                                                                    </label>
+                                                                    <div class="form-hint" data-reschedule-picked>Nový termín zatím není vybraný.</div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div class="table-actions">
-                                                            <button class="button button-primary button-small" type="submit" name="update_reservation" value="1">Uložit</button>
-                                                            <button class="button button-danger button-small" type="submit" name="delete_reservation" value="1">Smazat</button>
+                                                        <div class="reservation-detail-actions">
+                                                            <button class="button button-primary button-small" type="submit" name="update_reservation" value="1">Uložit změny</button>
                                                         </div>
+                                                        <details class="reservation-danger-zone">
+                                                            <summary>Trvalé smazání rezervace</summary>
+                                                            <p class="form-hint">Použijte jen pokud má být rezervace odstraněna úplně ze systému.</p>
+                                                            <button class="button button-danger button-small" type="submit" name="delete_reservation" value="1">Smazat rezervaci</button>
+                                                        </details>
                                                         <div class="reservation-inline-feedback" data-reservation-feedback role="status" aria-live="polite"></div>
                                                     </form>
                                                 </td>
