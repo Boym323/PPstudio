@@ -742,8 +742,7 @@ function setupAvailabilityPlanner() {
         });
     }
 
-    const isMobileViewport = window.matchMedia('(max-width: 720px)').matches;
-    setPlannerMode(isMobileViewport ? 'daily' : 'weekly');
+    setPlannerMode('daily');
     syncQuickDayChips();
 
     if (quickPresetDay) {

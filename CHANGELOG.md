@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-09
 
+- [ux] Sekce `Dostupnost` byla zjednodušena: denní režim je výchozí, horní navigace týdne je klidnější, týdenní editor je kompaktnější a seznam uložených oken přehlednější (commit: `this-commit`)
 - [ux] Dashboard v adminu přepracován do provozní nástěnky s bloky `Co potřebuje pozornost`, dnešními a zítřejšími rezervacemi, čekajícími novými rezervacemi a přehledem posledních zrušení či přesunů (commit: `this-commit`)
 
 ## 2026-04-08

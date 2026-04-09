@@ -1,13 +1,17 @@
                 <section class="admin-single" id="dostupnost">
                     <div class="admin-card">
-                        <p class="eyebrow">Plánovač</p>
-                        <h2>Plánování dostupnosti po týdnech</h2>
-                        <div class="availability-topbar">
-                            <p class="form-hint">Zobrazený týden: <strong><?= escape($plannerWeekLabel) ?></strong></p>
+                        <p class="eyebrow">Dostupnost</p>
+                        <h2>Plánování volných termínů</h2>
+                        <p class="form-hint availability-intro">Pro běžnou práci používejte denní režim. Týdenní režim je vhodný pro hromadné úpravy a kontrolu celého týdne.</p>
+                        <div class="availability-toolbar">
+                            <div class="availability-week-summary">
+                                <span class="availability-summary-label">Zobrazený týden</span>
+                                <strong><?= escape($plannerWeekLabel) ?></strong>
+                            </div>
                             <div class="table-actions availability-week-actions">
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí týden</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Aktuální týden</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další týden</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
                             </div>
                         </div>
                         <form method="post" class="admin-form" data-availability-planner-form>
@@ -16,20 +20,26 @@
                             <input type="hidden" name="planner_end" value="<?= escape($plannerDays[count($plannerDays) - 1] ?? '') ?>">
                             <input type="hidden" name="planner_windows" value="[]">
 
-                            <div class="availability-mode-switch" role="group" aria-label="Režim plánování">
-                                <button class="button button-secondary button-small is-active" type="button" data-planner-mode-trigger="daily">Denní režim</button>
-                                <button class="button button-secondary button-small" type="button" data-planner-mode-trigger="weekly">Týdenní režim</button>
+                            <div class="availability-mode-card">
+                                <div>
+                                    <p class="eyebrow">Režim práce</p>
+                                    <p class="form-hint">Denní režim je nejrychlejší pro běžnou obsluhu. Týdenní režim používejte při větších změnách.</p>
+                                </div>
+                                <div class="availability-mode-switch" role="group" aria-label="Režim plánování">
+                                    <button class="button button-secondary button-small is-active" type="button" data-planner-mode-trigger="daily">Denní režim</button>
+                                    <button class="button button-secondary button-small" type="button" data-planner-mode-trigger="weekly">Týdenní režim</button>
+                                </div>
                             </div>
 
                             <div class="availability-daily-entry" data-availability-daily-entry>
-                                <p class="eyebrow">Denní režim (doporučeno na mobilu)</p>
+                                <p class="eyebrow">Denní režim</p>
                                 <div class="availability-daily-headline">
                                     <strong>Rychlá úprava jednoho dne</strong>
-                                    <span>Klepnutím na čas hned zapnete nebo vypnete dostupnost.</span>
+                                    <span>Vyberte den, klepnutím zapínejte nebo vypínejte sloty a případně použijte hromadnou úpravu rozsahu.</span>
                                 </div>
                                 <div class="admin-form admin-form-grid availability-daily-grid">
-                                    <label>
-                                        <span>Den</span>
+                                    <label class="availability-day-select">
+                                        <span>Vybraný den</span>
                                         <select data-daily-day>
                                             <?php foreach ($plannerDays as $day): ?>
                                                 <option value="<?= escape($day) ?>"><?= escape(formatCzechDate($day)) ?></option>
@@ -38,11 +48,11 @@
                                     </label>
                                     <div class="availability-daily-summary" data-daily-summary>
                                         <div class="summary-item">
-                                            <span>Vybraný den</span>
+                                            <span>Den</span>
                                             <strong data-daily-summary-day><?= escape(formatCzechDate($plannerDays[0] ?? '')) ?></strong>
                                         </div>
                                         <div class="summary-item">
-                                            <span>Dostupné sloty</span>
+                                            <span>Volné sloty</span>
                                             <strong data-daily-summary-total>0</strong>
                                         </div>
                                     </div>
@@ -84,6 +94,10 @@
                                     </div>
                                 </div>
                                 <div class="availability-daily-actions-panel">
+                                    <div class="availability-block-heading">
+                                        <strong>Hromadná úprava dne</strong>
+                                        <span>Použijte pro rychlé přidání nebo odebrání celého rozsahu.</span>
+                                    </div>
                                     <div class="admin-form admin-form-grid availability-quick-grid">
                                         <label>
                                             <span>Od</span>
@@ -115,74 +129,79 @@
                             </div>
 
                             <div class="availability-weekly-editor" data-availability-weekly-editor hidden>
-                            <div class="availability-quick-entry" data-availability-quick-entry>
-                                <p class="eyebrow">Týdenní rychlé zadání</p>
-                                <div class="admin-form admin-form-grid availability-quick-grid">
-                                    <label>
-                                        <span>Den</span>
-                                        <select data-quick-day>
-                                            <?php foreach ($plannerDays as $day): ?>
-                                                <option value="<?= escape($day) ?>"><?= escape(formatCzechDate($day)) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span>Od</span>
-                                        <select data-quick-start>
-                                            <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                <option value="<?= escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= escape($slot) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span>Do</span>
-                                        <select data-quick-end>
-                                            <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                <option value="<?= escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= escape($slot) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </label>
+                                <div class="availability-weekly-layout">
+                                <div class="availability-quick-entry" data-availability-quick-entry>
+                                    <p class="eyebrow">Týdenní rychlé zadání</p>
+                                    <div class="availability-block-heading">
+                                        <strong>Hromadná změna pro vybraný den nebo pracovní týden</strong>
+                                        <span>Nejprve vyberte den a rozsah, pak použijte akci níže. Týdenní šablona se hodí pro rychlé doplnění Po–Pá.</span>
+                                    </div>
+                                    <div class="admin-form admin-form-grid availability-quick-grid">
+                                        <label>
+                                            <span>Den</span>
+                                            <select data-quick-day>
+                                                <?php foreach ($plannerDays as $day): ?>
+                                                    <option value="<?= escape($day) ?>"><?= escape(formatCzechDate($day)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            <span>Od</span>
+                                            <select data-quick-start>
+                                                <?php foreach ($plannerSlots as $index => $slot): ?>
+                                                    <option value="<?= escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            <span>Do</span>
+                                            <select data-quick-end>
+                                                <?php foreach ($plannerSlots as $index => $slot): ?>
+                                                    <option value="<?= escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="availability-day-chips" data-quick-day-chips>
+                                        <?php foreach ($plannerDays as $day): ?>
+                                            <?php $dayNumber = (int) (new DateTimeImmutable($day))->format('N'); ?>
+                                            <?php
+                                                $shortDayNameMap = [
+                                                    1 => 'Po',
+                                                    2 => 'Út',
+                                                    3 => 'St',
+                                                    4 => 'Čt',
+                                                    5 => 'Pá',
+                                                    6 => 'So',
+                                                    7 => 'Ne',
+                                                ];
+                                                $shortDayName = $shortDayNameMap[$dayNumber] ?? '';
+                                            ?>
+                                            <button
+                                                class="availability-day-chip"
+                                                type="button"
+                                                data-quick-day-chip="<?= escape($day) ?>"
+                                                aria-label="<?= escape($shortDayName . ' ' . formatCzechDate($day)) ?>"
+                                            >
+                                                <span class="day-chip-week"><?= escape($shortDayName) ?></span>
+                                                <span class="day-chip-date"><?= escape(formatCzechDate($day)) ?></span>
+                                            </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="table-actions availability-quick-actions">
+                                        <button class="button button-primary button-small" type="button" data-quick-add>Přidat interval</button>
+                                        <button class="button button-secondary button-small" type="button" data-quick-remove>Odebrat interval</button>
+                                    </div>
+                                    <div class="table-actions availability-preset-actions">
+                                        <button class="button button-secondary button-small" type="button" data-quick-preset-day>Vybraný den 9:00-17:00</button>
+                                        <button class="button button-secondary button-small" type="button" data-quick-preset-week>Po–Pá 9:00-17:00</button>
+                                        <button class="button button-danger button-small" type="button" data-quick-clear-day>Vymazat vybraný den</button>
+                                    </div>
+                                    <p class="form-hint" data-quick-status>Vyberte den a interval, pak jedním klikem přidejte nebo odeberte dostupnost.</p>
                                 </div>
-                                <div class="availability-day-chips" data-quick-day-chips>
-                                    <?php foreach ($plannerDays as $day): ?>
-                                        <?php $dayNumber = (int) (new DateTimeImmutable($day))->format('N'); ?>
-                                        <?php
-                                            $shortDayNameMap = [
-                                                1 => 'Po',
-                                                2 => 'Út',
-                                                3 => 'St',
-                                                4 => 'Čt',
-                                                5 => 'Pá',
-                                                6 => 'So',
-                                                7 => 'Ne',
-                                            ];
-                                            $shortDayName = $shortDayNameMap[$dayNumber] ?? '';
-                                        ?>
-                                        <button
-                                            class="availability-day-chip"
-                                            type="button"
-                                            data-quick-day-chip="<?= escape($day) ?>"
-                                            aria-label="<?= escape($shortDayName . ' ' . formatCzechDate($day)) ?>"
-                                        >
-                                            <span class="day-chip-week"><?= escape($shortDayName) ?></span>
-                                            <span class="day-chip-date"><?= escape(formatCzechDate($day)) ?></span>
-                                        </button>
-                                    <?php endforeach; ?>
-                                </div>
-                                <div class="table-actions availability-quick-actions">
-                                    <button class="button button-primary button-small" type="button" data-quick-add>Přidat interval</button>
-                                    <button class="button button-secondary button-small" type="button" data-quick-remove>Odebrat interval</button>
-                                </div>
-                                <div class="table-actions availability-preset-actions">
-                                    <button class="button button-secondary button-small" type="button" data-quick-preset-day>Vybraný den 9:00-17:00</button>
-                                    <button class="button button-secondary button-small" type="button" data-quick-preset-week>Po-Pá 9:00-17:00</button>
-                                    <button class="button button-danger button-small" type="button" data-quick-clear-day>Vymazat vybraný den</button>
-                                </div>
-                                <p class="form-hint" data-quick-status>Tip: vyberte den a interval, pak přidejte nebo odeberte dostupnost jedním kliknutím.</p>
-                            </div>
 
-                            <details class="availability-detail-wrap">
-                                <summary>Detailní mřížka (pokročilé)</summary>
+                                <details class="availability-detail-wrap" open>
+                                    <summary>Týdenní mřížka</summary>
                                 <div class="availability-legend">
                                     <span class="legend-item"><i class="legend-swatch is-active"></i>Dostupné</span>
                                     <span class="legend-item"><i class="legend-swatch is-booked"></i>Rezervované</span>
@@ -257,16 +276,18 @@
                                         </div>
                                     </div>
                                 </div>
-                            </details>
+                                </details>
+                                </div>
                             </div>
 
                             <div class="table-actions availability-save-actions availability-save-actions-sticky">
                                 <button class="button button-primary" type="submit" name="save_availability_grid" value="1">Uložit plánovač dostupnosti</button>
                             </div>
                         </form>
-                        <p class="form-hint">Jedním tahem označíte dostupné půlhodiny myší i prstem. „Vrátit poslední úpravu“ vrátí poslední krok. „Obnovit původní stav týdne“ zahodí všechny neuložené změny v aktuálním týdnu. Uložením přepíšete dostupnost jen pro právě zobrazený týden. Rezervované termíny zůstávají v systému zachované.</p>
+                        <p class="form-hint">Uložením přepíšete dostupnost jen pro právě zobrazený týden. Rezervované termíny zůstávají zachované a v mřížce je nepřepíšete.</p>
                         <details class="availability-list-wrap">
-                            <summary>Seznam uložených oken</summary>
+                            <summary>Uložená okna dostupnosti (<?= escape((string) count($availabilityRows)) ?>)</summary>
+                            <p class="form-hint availability-list-intro">Přehled uložených intervalů pro rychlou kontrolu a ruční smazání jednotlivých oken.</p>
                             <div class="admin-table-wrap planner-table-wrap">
                                 <table class="admin-table availability-admin-table">
                                     <thead><tr><th>Datum</th><th>Časové okno</th><th>Poznámka</th><th>Akce</th></tr></thead>

@@ -86,10 +86,15 @@ Praktický dopad:
 
 ### Dostupnost
 
-- Plánování dostupných intervalů po týdnech.
-- Nově i `Denní režim` pro rychlou správu slotů hlavně z mobilu.
-- V denním režimu vybereš den a jedním klikem zapínáš/vypínáš jednotlivé časy.
-- Týdenní režim zůstává pro širší plánování.
+- Plánování dostupných intervalů je nově stavěné primárně pro rychlou denní práci.
+- Po otevření sekce se jako výchozí zobrazí `Denní režim`.
+- Denní režim slouží pro běžnou obsluhu:
+- vybereš den,
+- jedním klikem zapínáš/vypínáš jednotlivé časy,
+- nebo hromadně upravíš celý rozsah.
+- `Týdenní režim` zůstává jako pokročilejší editor pro větší změny a kontrolu celého týdne.
+- Nahoře je kompaktní navigace týdne (`Předchozí / Tento týden / Další`).
+- Ve spodním bloku `Uložená okna dostupnosti` je přehled už uložených intervalů a možnost jednotlivé okno ručně smazat.
 - Cíl: definovat volné sloty, ze kterých se generují časy v rezervaci.
 
 ### Služby
