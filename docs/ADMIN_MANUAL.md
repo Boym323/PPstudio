@@ -82,17 +82,17 @@ Praktický dopad:
 - Sekce je rozdělená do podsekcí:
 - `Procedury`
 - `Kategorie`
-- `Historie cen`
+- `Poslední změny cen`
 - V `Procedury` je:
 - formulář pro založení nebo úpravu služby,
 - filtrování podle názvu/popisu/kategorie/stavu,
 - kompaktní přehled procedur s tlačítkem `Detail`.
-- V detailu procedury je vidět plný popis a rychlá správa aktivace/deaktivace.
+- V detailu procedury je vidět plný popis, rychlá správa aktivace/deaktivace a vlastní cenová historie.
 - V `Kategorie` je:
 - formulář pro název a pořadí,
 - přehled kategorií,
 - řazení pomocí drag and drop.
-- `Historie cen` ukazuje poslední změny cen procedur.
+- `Poslední změny cen` ukazují přehled změn ve formátu `původní cena -> nová cena` napříč všemi procedurami.
 
 ### Poukazy
 

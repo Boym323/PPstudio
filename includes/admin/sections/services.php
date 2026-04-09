@@ -1,14 +1,49 @@
                 <section class="admin-layout" id="sluzby-admin" data-services-root>
-                    <?php
-                        $serviceBaseParams = [
-                            'tab' => 'sluzby-admin',
-                            'service_q' => $serviceFilters['q'] ?? '',
-                            'service_category' => $serviceFilters['category'] ?? 'all',
-                            'service_status' => $serviceFilters['status'] ?? 'all',
-                        ];
-                        $activeServicesSection = 'procedures';
-                        if ((int) ($categoryForm['id'] ?? 0) > 0 || isset($_GET['edit_category'])) {
-                            $activeServicesSection = 'categories';
+	                    <?php
+	                        $serviceBaseParams = [
+	                            'tab' => 'sluzby-admin',
+	                            'service_q' => $serviceFilters['q'] ?? '',
+	                            'service_category' => $serviceFilters['category'] ?? 'all',
+	                            'service_status' => $serviceFilters['status'] ?? 'all',
+	                        ];
+                            $servicePriceHistoryByService = [];
+                            foreach ($servicePriceHistoryRows as $historyRow) {
+                                $historyServiceId = (int) ($historyRow['sluzba_id'] ?? 0);
+                                if ($historyServiceId <= 0) {
+                                    continue;
+                                }
+                                if (!isset($servicePriceHistoryByService[$historyServiceId])) {
+                                    $servicePriceHistoryByService[$historyServiceId] = [];
+                                }
+                                $servicePriceHistoryByService[$historyServiceId][] = $historyRow;
+                            }
+                            $servicePriceChanges = [];
+                            foreach ($servicePriceHistoryByService as $historyServiceId => $serviceHistoryItems) {
+                                $itemsCount = count($serviceHistoryItems);
+                                for ($historyIndex = 0; $historyIndex < $itemsCount; $historyIndex++) {
+                                    $newerItem = $serviceHistoryItems[$historyIndex];
+                                    $olderItem = $serviceHistoryItems[$historyIndex + 1] ?? null;
+                                    $servicePriceChanges[] = [
+                                        'sluzba_id' => $historyServiceId,
+                                        'sluzba_nazev' => (string) ($newerItem['sluzba_nazev'] ?? ''),
+                                        'new_price' => $newerItem['cena'] ?? null,
+                                        'old_price' => $olderItem['cena'] ?? null,
+                                        'changed_at' => (string) ($newerItem['platna_od'] ?? ''),
+                                        'is_initial' => $olderItem === null,
+                                    ];
+                                }
+                            }
+                            usort(
+                                $servicePriceChanges,
+                                static function (array $left, array $right): int {
+                                    $leftTime = strtotime((string) ($left['changed_at'] ?? '')) ?: 0;
+                                    $rightTime = strtotime((string) ($right['changed_at'] ?? '')) ?: 0;
+                                    return $rightTime <=> $leftTime;
+                                }
+                            );
+	                        $activeServicesSection = 'procedures';
+	                        if ((int) ($categoryForm['id'] ?? 0) > 0 || isset($_GET['edit_category'])) {
+	                            $activeServicesSection = 'categories';
                         } elseif (isset($_GET['service_section']) && in_array((string) $_GET['service_section'], ['procedures', 'categories', 'price-history'], true)) {
                             $activeServicesSection = (string) $_GET['service_section'];
                         }
@@ -19,7 +54,7 @@
                         <div class="services-section-tabs" role="tablist" aria-label="Podsekce služeb">
                             <button class="button button-secondary button-small<?= $activeServicesSection === 'procedures' ? ' is-active' : '' ?>" type="button" data-services-section-trigger="procedures" aria-pressed="<?= $activeServicesSection === 'procedures' ? 'true' : 'false' ?>">Procedury</button>
                             <button class="button button-secondary button-small<?= $activeServicesSection === 'categories' ? ' is-active' : '' ?>" type="button" data-services-section-trigger="categories" aria-pressed="<?= $activeServicesSection === 'categories' ? 'true' : 'false' ?>">Kategorie</button>
-                            <button class="button button-secondary button-small<?= $activeServicesSection === 'price-history' ? ' is-active' : '' ?>" type="button" data-services-section-trigger="price-history" aria-pressed="<?= $activeServicesSection === 'price-history' ? 'true' : 'false' ?>">Historie cen</button>
+                            <button class="button button-secondary button-small<?= $activeServicesSection === 'price-history' ? ' is-active' : '' ?>" type="button" data-services-section-trigger="price-history" aria-pressed="<?= $activeServicesSection === 'price-history' ? 'true' : 'false' ?>">Poslední změny cen</button>
                         </div>
                         <p class="form-hint">Zobrazte jen tu část, kterou právě potřebujete upravit.</p>
                     </div>
@@ -106,11 +141,13 @@
                                     <tr><td colspan="6">Zatím zde nejsou žádné procedury.</td></tr>
                                 <?php else: ?>
                                     <?php foreach ($serviceRows as $row): ?>
-                                        <?php
-                                            $serviceDescription = trim((string) ($row['popis'] ?? ''));
-                                            $serviceIsActive = (int) ($row['service_active'] ?? 1) === 1;
-                                            $serviceCategoryLabel = trim((string) ($row['kategorie'] ?? '')) !== '' ? (string) $row['kategorie'] : 'Ostatní služby';
-                                        ?>
+	                                        <?php
+	                                            $serviceDescription = trim((string) ($row['popis'] ?? ''));
+	                                            $serviceIsActive = (int) ($row['service_active'] ?? 1) === 1;
+	                                            $serviceCategoryLabel = trim((string) ($row['kategorie'] ?? '')) !== '' ? (string) $row['kategorie'] : 'Ostatní služby';
+                                                $serviceHistoryItems = $servicePriceHistoryByService[(int) ($row['id'] ?? 0)] ?? [];
+                                                $serviceHistoryPreview = array_slice($serviceHistoryItems, 0, 5);
+	                                        ?>
                                         <tr class="service-list-row">
                                             <td data-label="Procedura">
                                                 <div class="reservation-service-main"><?= escape((string) $row['nazev']) ?></div>
@@ -143,11 +180,11 @@
                                                             <div><strong>Délka</strong><span><?= escape(formatDuration($row['doba_trvani'] ?? null)) ?></span></div>
                                                         </div>
                                                     </div>
-                                                    <div class="service-detail-block">
-                                                        <h3>Popis a správa</h3>
-                                                        <div class="service-detail-notes">
-                                                            <div><strong>Popis</strong><span><?= escape($serviceDescription !== '' ? $serviceDescription : 'Bez popisu') ?></span></div>
-                                                        </div>
+	                                                    <div class="service-detail-block">
+	                                                        <h3>Popis a správa</h3>
+	                                                        <div class="service-detail-notes">
+	                                                            <div><strong>Popis</strong><span><?= escape($serviceDescription !== '' ? $serviceDescription : 'Bez popisu') ?></span></div>
+	                                                        </div>
                                                         <div class="table-actions service-detail-actions">
                                                             <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($serviceBaseParams + ['edit_service' => (string) $row['id']])) ?>#sluzby-admin">Upravit proceduru</a>
                                                             <form method="post">
@@ -161,12 +198,37 @@
                                                                     value="1"
                                                                     onclick="return confirm('<?= $serviceIsActive ? 'Opravdu chcete proceduru deaktivovat?' : 'Opravdu chcete proceduru aktivovat?' ?>');"
                                                                 ><?= $serviceIsActive ? 'Deaktivovat' : 'Aktivovat' ?></button>
-                                                            </form>
-                                                        </div>
+	                                                            </form>
+	                                                        </div>
+	                                                    </div>
+                                                    <div class="service-detail-block service-price-history-block">
+                                                        <h3>Cenová historie</h3>
+                                                        <?php if ($serviceHistoryPreview === []): ?>
+                                                            <p class="form-hint">Zatím tu není uložená žádná historie ceny.</p>
+                                                        <?php else: ?>
+                                                            <div class="service-price-history-list">
+                                                                <?php foreach ($serviceHistoryPreview as $historyIndex => $historyItem): ?>
+                                                                    <?php $olderHistoryItem = $serviceHistoryPreview[$historyIndex + 1] ?? ($serviceHistoryItems[$historyIndex + 1] ?? null); ?>
+                                                                    <div class="service-price-history-item">
+                                                                        <div class="service-price-history-main">
+                                                                            <?php if ($olderHistoryItem !== null): ?>
+                                                                                <strong><?= escape(formatPrice($olderHistoryItem['cena'] ?? null)) ?> -> <?= escape(formatPrice($historyItem['cena'] ?? null)) ?></strong>
+                                                                            <?php else: ?>
+                                                                                <strong>První cena: <?= escape(formatPrice($historyItem['cena'] ?? null)) ?></strong>
+                                                                            <?php endif; ?>
+                                                                            <span><?= escape(formatCzechDateTime((string) ($historyItem['platna_od'] ?? ''))) ?></span>
+                                                                        </div>
+                                                                        <div class="service-price-history-meta">
+                                                                            <span><?= (string) ($historyItem['platna_do'] ?? '') !== '' ? 'Platilo do ' . escape(formatCzechDateTime((string) $historyItem['platna_do'])) : 'Aktuální cena' ?></span>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        <?php endif; ?>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+	                                                </div>
+	                                            </td>
+	                                        </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
@@ -174,52 +236,50 @@
                     </div>
                     </div>
                     </div>
-                    <div class="services-section-panel services-section-panel-history" data-services-section-panel="price-history"<?= $activeServicesSection === 'price-history' ? '' : ' hidden' ?>>
-                    <div class="admin-card admin-card-compact-history full-span">
-                        <p class="eyebrow">Historie cen</p>
-                        <h2>Poslední změny cen procedur</h2>
-                        <?php
-                            $historyTotal = count($servicePriceHistoryRows);
-                            $historyRowsPreview = array_slice($servicePriceHistoryRows, 0, 50);
-                        ?>
-                        <details class="compact-history-panel" <?= $historyTotal > 0 ? '' : 'open' ?>>
-                            <summary>
-                                <?= $historyTotal > 0
-                                    ? 'Zobrazit historii (' . escape((string) $historyTotal) . ' záznamů)'
-                                    : 'Zobrazit historii'
-                                ?>
-                            </summary>
-                            <p class="form-hint">Ceny se ukládají automaticky při každé změně procedury.</p>
-                            <div class="admin-table-wrap compact-history-table-wrap">
-                                <table class="admin-table service-admin-table price-history-admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Procedura</th>
-                                            <th>Cena</th>
-                                            <th>Platná od</th>
-                                            <th>Platná do</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if ($historyRowsPreview === []): ?>
-                                            <tr><td colspan="4">Zatím zde nejsou žádné záznamy historie cen.</td></tr>
-                                        <?php else: ?>
-                                            <?php foreach ($historyRowsPreview as $historyRow): ?>
-                                                <tr>
-                                                    <td data-label="Procedura"><?= escape((string) ($historyRow['sluzba_nazev'] ?? '')) ?></td>
-                                                    <td data-label="Cena"><?= escape(formatPrice($historyRow['cena'] ?? null)) ?></td>
-                                                    <td data-label="Platná od"><?= escape(formatCzechDateTime((string) ($historyRow['platna_od'] ?? ''))) ?></td>
-                                                    <td data-label="Platná do"><?= escape((string) ($historyRow['platna_do'] ?? '') !== '' ? formatCzechDateTime((string) $historyRow['platna_do']) : 'Aktuální') ?></td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <?php if ($historyTotal > 50): ?>
-                                <p class="form-hint">Zobrazeno posledních 50 změn z celkových <?= escape((string) $historyTotal) ?>.</p>
-                            <?php endif; ?>
-                        </details>
+	                    <div class="services-section-panel services-section-panel-history" data-services-section-panel="price-history"<?= $activeServicesSection === 'price-history' ? '' : ' hidden' ?>>
+	                    <div class="admin-card admin-card-compact-history full-span">
+	                        <p class="eyebrow">Poslední změny cen</p>
+	                        <h2>Poslední změny cen procedur</h2>
+	                        <?php
+	                            $historyTotal = count($servicePriceChanges);
+	                            $historyRowsPreview = array_slice($servicePriceChanges, 0, 50);
+	                        ?>
+	                        <p class="form-hint">Přehled ukazuje skutečné změny ceny ve formátu původní cena -> nová cena.</p>
+	                        <div class="admin-table-wrap compact-history-table-wrap">
+	                            <table class="admin-table service-admin-table price-history-admin-table">
+	                                <thead>
+	                                    <tr>
+	                                        <th>Procedura</th>
+	                                        <th>Změna ceny</th>
+	                                        <th>Změněno</th>
+	                                        <th>Typ</th>
+	                                    </tr>
+	                                </thead>
+	                                <tbody>
+	                                    <?php if ($historyRowsPreview === []): ?>
+	                                        <tr><td colspan="4">Zatím zde nejsou žádné záznamy historie cen.</td></tr>
+	                                    <?php else: ?>
+	                                        <?php foreach ($historyRowsPreview as $historyRow): ?>
+	                                            <tr>
+	                                                <td data-label="Procedura"><?= escape((string) ($historyRow['sluzba_nazev'] ?? '')) ?></td>
+	                                                <td data-label="Změna ceny">
+                                                        <?php if (!empty($historyRow['is_initial'])): ?>
+                                                            <strong>První cena: <?= escape(formatPrice($historyRow['new_price'] ?? null)) ?></strong>
+                                                        <?php else: ?>
+                                                            <strong><?= escape(formatPrice($historyRow['old_price'] ?? null)) ?> -> <?= escape(formatPrice($historyRow['new_price'] ?? null)) ?></strong>
+                                                        <?php endif; ?>
+                                                    </td>
+	                                                <td data-label="Změněno"><?= escape(formatCzechDateTime((string) ($historyRow['changed_at'] ?? ''))) ?></td>
+	                                                <td data-label="Typ"><?= !empty($historyRow['is_initial']) ? 'První nastavení' : 'Úprava ceny' ?></td>
+	                                            </tr>
+	                                        <?php endforeach; ?>
+	                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php if ($historyTotal > 50): ?>
+                            <p class="form-hint">Zobrazeno posledních 50 změn z celkových <?= escape((string) $historyTotal) ?>.</p>
+                        <?php endif; ?>
                     </div>
                     </div>
                     <div class="services-section-panel services-section-panel-categories" data-services-section-panel="categories"<?= $activeServicesSection === 'categories' ? '' : ' hidden' ?>>
