@@ -209,7 +209,7 @@ p {
 }
 
 .dashboard-kpi-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .dashboard-detail-grid {
@@ -218,8 +218,23 @@ p {
     gap: 1.5rem;
 }
 
+.dashboard-operational-grid {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-secondary-grid {
+    margin-bottom: 0;
+}
+
 .dashboard-panel h2 {
     margin-bottom: 1rem;
+}
+
+.dashboard-panel-highlight {
+    grid-column: 1 / -1;
+    background:
+        linear-gradient(180deg, rgba(255, 251, 246, 0.98), rgba(252, 245, 236, 0.96)),
+        var(--card-bg);
 }
 
 .stat-value {
@@ -265,6 +280,11 @@ p {
     margin-top: 0.15rem;
 }
 
+.dashboard-row-submeta {
+    color: var(--text-soft);
+    font-size: 0.92rem;
+}
+
 .dashboard-row-meta {
     text-align: right;
     display: grid;
@@ -286,6 +306,61 @@ p {
     border-radius: 12px;
     border: 1px solid rgba(219, 203, 189, 0.72);
     background: rgba(255, 251, 246, 0.68);
+}
+
+.dashboard-attention-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.dashboard-attention-item {
+    padding: 1rem 1.05rem;
+    border-radius: 14px;
+    border: 1px solid rgba(219, 203, 189, 0.76);
+    background: rgba(255, 251, 246, 0.82);
+}
+
+.dashboard-attention-warning {
+    background: linear-gradient(180deg, rgba(255, 246, 231, 0.95), rgba(253, 238, 216, 0.92));
+    border-color: rgba(196, 147, 89, 0.34);
+}
+
+.dashboard-attention-info {
+    background: linear-gradient(180deg, rgba(245, 249, 252, 0.95), rgba(235, 243, 249, 0.92));
+    border-color: rgba(113, 150, 187, 0.28);
+}
+
+.dashboard-attention-success {
+    background: linear-gradient(180deg, rgba(240, 249, 242, 0.96), rgba(230, 242, 233, 0.92));
+    border-color: rgba(104, 149, 113, 0.28);
+}
+
+.dashboard-attention-neutral {
+    background: linear-gradient(180deg, rgba(255, 251, 246, 0.98), rgba(246, 239, 230, 0.94));
+}
+
+.dashboard-change-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.dashboard-change-rescheduled {
+    background: rgba(124, 153, 191, 0.16);
+    color: #486888;
+}
+
+.dashboard-change-cancelled {
+    background: rgba(184, 106, 98, 0.16);
+    color: #9a5149;
 }
 
 .dashboard-status-list {
@@ -2556,6 +2631,10 @@ body.is-sorting-categories {
     .dashboard-row {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .dashboard-attention-list {
+        grid-template-columns: 1fr;
     }
 
     .dashboard-row-meta {

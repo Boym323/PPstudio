@@ -15,8 +15,11 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - [feat] Do potvrzovacího e-mailu doplněno tlačítko „Přesunout termín“ vedle zrušení rezervace (commit: `this-commit`)
 - [security] Rozšířena data rezervace o `service_id` a přidán audit event `reservation_customer_rescheduled` (commit: `this-commit`)
 
-## 2026-04-08
+## 2026-04-09
 
+- [ux] Dashboard v adminu přepracován do provozní nástěnky s bloky `Co potřebuje pozornost`, dnešními a zítřejšími rezervacemi, čekajícími novými rezervacemi a přehledem posledních zrušení či přesunů (commit: `this-commit`)
+
+## 2026-04-08
 - [ux] Sekce `Služby` dostala jasnější navigaci podsekcí, čitelnější aktivní záložky a záložku `Poslední změny cen` s cenovou historií přímo v detailu procedury (commit: `this-commit`)
 - [ux] Sekce `Služby` v adminu byla přepracována do podsekcí `Procedury / Kategorie / Historie cen`, doplněna o filtry, detail procedury a kompaktnější formuláře i tabulky (commit: `this-commit`)
 - [docs] Aktualizován `docs/ADMIN_MANUAL.md` o nový denní režim dostupnosti, kompaktní správu rezervací a detailní antispam log (commit: `this-commit`)

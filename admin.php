@@ -175,6 +175,11 @@ $dashboardStats = [
     'active_reservations_trend_pct' => 0,
 ];
 $dashboardUpcomingReservations = [];
+$dashboardTodayReservations = [];
+$dashboardTomorrowReservations = [];
+$dashboardPendingReservationRows = [];
+$dashboardRecentReservationChanges = [];
+$dashboardAttentionItems = [];
 $dashboardTopServices = [];
 $dashboardTopCategories = [];
 $dashboardStatusBreakdown = [

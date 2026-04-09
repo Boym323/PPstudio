@@ -440,6 +440,98 @@ if ($upcomingQuery instanceof mysqli_result) {
     $upcomingQuery->free();
 }
 
+$dashboardTodayQuery = $connection->query(
+    'SELECT r.id, r.datum_cas, r.jmeno, r.stav, s.nazev
+     FROM rezervace r
+     INNER JOIN sluzby s ON s.id = r.sluzba
+     WHERE DATE(r.datum_cas) = CURDATE()
+       AND r.stav IN ("nova", "potvrzena", "dokoncena")
+     ORDER BY r.datum_cas ASC
+     LIMIT 6'
+);
+if ($dashboardTodayQuery instanceof mysqli_result) {
+    while ($row = $dashboardTodayQuery->fetch_assoc()) {
+        $dashboardTodayReservations[] = $row;
+    }
+    $dashboardTodayQuery->free();
+}
+
+$dashboardTomorrowQuery = $connection->query(
+    'SELECT r.id, r.datum_cas, r.jmeno, r.stav, s.nazev
+     FROM rezervace r
+     INNER JOIN sluzby s ON s.id = r.sluzba
+     WHERE DATE(r.datum_cas) = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+       AND r.stav IN ("nova", "potvrzena", "dokoncena")
+     ORDER BY r.datum_cas ASC
+     LIMIT 6'
+);
+if ($dashboardTomorrowQuery instanceof mysqli_result) {
+    while ($row = $dashboardTomorrowQuery->fetch_assoc()) {
+        $dashboardTomorrowReservations[] = $row;
+    }
+    $dashboardTomorrowQuery->free();
+}
+
+$dashboardPendingQuery = $connection->query(
+    'SELECT r.id, r.datum_cas, r.jmeno, r.email, r.telefon, s.nazev
+     FROM rezervace r
+     INNER JOIN sluzby s ON s.id = r.sluzba
+     WHERE r.datum_cas >= NOW()
+       AND r.stav = "nova"
+     ORDER BY r.datum_cas ASC
+     LIMIT 6'
+);
+if ($dashboardPendingQuery instanceof mysqli_result) {
+    while ($row = $dashboardPendingQuery->fetch_assoc()) {
+        $dashboardPendingReservationRows[] = $row;
+    }
+    $dashboardPendingQuery->free();
+}
+
+if ($securityEventsTableExists) {
+    $recentReservationChangesQuery = $connection->query(
+        "SELECT created_at, event_type, context_json
+         FROM security_events
+         WHERE event_type IN (
+            'reservation_admin_rescheduled',
+            'reservation_admin_cancelled',
+            'reservation_customer_rescheduled',
+            'reservation_customer_cancelled'
+         )
+         ORDER BY created_at DESC
+         LIMIT 6"
+    );
+    if ($recentReservationChangesQuery instanceof mysqli_result) {
+        while ($row = $recentReservationChangesQuery->fetch_assoc()) {
+            $context = json_decode((string) ($row['context_json'] ?? ''), true);
+            if (! is_array($context)) {
+                $context = [];
+            }
+
+            $eventType = (string) ($row['event_type'] ?? '');
+            $changeTypeLabel = match ($eventType) {
+                'reservation_admin_rescheduled' => 'Přesunula jste rezervaci',
+                'reservation_customer_rescheduled' => 'Klientka přesunula rezervaci',
+                'reservation_admin_cancelled' => 'Zrušila jste rezervaci',
+                'reservation_customer_cancelled' => 'Klientka zrušila rezervaci',
+                default => 'Změna rezervace',
+            };
+
+            $dashboardRecentReservationChanges[] = [
+                'time' => (string) ($row['created_at'] ?? ''),
+                'label' => $changeTypeLabel,
+                'reservation_id' => (int) ($context['reservation_id'] ?? 0),
+                'old_datetime' => (string) ($context['old_datetime'] ?? ''),
+                'new_datetime' => (string) ($context['new_datetime'] ?? ''),
+                'cancel_reason' => trim((string) ($context['cancel_reason'] ?? '')),
+                'cancelled_by' => trim((string) ($context['cancelled_by'] ?? '')),
+                'event_type' => $eventType,
+            ];
+        }
+        $recentReservationChangesQuery->free();
+    }
+}
+
 $topServicesQuery = $connection->query(
     'SELECT s.nazev, COUNT(*) AS reservations_count
      FROM rezervace r
@@ -581,6 +673,52 @@ if ($bookedTodayStatement) {
 }
 
 $dashboardStats['free_slots_today'] = count(array_diff_key($availableSlots, $bookedSlots));
+
+$todayReservationsCount = (int) ($dashboardStats['today_reservations'] ?? 0);
+$tomorrowReservationsCount = count($dashboardTomorrowReservations);
+$pendingReservationsCount = (int) ($dashboardStats['pending_reservations'] ?? 0);
+$freeSlotsTodayCount = (int) ($dashboardStats['free_slots_today'] ?? 0);
+
+if ($pendingReservationsCount > 0) {
+    $dashboardAttentionItems[] = [
+        'tone' => 'warning',
+        'title' => 'Čekají nové rezervace k potvrzení',
+        'text' => $pendingReservationsCount === 1
+            ? 'Máte 1 novou rezervaci, která čeká na potvrzení.'
+            : 'Máte ' . $pendingReservationsCount . ' nových rezervací, které čekají na potvrzení.',
+    ];
+}
+
+if ($todayReservationsCount === 0) {
+    $dashboardAttentionItems[] = [
+        'tone' => 'info',
+        'title' => 'Dnes zatím není žádná rezervace',
+        'text' => 'Zkontrolujte dostupnost a případně uvolněte termíny pro dnešní den.',
+    ];
+} elseif ($freeSlotsTodayCount > 0) {
+    $dashboardAttentionItems[] = [
+        'tone' => 'success',
+        'title' => 'Dnes ještě zbývají volné sloty',
+        'text' => $freeSlotsTodayCount . ' volných 30min slotů je stále k dispozici pro rychlé doobjednání.',
+    ];
+}
+
+if ($tomorrowReservationsCount === 0) {
+    $dashboardAttentionItems[] = [
+        'tone' => 'info',
+        'title' => 'Zítřek je zatím prázdný',
+        'text' => 'Na zítřek zatím nevidím žádnou rezervaci. Může se hodit zkontrolovat dostupnost nebo propagaci volných termínů.',
+    ];
+}
+
+if ($dashboardRecentReservationChanges !== []) {
+    $latestChange = $dashboardRecentReservationChanges[0];
+    $dashboardAttentionItems[] = [
+        'tone' => 'neutral',
+        'title' => 'Poslední změna v rezervacích',
+        'text' => trim((string) ($latestChange['label'] ?? 'Změna rezervace')) . ' ' . mb_strtolower(formatCzechDateTime((string) ($latestChange['time'] ?? ''))),
+    ];
+}
 
 $profileMedia = loadMediaByCategory($connection, 'profile', 1);
 $galleryMedia = loadMediaByCategory($connection, 'gallery', 30);

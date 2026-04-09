@@ -18,8 +18,23 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 
 ### Dashboard
 
-- Rychlý přehled provozu.
-- KPI pro orientaci v aktuálním stavu rezervací.
+- Dashboard je nově provozní nástěnka pro rychlou ranní kontrolu.
+- Hlavní horní blok ukazuje:
+- dnešní rezervace,
+- zítřejší rezervace,
+- čekající nové rezervace,
+- volné sloty dnes.
+- Blok `Co potřebuje pozornost` shrnuje nejdůležitější situace, které je vhodné řešit jako první.
+- Pod ním jsou samostatné přehledy:
+- `Dnešní rezervace`
+- `Zítřejší rezervace`
+- `Čekající nové rezervace`
+- `Poslední zrušení a přesuny`
+- Spodní část dashboardu zůstává jako sekundární analytika:
+- nejbližší rezervace,
+- stavy rezervací,
+- nejžádanější procedury,
+- top kategorie.
 
 ### Rezervace
 
