@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-08
 
+- [ux] Sekce `Služby` v adminu byla přepracována do podsekcí `Procedury / Kategorie / Historie cen`, doplněna o filtry, detail procedury a kompaktnější formuláře i tabulky (commit: `this-commit`)
 - [docs] Aktualizován `docs/ADMIN_MANUAL.md` o nový denní režim dostupnosti, kompaktní správu rezervací a detailní antispam log (commit: `this-commit`)
 - [ux] Antispam log přepracován do kompaktního seznamu s detailem události a stránkováním (commit: `this-commit`)
 - [ux] Admin rezervace přepracovány do kompaktního seznamu s rozbalovacím detailem, bezpečnějšími akcemi a lepším mobilním layoutem (commit: `this-commit`)

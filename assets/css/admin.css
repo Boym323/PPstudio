@@ -1401,20 +1401,160 @@ p {
 .price-history-admin-table th:nth-child(4),
 .price-history-admin-table td:nth-child(4) { width: 21%; }
 
+.service-editor-form {
+    gap: 0.9rem;
+}
+
+.service-editor-card {
+    max-width: 980px;
+}
+
+.service-editor-card .admin-form input,
+.service-editor-card .admin-form select,
+.service-editor-card .admin-form textarea {
+    padding: 0.82rem 0.92rem;
+}
+
+.service-editor-card .admin-form textarea {
+    min-height: 92px;
+}
+
+.services-section-switcher {
+    display: grid;
+    gap: 0.65rem;
+    padding-top: 1.35rem;
+    padding-bottom: 1.35rem;
+}
+
+.services-section-switcher h2 {
+    margin-bottom: 0.35rem;
+}
+
+.services-section-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.services-section-tabs .button.is-active {
+    background: var(--accent-brown);
+    border-color: var(--accent-brown);
+    color: #fff;
+}
+
+.services-section-tabs .button {
+    min-height: 2.7rem;
+    padding: 0.7rem 1.25rem;
+}
+
+.services-section-panel[hidden] {
+    display: none !important;
+}
+
+.services-section-panel {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.services-section-panel-procedures,
+.services-section-panel-history,
+.services-section-panel-categories {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.service-form-panel {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(219, 203, 189, 0.72);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.76);
+}
+
+.service-form-panel h3 {
+    margin: 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    opacity: 0.88;
+}
+
+.service-form-fields {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.service-form-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.service-form-actions .button {
+    min-width: 220px;
+}
+
+.services-section-panel .admin-card,
+.services-section-panel .admin-table-wrap {
+    margin-top: 0;
+}
+
+.services-section-panel .admin-card h2 {
+    margin-bottom: 0.55rem;
+}
+
+.service-filters-card .admin-form {
+    gap: 0.85rem;
+}
+
+.service-table-card {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
 .procedure-admin-table th:nth-child(1),
-.procedure-admin-table td:nth-child(1) { width: 16%; }
+.procedure-admin-table td:nth-child(1) { width: 28%; }
 .procedure-admin-table th:nth-child(2),
-.procedure-admin-table td:nth-child(2) { width: 18%; }
+.procedure-admin-table td:nth-child(2) { width: 20%; }
 .procedure-admin-table th:nth-child(3),
 .procedure-admin-table td:nth-child(3) { width: 10%; }
 .procedure-admin-table th:nth-child(4),
 .procedure-admin-table td:nth-child(4) { width: 10%; }
 .procedure-admin-table th:nth-child(5),
-.procedure-admin-table td:nth-child(5) { width: 22%; }
+.procedure-admin-table td:nth-child(5) { width: 12%; }
 .procedure-admin-table th:nth-child(6),
-.procedure-admin-table td:nth-child(6) { width: 10%; }
-.procedure-admin-table th:nth-child(7),
-.procedure-admin-table td:nth-child(7) { width: 14%; }
+.procedure-admin-table td:nth-child(6) { width: 20%; }
+
+.procedure-admin-table th,
+.procedure-admin-table td {
+    padding: 0.82rem 0.9rem;
+    min-width: 0;
+}
+
+.procedure-admin-table td {
+    vertical-align: middle;
+}
+
+.procedure-admin-table .reservation-service-main {
+    margin-bottom: 0.18rem;
+    line-height: 1.25;
+}
+
+.procedure-admin-table .reservation-service-meta {
+    font-size: 0.84rem;
+    line-height: 1.35;
+    color: var(--text-soft);
+}
+
+.procedure-admin-table .table-actions {
+    gap: 0.45rem;
+}
+
+.procedure-admin-table .button-small {
+    padding: 0.48rem 0.78rem;
+}
 
 .category-admin-table {
     table-layout: auto;
@@ -1466,6 +1606,84 @@ p {
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.service-list-row + .service-detail-row[hidden] {
+    display: none;
+}
+
+.service-detail-cell {
+    padding: 0 !important;
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(250, 244, 236, 0.9));
+}
+
+.service-admin-table .service-detail-cell::before {
+    display: none;
+    content: none;
+}
+
+.service-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.service-detail-block {
+    border: 1px solid rgba(219, 203, 189, 0.72);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.82);
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    box-shadow: 0 14px 30px rgba(123, 93, 70, 0.05);
+}
+
+.service-detail-block h3 {
+    margin: 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    opacity: 0.88;
+}
+
+.service-detail-list,
+.service-detail-notes {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.service-detail-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.service-detail-list > div,
+.service-detail-notes > div {
+    padding: 0.55rem 0.65rem;
+    border-radius: 12px;
+    background: rgba(247, 241, 233, 0.68);
+    display: grid;
+    gap: 0.18rem;
+}
+
+.service-detail-list strong,
+.service-detail-notes strong {
+    color: var(--text);
+    font-size: 0.76rem;
+    letter-spacing: 0.04rem;
+    text-transform: uppercase;
+}
+
+.service-detail-list span,
+.service-detail-notes span {
+    color: var(--text-soft);
+    line-height: 1.45;
+}
+
+.service-detail-actions {
+    align-items: center;
 }
 
 .service-actions-cell .table-actions {
@@ -2507,6 +2725,35 @@ body.is-sorting-categories {
         justify-content: flex-start;
     }
 
+    .service-detail-row {
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: -0.35rem 0 0.85rem !important;
+    }
+
+    .service-detail-cell {
+        border: 0 !important;
+        padding: 0 !important;
+    }
+
+    .service-detail-grid,
+    .service-detail-list {
+        grid-template-columns: 1fr;
+        padding: 0.7rem 0.3rem 0.25rem;
+    }
+
+    .services-section-tabs .button {
+        width: 100%;
+    }
+
+    .services-section-panel,
+    .services-section-panel-procedures,
+    .services-section-panel-history,
+    .services-section-panel-categories {
+        grid-template-columns: 1fr;
+    }
+
     .category-admin-table .drag-cell {
         width: 100%;
     }
@@ -2694,6 +2941,35 @@ body.is-sorting-categories {
         word-break: normal;
         overflow-wrap: normal;
         hyphens: none;
+    }
+
+    .service-detail-row {
+        border: 0 !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: -0.35rem 0 0.85rem !important;
+    }
+
+    .service-detail-cell {
+        border: 0 !important;
+        padding: 0 !important;
+    }
+
+    .service-detail-grid,
+    .service-detail-list {
+        grid-template-columns: 1fr;
+        padding: 0.65rem 0.2rem 0.2rem;
+    }
+
+    .services-section-tabs .button {
+        width: 100%;
+    }
+
+    .services-section-panel,
+    .services-section-panel-procedures,
+    .services-section-panel-history,
+    .services-section-panel-categories {
+        grid-template-columns: 1fr;
     }
 
     .reservation-detail-row {

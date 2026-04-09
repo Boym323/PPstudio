@@ -79,9 +79,20 @@ Praktický dopad:
 
 ### Služby
 
-- Správa kategorií a procedur.
-- Úprava ceny, délky, popisu, pořadí.
-- Přesun kategorií (drag and drop).
+- Sekce je rozdělená do podsekcí:
+- `Procedury`
+- `Kategorie`
+- `Historie cen`
+- V `Procedury` je:
+- formulář pro založení nebo úpravu služby,
+- filtrování podle názvu/popisu/kategorie/stavu,
+- kompaktní přehled procedur s tlačítkem `Detail`.
+- V detailu procedury je vidět plný popis a rychlá správa aktivace/deaktivace.
+- V `Kategorie` je:
+- formulář pro název a pořadí,
+- přehled kategorií,
+- řazení pomocí drag and drop.
+- `Historie cen` ukazuje poslední změny cen procedur.
 
 ### Poukazy
 

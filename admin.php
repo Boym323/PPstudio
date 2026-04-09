@@ -247,6 +247,16 @@ $reservationPagination = [
     'total' => 0,
     'total_pages' => 1,
 ];
+$serviceStatusFilterOptions = [
+    'all' => 'Všechny stavy',
+    'active' => 'Pouze aktivní',
+    'inactive' => 'Pouze neaktivní',
+];
+$serviceFilters = [
+    'q' => trim((string) ($_GET['service_q'] ?? '')),
+    'category' => (string) ($_GET['service_category'] ?? 'all'),
+    'status' => (string) ($_GET['service_status'] ?? 'all'),
+];
 $antispamRows = [];
 $antispamLogStats = [
     'total' => 0,

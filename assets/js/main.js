@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAvailabilityPlanner();
     setupAntispamLogDetails();
     setupCategorySorting();
+    setupServiceSections();
+    setupServiceListDetails();
     setupReservationActions();
     setupVoucherRedeemAssist();
 });
@@ -1427,6 +1429,67 @@ function setupAntispamLogDetails() {
             button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         });
     });
+}
+
+function setupServiceListDetails() {
+    const buttons = Array.from(document.querySelectorAll('[data-service-detail-toggle]'));
+    if (buttons.length === 0) {
+        return;
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const summaryRow = button.closest('tr');
+            if (!summaryRow) {
+                return;
+            }
+
+            const detailRow = summaryRow.nextElementSibling;
+            if (!detailRow || !detailRow.hasAttribute('data-service-detail-row')) {
+                return;
+            }
+
+            const shouldOpen = detailRow.hidden;
+            detailRow.hidden = !shouldOpen;
+            button.textContent = shouldOpen
+                ? String(button.dataset.closeLabel || 'Skrýt detail')
+                : String(button.dataset.openLabel || 'Detail');
+            button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        });
+    });
+}
+
+function setupServiceSections() {
+    const root = document.querySelector('[data-services-section-switcher]');
+    if (!root) {
+        return;
+    }
+
+    const triggers = Array.from(root.querySelectorAll('[data-services-section-trigger]'));
+    const panels = Array.from(document.querySelectorAll('[data-services-section-panel]'));
+    if (triggers.length === 0 || panels.length === 0) {
+        return;
+    }
+
+    const setActiveSection = (sectionName) => {
+        const safeSection = String(sectionName || 'procedures');
+        triggers.forEach((trigger) => {
+            const isActive = String(trigger.dataset.servicesSectionTrigger || '') === safeSection;
+            trigger.classList.toggle('is-active', isActive);
+            trigger.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        panels.forEach((panel) => {
+            panel.hidden = String(panel.dataset.servicesSectionPanel || '') !== safeSection;
+        });
+    };
+
+    triggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            setActiveSection(String(trigger.dataset.servicesSectionTrigger || 'procedures'));
+        });
+    });
+
+    setActiveSection(String(root.dataset.initialSection || 'procedures'));
 }
 
 function setupVoucherRedeemAssist() {
