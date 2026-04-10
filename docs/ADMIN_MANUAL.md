@@ -124,6 +124,7 @@ Praktický dopad:
 
 - Hromadné generování kódů poukazů.
 - Ruční vytvoření poukazu.
+- Pole `Platnost do` je u nového i hromadně generovaného poukazu předvyplněné na rok od aktuálního dne.
 - Částečné čerpání se zůstatkem a historií transakcí.
 - Vazba čerpání na rezervaci:
 - vyhledání rezervace podle jména/telefonu/služby/data,

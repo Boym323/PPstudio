@@ -150,7 +150,7 @@ $voucherModuleReady = false;
 $voucherForm = [
     'code' => '',
     'value' => '',
-    'expires_at' => '',
+    'expires_at' => date('Y-m-d', strtotime('+1 year')),
     'recipient_name' => '',
     'note' => '',
 ];
@@ -158,7 +158,7 @@ $voucherBatchForm = [
     'prefix' => 'PP' . date('y'),
     'count' => '20',
     'value' => '1000',
-    'expires_at' => '',
+    'expires_at' => date('Y-m-d', strtotime('+1 year')),
     'recipient_name' => '',
     'note' => '',
 ];

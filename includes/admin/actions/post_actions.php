@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
                     $voucherForm = [
                         'code' => '',
                         'value' => '',
-                        'expires_at' => '',
+                        'expires_at' => date('Y-m-d', strtotime('+1 year')),
                         'recipient_name' => '',
                         'note' => '',
                     ];

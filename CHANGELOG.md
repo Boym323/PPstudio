@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-09
 
+- [ux] U formulářů pro jednotlivé i hromadné vytváření poukazů je `Platnost do` nově předvyplněná na rok od aktuálního data (commit: `this-commit`)
 - [feat] Sekce `Dostupnost` byla rozšířena o generátor Instagram story/feed obrázků s náhledem, styly výstupu, vlastním pozadím a exportem PNG z aktuálně volných termínů (commit: `this-commit`)
 - [ux] Sekce `Fotky a galerie` byla rozdělena do podsekcí `Profilová fotka / Galerie salonu / Certifikáty`, zjednodušena pro běžnou obsluhu a doplněna o lepší náhled hlavní profilové fotky (commit: `this-commit`)
 - [ux] Sekce `Dostupnost` byla zjednodušena: denní režim je výchozí, horní navigace týdne je klidnější, týdenní editor je kompaktnější a seznam uložených oken přehlednější (commit: `this-commit`)
