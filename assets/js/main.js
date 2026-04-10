@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMediaSections();
     setupServiceListDetails();
     setupReservationActions();
+    setupManualReservationAvailability();
     setupVoucherRedeemAssist();
 });
 
@@ -37,6 +38,20 @@ function setupRevealAnimations() {
     }, { threshold: 0.12 });
 
     revealTargets.forEach((element) => observer.observe(element));
+}
+
+async function fetchJson(url, errorMessage = 'Dostupné termíny se nepodařilo načíst.') {
+    const response = await fetch(url, {
+        headers: {
+            'X-Requested-With': 'fetch',
+            'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+    });
+    if (!response.ok) {
+        throw new Error(errorMessage);
+    }
+    return response.json();
 }
 
 function setupAvailabilityPlanner() {
@@ -1042,20 +1057,6 @@ function setupReservationActions() {
     const totalNode = root.querySelector('[data-reservation-total]');
     const tbody = root.querySelector('[data-reservation-tbody]');
     let feedbackTimer = null;
-    const fetchJson = async (url) => {
-        const response = await fetch(url, {
-            headers: {
-                'X-Requested-With': 'fetch',
-                'Accept': 'application/json',
-            },
-            credentials: 'same-origin',
-        });
-        if (!response.ok) {
-            throw new Error('Dostupné termíny se nepodařilo načíst.');
-        }
-        return response.json();
-    };
-
     const setFeedback = (form, message, type = 'info') => {
         const feedback = form.querySelector('[data-reservation-feedback]');
         if (!feedback) {
@@ -1436,6 +1437,160 @@ function setupReservationActions() {
             button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         });
     });
+}
+
+function setupManualReservationAvailability() {
+    const form = document.querySelector('[data-manual-reservation-form]');
+    if (!form) {
+        return;
+    }
+
+    const serviceSelect = form.querySelector('[data-manual-service-select]');
+    const daySelect = form.querySelector('[data-manual-day-select]');
+    const timeSelect = form.querySelector('[data-manual-time-select]');
+    const hiddenDateTimeInput = form.querySelector('[data-manual-datetime]');
+    const initialDay = String(form.dataset.initialDay || '').trim();
+    const initialTime = String(form.dataset.initialTime || '').trim();
+
+    if (!serviceSelect || !daySelect || !timeSelect || !hiddenDateTimeInput) {
+        return;
+    }
+
+    const setHiddenDateTime = () => {
+        const dayValue = String(daySelect.value || '');
+        const timeValue = String(timeSelect.value || '');
+        hiddenDateTimeInput.value = dayValue && timeValue ? `${dayValue}T${timeValue}` : '';
+    };
+
+    const resetTimes = (message = 'Nejprve vyberte den') => {
+        timeSelect.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = message;
+        timeSelect.appendChild(option);
+        timeSelect.disabled = true;
+        setHiddenDateTime();
+    };
+
+    const loadTimes = async (dayValue, preferredTime = '') => {
+        const serviceId = String(serviceSelect.value || '').trim();
+        if (!serviceId || !dayValue) {
+            resetTimes();
+            return;
+        }
+
+        timeSelect.disabled = true;
+        timeSelect.innerHTML = '<option value="">Načítám časy…</option>';
+
+        try {
+            const payload = await fetchJson(`/api/admin/availability.php?service_id=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(dayValue)}`);
+            const times = Array.isArray(payload.times) ? payload.times : [];
+            timeSelect.innerHTML = '';
+
+            const first = document.createElement('option');
+            first.value = '';
+            first.textContent = times.length > 0 ? 'Vyberte čas' : 'Bez volného času';
+            timeSelect.appendChild(first);
+
+            times.forEach((slot) => {
+                const value = String(slot?.value || '');
+                if (!value) {
+                    return;
+                }
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = String(slot?.label || value);
+                if (preferredTime && preferredTime === value) {
+                    option.selected = true;
+                }
+                timeSelect.appendChild(option);
+            });
+
+            timeSelect.disabled = times.length === 0;
+        } catch (_) {
+            timeSelect.innerHTML = '<option value="">Časy nelze načíst</option>';
+            timeSelect.disabled = true;
+        }
+
+        setHiddenDateTime();
+    };
+
+    const loadDays = async (preferredDay = '', preferredTime = '') => {
+        const serviceId = String(serviceSelect.value || '').trim();
+        if (!serviceId) {
+            daySelect.innerHTML = '<option value="">Nejprve vyberte proceduru</option>';
+            daySelect.disabled = true;
+            resetTimes('Nejprve vyberte den');
+            return;
+        }
+
+        daySelect.disabled = true;
+        daySelect.innerHTML = '<option value="">Načítám dny…</option>';
+        resetTimes('Nejprve vyberte den');
+
+        try {
+            const payload = await fetchJson(`/api/admin/availability.php?service_id=${encodeURIComponent(serviceId)}`);
+            const days = Array.isArray(payload.days) ? payload.days : [];
+            daySelect.innerHTML = '';
+
+            const first = document.createElement('option');
+            first.value = '';
+            first.textContent = days.length > 0 ? 'Vyberte den' : 'Bez volných dnů';
+            daySelect.appendChild(first);
+
+            let selectedDay = '';
+            days.forEach((day) => {
+                const value = String(day?.value || '');
+                if (!value) {
+                    return;
+                }
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = String(day?.label || value);
+                if (preferredDay && preferredDay === value) {
+                    option.selected = true;
+                    selectedDay = value;
+                }
+                daySelect.appendChild(option);
+            });
+
+            daySelect.disabled = days.length === 0;
+
+            if (selectedDay) {
+                await loadTimes(selectedDay, preferredTime);
+            }
+        } catch (_) {
+            daySelect.innerHTML = '<option value="">Dny nelze načíst</option>';
+            daySelect.disabled = true;
+            resetTimes('Časy nelze načíst');
+        }
+
+        setHiddenDateTime();
+    };
+
+    serviceSelect.addEventListener('change', () => {
+        hiddenDateTimeInput.value = '';
+        loadDays();
+    });
+
+    daySelect.addEventListener('change', () => {
+        const dayValue = String(daySelect.value || '');
+        if (!dayValue) {
+            resetTimes();
+            return;
+        }
+        loadTimes(dayValue);
+    });
+
+    timeSelect.addEventListener('change', () => {
+        setHiddenDateTime();
+    });
+
+    if (String(serviceSelect.value || '').trim() !== '') {
+        loadDays(initialDay, initialTime);
+    } else {
+        resetTimes('Nejprve vyberte den');
+    }
 }
 
 function setupAvailabilityStoryPreview() {

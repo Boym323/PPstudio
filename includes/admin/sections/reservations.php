@@ -223,9 +223,18 @@
                         <?php endif; ?>
                     </div>
                     <div class="admin-card">
+                        <?php
+                        $manualDateTimeRaw = trim((string) ($manualReservationForm['datum_cas'] ?? ''));
+                        $manualDateTimeLocal = str_replace(' ', 'T', $manualDateTimeRaw);
+                        if (strlen($manualDateTimeLocal) === 19) {
+                            $manualDateTimeLocal = substr($manualDateTimeLocal, 0, 16);
+                        }
+                        $manualSelectedDay = strlen($manualDateTimeLocal) >= 10 ? substr($manualDateTimeLocal, 0, 10) : '';
+                        $manualSelectedTime = strlen($manualDateTimeLocal) >= 16 ? substr($manualDateTimeLocal, 11, 5) : '';
+                        ?>
                         <p class="eyebrow">Ruční rezervace</p>
                         <h2>Vložení objednávky z telefonu, Instagramu nebo zprávy</h2>
-                        <form method="post" class="admin-form admin-form-grid">
+                        <form method="post" class="admin-form admin-form-grid" data-manual-reservation-form data-initial-day="<?= escape($manualSelectedDay) ?>" data-initial-time="<?= escape($manualSelectedTime) ?>">
                             <?= csrfInputField() ?>
                             <label>
                                 <span>Jméno klientky</span>
@@ -249,9 +258,16 @@
                             </label>
                             <label>
                                 <span>Procedura</span>
-                                <select name="sluzba_id" required>
+                                <select name="sluzba_id" data-manual-service-select required>
                                     <option value="">Vyberte proceduru</option>
                                     <?php foreach ($serviceRows as $service): ?>
+                                        <?php
+                                        $isServiceActive = (int) ($service['service_active'] ?? 1) === 1;
+                                        $isCategoryActive = (int) ($service['category_active'] ?? 1) === 1;
+                                        if (! $isServiceActive || ! $isCategoryActive) {
+                                            continue;
+                                        }
+                                        ?>
                                         <option value="<?= escape((string) $service['id']) ?>" <?= (string) $service['id'] === $manualReservationForm['sluzba_id'] ? 'selected' : '' ?>>
                                             <?= escape((string) $service['nazev']) ?>
                                         </option>
@@ -259,8 +275,17 @@
                                 </select>
                             </label>
                             <label>
-                                <span>Termín</span>
-                                <input type="datetime-local" name="datum_cas" step="1800" value="<?= escape($manualReservationForm['datum_cas']) ?>" required>
+                                <span>Den</span>
+                                <select data-manual-day-select <?= $manualReservationForm['sluzba_id'] === '' ? 'disabled' : '' ?> required>
+                                    <option value=""><?= $manualReservationForm['sluzba_id'] === '' ? 'Nejprve vyberte proceduru' : 'Načítám dny…' ?></option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Čas</span>
+                                <select data-manual-time-select disabled required>
+                                    <option value="">Nejprve vyberte den</option>
+                                </select>
+                                <input type="hidden" name="datum_cas" value="<?= escape($manualDateTimeLocal) ?>" data-manual-datetime required>
                             </label>
                             <label class="full-span">
                                 <span>Poznámka klientky</span>
@@ -268,6 +293,6 @@
                             </label>
                             <button class="button button-primary full-span" type="submit" name="save_manual_reservation" value="1">Vložit ruční rezervaci</button>
                         </form>
-                        <p class="form-hint">Ruční rezervace se ukládá rovnou jako potvrzená. Pokud je vyplněný e-mail klientky, odejde jí i potvrzení s kalendářovou přílohou.</p>
+                        <p class="form-hint">Ruční rezervace se ukládá rovnou jako potvrzená a lze ji vložit jen do skutečně volných termínů. Pokud je vyplněný e-mail klientky, odejde jí i potvrzení s kalendářovou přílohou.</p>
                     </div>
                 </section>

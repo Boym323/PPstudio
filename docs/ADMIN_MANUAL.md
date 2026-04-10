@@ -59,6 +59,10 @@ Praktický dopad:
 - Stav ovlivňuje přehledy, filtry a provozní statistiky.
 - Stav `zrusena` se nezapočítává jako aktivní termín.
 - U zrušené rezervace se eviduje audit: důvod, kdo zrušil, účet a čas.
+- `Ruční rezervace`:
+- proceduru lze vybrat jen z aktivních služeb v aktivních kategoriích,
+- termín se vybírá zvlášť jako `Den` + `Čas`,
+- nabídnou se jen skutečně volné termíny podle aktuální dostupnosti.
 
 ### Kalendář
 
