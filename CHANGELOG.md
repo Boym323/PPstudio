@@ -17,6 +17,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-09
 
+- [ux] Veřejný rezervační formulář nově odesílá rezervaci přes AJAX bez reloadu a po úspěchu zobrazí potvrzovací kartu přímo na stránce (commit: `this-commit`)
+- [ux] Klientská stránka pro přesun termínu dostala přehlednější potvrzovací panel a výraznější hlavní akci `Potvrdit přesun` navázanou na výběr nového termínu (commit: `this-commit`)
+- [style] E-mailová tlačítka pro potvrzení, přesun a zrušení rezervace byla barevně sjednocena do jemnějšího PP Studio stylu při zachování bezpečnostní hierarchie akcí (commit: `this-commit`)
 - [ux] Ruční rezervace v adminu nově umožňuje vybrat jen aktivní procedury a pouze skutečně volné dny/časy přes admin dostupnost API (commit: `this-commit`)
 - [ux] U formulářů pro jednotlivé i hromadné vytváření poukazů je `Platnost do` nově předvyplněná na rok od aktuálního data (commit: `this-commit`)
 - [feat] Sekce `Dostupnost` byla rozšířena o generátor Instagram story/feed obrázků s náhledem, styly výstupu, vlastním pozadím a exportem PNG z aktuálně volných termínů (commit: `this-commit`)

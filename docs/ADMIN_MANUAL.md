@@ -47,6 +47,8 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 - přeplánovat rezervaci na dostupný den a čas,
 - trvale smazat rezervaci v oddělené „nebezpečné“ sekci.
 - Potvrzovací e-mail klientce obsahuje bezpečný odkaz na zrušení (s mezikrokem potvrzení).
+- Veřejný rezervační formulář se po odeslání nově potvrzuje přímo na stránce bez reloadu; klientka po úspěchu uvidí finální potvrzovací kartu.
+- Stránka klientského přesunu termínu používá stejný kalendář dostupnosti jako rezervace a potvrzení přesunu se zvýrazní až po výběru nového dne a času.
 
 #### Stavy rezervace
 

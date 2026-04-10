@@ -15,25 +15,69 @@ $emailConfig = require __DIR__ . '/config/email.php';
 
 startSecureSession();
 
-if (ppstudioPublicLockEnabled() && ! ppstudioPublicLockHasAccess()) {
-    http_response_code(423);
-    echo 'Web je dočasně uzamčen heslem.';
-    exit;
-}
-
 $redirectWithStatus = static function (string $status): never {
     header('Location: /rezervace.php?reservation=' . rawurlencode($status) . '#contact');
     exit;
 };
 
+$isAjaxRequest = strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'fetch'
+    || str_contains(strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? '')), 'application/json');
+
+$statusMessages = [
+    'success' => 'Rezervace byla odeslaná. Potvrzení vám během chvíle dorazí e-mailem.',
+    'csrf' => 'Platnost formuláře vypršela. Obnovte stránku a zkuste to znovu.',
+    'missing' => 'Vyplňte prosím všechna povinná pole.',
+    'email' => 'Zadejte platný e-mail.',
+    'invalid_datetime' => 'Vyberte platný termín rezervace.',
+    'slot' => 'Vybraný termín už není volný. Zkuste prosím jiný.',
+    'too_fast' => 'Formulář byl odeslán příliš rychle. Zkuste to prosím ještě jednou.',
+    'spam' => 'Rezervaci se nepodařilo ověřit. Obnovte stránku a zkuste to znovu.',
+    'rate_limit' => 'Odeslání je dočasně omezené. Zkuste to prosím za chvíli.',
+    'db' => 'Nepodařilo se navázat spojení. Zkuste to prosím za chvíli znovu.',
+    'insert' => 'Rezervaci se nepodařilo uložit. Zkuste to prosím znovu.',
+    'locked' => 'Web je dočasně uzamčen heslem.',
+];
+
+$respond = static function (string $status, bool $success = false, int $httpCode = 200, array $extra = []) use ($redirectWithStatus, $isAjaxRequest, $statusMessages): never {
+    if (! $isAjaxRequest) {
+        $redirectWithStatus($status);
+    }
+
+    http_response_code($httpCode);
+    header('Content-Type: application/json; charset=utf-8');
+
+    $payload = array_merge([
+        'success' => $success,
+        'status' => $status,
+        'message' => $statusMessages[$status] ?? 'Nepodařilo se zpracovat požadavek.',
+        'new_token' => reservationAntispamIssueToken(),
+    ], $extra);
+
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+};
+
+if (ppstudioPublicLockEnabled() && ! ppstudioPublicLockHasAccess()) {
+    if ($isAjaxRequest) {
+        $respond('locked', false, 423);
+    }
+
+    http_response_code(423);
+    echo 'Web je dočasně uzamčen heslem.';
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    if ($isAjaxRequest) {
+        $respond('missing', false, 405);
+    }
     http_response_code(405);
     echo 'Method not allowed';
     exit;
 }
 
 if (! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-    $redirectWithStatus('csrf');
+    $respond('csrf', false, 419);
 }
 
 $honeypot = trim((string) ($_POST['website'] ?? ''));
@@ -43,30 +87,30 @@ $clientIp = getClientIpAddress();
 $rateLimitResult = reservationAntispamRateLimitCheck($clientIp, 8, 600);
 if (! ($rateLimitResult['allowed'] ?? true)) {
     reservationAntispamLog('rate_limited', ['retry_after' => (int) ($rateLimitResult['retry_after'] ?? 0)]);
-    $redirectWithStatus('rate_limit');
+    $respond('rate_limit', false, 429);
 }
 
 if ($honeypot !== '') {
     reservationAntispamLog('honeypot_filled');
-    $redirectWithStatus('spam');
+    $respond('spam', false, 422);
 }
 
 $issuedAt = reservationAntispamConsumeToken($reservationToken);
 
 if ($issuedAt === null) {
     reservationAntispamLog('missing_or_invalid_token');
-    $redirectWithStatus('spam');
+    $respond('spam', false, 422);
 }
 
 $elapsed = time() - $issuedAt;
 if ($elapsed < 3) {
     reservationAntispamLog('submitted_too_fast', ['elapsed' => $elapsed]);
-    $redirectWithStatus('too_fast');
+    $respond('too_fast', false, 422);
 }
 
 if ($elapsed > 2 * 60 * 60) {
     reservationAntispamLog('token_expired', ['elapsed' => $elapsed]);
-    $redirectWithStatus('spam');
+    $respond('spam', false, 422);
 }
 
 $name = trim((string) ($_POST['jmeno'] ?? ''));
@@ -79,15 +123,15 @@ $time = trim((string) ($_POST['rezervacni_cas'] ?? ''));
 $source = 'web';
 
 if ($name === '' || $email === '' || $serviceId <= 0 || $day === '' || $time === '') {
-    $redirectWithStatus('missing');
+    $respond('missing', false, 422);
 }
 
 if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $redirectWithStatus('email');
+    $respond('email', false, 422);
 }
 
 if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || ! preg_match('/^\d{2}:\d{2}$/', $time)) {
-    $redirectWithStatus('invalid_datetime');
+    $respond('invalid_datetime', false, 422);
 }
 
 $dateTime = $day . ' ' . $time . ':00';
@@ -100,7 +144,7 @@ $connection = @new mysqli(
 );
 
 if ($connection->connect_errno) {
-    $redirectWithStatus('db');
+    $respond('db', false, 500);
 }
 
 $connection->set_charset($dbConfig['charset']);
@@ -108,7 +152,7 @@ $siteSettings = loadSiteSettings($connection);
 
 if (! isValidReservationSlot($connection, $serviceId, $dateTime)) {
     $connection->close();
-    $redirectWithStatus('slot');
+    $respond('slot', false, 409);
 }
 
 $service = getServiceById($connection, $serviceId);
@@ -119,7 +163,7 @@ $statement = $connection->prepare(
 
 if (! $statement) {
     $connection->close();
-    $redirectWithStatus('insert');
+    $respond('insert', false, 500);
 }
 
 $servicePrice = isset($service['cena']) ? (float) $service['cena'] : null;
@@ -128,7 +172,7 @@ $statement->bind_param('sssssids', $name, $email, $phone, $source, $note, $servi
 if (! $statement->execute()) {
     $statement->close();
     $connection->close();
-    $redirectWithStatus('insert');
+    $respond('insert', false, 500);
 }
 
 $reservation = [
@@ -150,4 +194,10 @@ sendReservationAdminNotification($emailConfig, $siteSettings, $reservation);
 $statement->close();
 $connection->close();
 
-$redirectWithStatus('success');
+$respond('success', true, 200, [
+    'reservation' => [
+        'service' => (string) $reservation['service_name'],
+        'slot' => date('d.m.Y', strtotime($dateTime)) . ' v ' . substr($time, 0, 5),
+        'contact' => implode(' • ', array_filter([$name, $email, $phone])),
+    ],
+]);

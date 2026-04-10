@@ -361,6 +361,14 @@
   const form = document.querySelector('[data-reservation-form]');
   if (form) {
     const requestedServiceId = new URLSearchParams(window.location.search).get('sluzba');
+    const feedbackRoot = document.querySelector('[data-reservation-feedback]');
+    const successCard = document.querySelector('[data-reservation-success]');
+    const successMessage = successCard ? successCard.querySelector('[data-success-message]') : null;
+    const successService = successCard ? successCard.querySelector('[data-success-service]') : null;
+    const successSlot = successCard ? successCard.querySelector('[data-success-slot]') : null;
+    const successContact = successCard ? successCard.querySelector('[data-success-contact]') : null;
+    const successResetButton = successCard ? successCard.querySelector('[data-success-reset]') : null;
+    const tokenInput = form.querySelector('input[name="reservation_token"]');
     const stepElements = Array.from(form.querySelectorAll('[data-step]'));
     const stepIndicators = Array.from(form.querySelectorAll('[data-step-indicator]'));
     const stepNextButtons = Array.from(form.querySelectorAll('[data-step-next]'));
@@ -389,6 +397,13 @@
     let calendarMonths = [];
     let activeCalendarMonthIndex = 0;
     let servicesById = new Map();
+
+    const escapeHtml = (value) => String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     const parseDateKey = (value) => {
       const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -428,6 +443,68 @@
       const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
       if (!res.ok) throw new Error('Chyba načtení');
       return res.json();
+    };
+
+    const updateReservationToken = (value) => {
+      if (tokenInput && String(value || '').trim()) {
+        tokenInput.value = String(value).trim();
+      }
+    };
+
+    const renderFeedback = (type, message) => {
+      if (!feedbackRoot) return;
+      if (!message) {
+        feedbackRoot.innerHTML = '';
+        return;
+      }
+
+      const safeMessage = escapeHtml(message);
+      feedbackRoot.innerHTML = `<div class="reservation-alert reservation-alert-${type}">${safeMessage}</div>`;
+    };
+
+    const showSuccessCard = (payload) => {
+      if (!successCard) return;
+      if (successMessage) {
+        successMessage.textContent = String(payload?.message || 'Rezervace byla odeslaná. Potvrzení vám během chvíle dorazí e-mailem.');
+      }
+      if (successService) {
+        successService.textContent = String(payload?.reservation?.service || selectedOptionText(serviceSelect) || '—');
+      }
+      if (successSlot) {
+        successSlot.textContent = String(payload?.reservation?.slot || summarySlot?.textContent || '—');
+      }
+      if (successContact) {
+        successContact.textContent = String(payload?.reservation?.contact || summaryContact?.textContent || '—');
+      }
+
+      renderFeedback('', '');
+      form.hidden = true;
+      successCard.hidden = false;
+      successCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const resetReservationFlow = async () => {
+      form.reset();
+      showStep(1);
+      renderFeedback('', '');
+      if (successCard) successCard.hidden = true;
+      form.hidden = false;
+      servicesById = new Map();
+      availableDays = [];
+      availableDayMap = new Map();
+      calendarMonths = [];
+      activeCalendarMonthIndex = 0;
+      if (calendarRoot && calendarGrid && calendarMonth) {
+        calendarMonth.textContent = 'Vyberte službu';
+        calendarGrid.innerHTML = '<div class="reservation-calendar-empty">Nejprve vyberte službu.</div>';
+      }
+      if (timeSlots) {
+        timeSlots.innerHTML = '<div class="reservation-calendar-empty">Nejprve vyberte den.</div>';
+      }
+      setOptions(daySelect, [], 'Nejprve vyberte službu');
+      setOptions(timeSelect, [], 'Nejprve vyberte den');
+      updateSummary();
+      await loadServices();
     };
 
     const showStep = (step) => {
@@ -809,10 +886,52 @@
         invalid.focus();
         return;
       }
+      event.preventDefault();
       if (!submitButton) return;
       submitButton.disabled = true;
       submitButton.textContent = submitButton.dataset.loadingLabel || 'Odesílám...';
+
+      const formData = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'fetch',
+          Accept: 'application/json',
+        },
+      })
+        .then(async (response) => {
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch (error) {
+            payload = null;
+          }
+
+          if (payload?.new_token) {
+            updateReservationToken(payload.new_token);
+          }
+
+          if (!response.ok || !payload || payload.success !== true) {
+            throw new Error(payload?.message || 'Rezervaci se nepodařilo odeslat. Zkuste to prosím znovu.');
+          }
+
+          showSuccessCard(payload);
+        })
+        .catch((error) => {
+          renderFeedback('error', error.message || 'Rezervaci se nepodařilo odeslat. Zkuste to prosím znovu.');
+        })
+        .finally(() => {
+          submitButton.disabled = false;
+          submitButton.textContent = submitButton.dataset.defaultLabel || 'Odeslat rezervaci';
+        });
     });
+
+    if (successResetButton) {
+      successResetButton.addEventListener('click', () => {
+        resetReservationFlow();
+      });
+    }
 
     showStep(1);
     updateSummary();

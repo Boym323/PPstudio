@@ -2090,6 +2090,19 @@
             gap: .85rem;
         }
 
+        .reservation-form[hidden] {
+            display: none !important;
+        }
+
+        .reservation-feedback:empty {
+            display: none;
+        }
+
+        .reservation-feedback {
+            display: grid;
+            gap: .8rem;
+        }
+
         .reservation-stepper {
             display: grid;
             gap: 1rem;
@@ -2513,6 +2526,70 @@
             background: #f9e9e5;
             color: #8a4641;
             border: 1px solid #e3b7ae;
+        }
+
+        .reservation-success-card {
+            display: grid;
+            gap: .9rem;
+            border: 1px solid #cfe2cf;
+            background: linear-gradient(180deg, #fefcf8 0%, #eef7ef 100%);
+            border-radius: 16px;
+            padding: 1.15rem 1.1rem 1.2rem;
+            box-shadow: 0 4px 16px rgba(72, 118, 83, 0.08);
+        }
+
+        .reservation-success-card[hidden] {
+            display: none !important;
+        }
+
+        .reservation-success-badge {
+            width: 2.65rem;
+            height: 2.65rem;
+            border-radius: 999px;
+            background: #4c7f57;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .reservation-success-card h4 {
+            margin: 0;
+            color: #2f4f38;
+            font-size: 1.28rem;
+        }
+
+        .reservation-success-message {
+            margin: 0;
+            color: #4f6254;
+            line-height: 1.5;
+        }
+
+        .reservation-success-summary {
+            display: grid;
+            gap: .38rem;
+            border: 1px solid #d8e6d7;
+            background: rgba(255, 255, 255, 0.82);
+            border-radius: 12px;
+            padding: .9rem 1rem;
+            color: #46604d;
+        }
+
+        .reservation-success-summary p {
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .reservation-success-summary strong {
+            color: #324e39;
+        }
+
+        .reservation-success-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .7rem;
         }
 
         .reservation-faq {

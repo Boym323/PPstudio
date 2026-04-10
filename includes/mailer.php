@@ -71,7 +71,7 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
             $actions .= '<div style="margin-bottom:18px;">'
                 . '<a href="'
                 . escape($confirmUrl)
-                . '" style="display:inline-block;padding:11px 18px;background:#6f4d34;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;">Potvrdit rezervaci</a>'
+                . '" style="display:inline-block;padding:11px 18px;background:#7a5a43;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;box-shadow:0 6px 16px rgba(122,90,67,0.18);">Potvrdit rezervaci</a>'
                 . '</div>';
         }
         if ($cancelUrl !== '') {
@@ -79,7 +79,7 @@ function sendReservationAdminNotification(array $emailConfig, array $siteSetting
                 . '<p style="margin:0 0 10px 0;font-size:12px;color:#7b6959;">Pozor: následující akce rezervaci okamžitě zruší.</p>'
                 . '<a href="'
                 . escape($cancelUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#ffffff;color:#9a4c3f;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d8b2a9;">Zrušit rezervaci</a>'
+                . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit rezervaci</a>'
                 . '</div>';
         }
         $actions .= '</div>';
@@ -154,13 +154,13 @@ function sendReservationConfirmedEmail(
         if ($rescheduleUrl !== '') {
             $htmlBody .= '<a href="'
                 . escape($rescheduleUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#6f4d34;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Přesunout termín</a>';
+                . '" style="display:inline-block;padding:10px 16px;background:#7a5a43;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;box-shadow:0 6px 16px rgba(122,90,67,0.18);">Přesunout termín</a>';
         }
         if ($cancelUrl !== '') {
             $htmlBody .= ($rescheduleUrl !== '' ? '<span style="display:inline-block;width:24px;"></span>' : '')
                 . '<a href="'
                 . escape($cancelUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#b86a59;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Zrušit rezervaci</a>';
+                . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit rezervaci</a>';
         }
         $htmlBody .= '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.</p>'
             . '</div>';

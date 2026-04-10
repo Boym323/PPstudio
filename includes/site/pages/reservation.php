@@ -4,7 +4,7 @@
         <div class="reservation-box">
             <h3>Online rezervace</h3>
             <p>Vyberte službu, termín a vyplňte kontakt. Potvrzení rezervace vám dorazí e-mailem.</p>
-            <?= $reservationAlertHtml ?>
+            <div class="reservation-feedback" data-reservation-feedback><?= $reservationAlertHtml ?></div>
             <form class="reservation-form" method="post" action="/reservation-submit.php" data-reservation-form>
                 <input type="hidden" name="_csrf" value="<?= escape($csrfToken) ?>">
                 <input type="hidden" name="reservation_token" value="<?= escape($reservationAntispamToken) ?>">
@@ -118,6 +118,21 @@
                     </section>
                 </div>
             </form>
+            <section class="reservation-success-card" data-reservation-success hidden>
+                <div class="reservation-success-badge" aria-hidden="true">✓</div>
+                <h4>Rezervace je úspěšně odeslaná</h4>
+                <p class="reservation-success-message" data-success-message>
+                    Děkujeme. Potvrzení rezervace vám během chvíle dorazí e-mailem.
+                </p>
+                <div class="reservation-success-summary">
+                    <p><strong>Služba:</strong> <span data-success-service>—</span></p>
+                    <p><strong>Termín:</strong> <span data-success-slot>—</span></p>
+                    <p><strong>Kontakt:</strong> <span data-success-contact>—</span></p>
+                </div>
+                <div class="reservation-success-actions">
+                    <button type="button" class="reservation-back" data-success-reset>Vytvořit další rezervaci</button>
+                </div>
+            </section>
         </div>
 
         <div class="reservation-faq">

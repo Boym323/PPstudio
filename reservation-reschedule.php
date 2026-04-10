@@ -192,7 +192,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             text-transform: uppercase;
             letter-spacing: .14em;
             font-size: .78rem;
-            color: var(--color-primary);
+            color: #7a5a43;
             font-weight: 700;
         }
         .reschedule-card h1 {
@@ -205,6 +205,12 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             border: 1px solid var(--color-border-soft);
             background: #f4eee6;
             color: #513827;
+        }
+        .reschedule-message.is-helper {
+            background: transparent;
+            border-color: transparent;
+            padding: .2rem 0 1rem;
+            color: var(--color-text-muted);
         }
         .reschedule-message.is-success {
             background: #eaf3ed;
@@ -225,29 +231,103 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             display: grid;
             gap: .2rem;
         }
+        .reschedule-confirm-panel {
+            margin-top: 1rem;
+            border: 1px solid rgba(122, 90, 67, 0.18);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fcfaf6 0%, #f8f3eb 100%);
+            padding: 1rem 1rem 1.1rem;
+            box-shadow: 0 14px 36px rgba(122, 90, 67, 0.08);
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
+        }
+        .reschedule-confirm-panel[data-ready="true"] {
+            border-color: rgba(122, 90, 67, 0.34);
+            box-shadow: 0 18px 40px rgba(122, 90, 67, 0.14);
+            background: linear-gradient(180deg, #fdfbf7 0%, #f7f1e7 100%);
+        }
+        .reschedule-confirm-title {
+            margin: 0 0 .35rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+        .reschedule-confirm-hint {
+            margin: .35rem 0 0;
+            color: var(--color-text-muted);
+            font-size: .98rem;
+        }
         .reschedule-actions {
             display: flex;
             gap: .75rem;
             margin-top: 1rem;
             flex-wrap: wrap;
+            align-items: center;
         }
         .reschedule-button,
         .reschedule-link {
             border-radius: 999px;
-            border: 1px solid var(--color-primary);
+            border: 1px solid #7a5a43;
             font-weight: 700;
-            padding: .72rem 1.2rem;
+            padding: .82rem 1.45rem;
             text-decoration: none;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.02rem;
         }
         .reschedule-button {
-            background: var(--color-primary);
-            color: #fff;
+            background: #fffaf4 !important;
+            border-color: #e0ceb8 !important;
+            color: #b7a18d !important;
+            box-shadow: 0 8px 18px rgba(122, 90, 67, 0.08);
+            min-width: 16rem;
+            text-align: center;
+            letter-spacing: .01em;
+            transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease, border-color .2s ease, color .2s ease;
+        }
+        .reschedule-button.is-ready,
+        .reschedule-button[data-ready="true"] {
+            background: #7a5a43 !important;
+            border-color: #7a5a43 !important;
+            color: #fff !important;
+            box-shadow: 0 20px 38px rgba(122, 90, 67, 0.34);
+            transform: translateY(-1px);
+        }
+        .reschedule-button.is-ready:hover,
+        .reschedule-button[data-ready="true"]:hover {
+            background: #8d684c;
+            border-color: #8d684c;
+            box-shadow: 0 16px 32px rgba(122, 90, 67, 0.24);
+            transform: translateY(-1px);
+        }
+        .reschedule-button[data-ready="false"] {
+            cursor: default;
+            background: #fffaf4 !important;
+            border-color: #e0ceb8 !important;
+            color: #b7a18d !important;
+            box-shadow: 0 8px 18px rgba(122, 90, 67, 0.08);
         }
         .reschedule-link {
             background: transparent;
+            color: var(--color-text-muted);
+            border-color: rgba(122, 90, 67, 0.18);
+            font-weight: 600;
+            padding: .65rem 1rem;
+            font-size: .98rem;
+        }
+        .reschedule-link:hover {
+            background: rgba(255, 255, 255, 0.7);
             color: var(--color-text-primary);
+            border-color: rgba(122, 90, 67, 0.26);
+        }
+        @media (max-width: 720px) {
+            .reschedule-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .reschedule-button,
+            .reschedule-link {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -257,7 +337,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             <p class="reschedule-eyebrow">Online rezervace</p>
             <h1>Přesun termínu</h1>
 
-            <p class="reschedule-message<?= $messageType === 'success' ? ' is-success' : ($messageType === 'error' ? ' is-error' : '') ?>">
+            <p class="reschedule-message<?= $messageType === 'success' ? ' is-success' : ($messageType === 'error' ? ' is-error' : ' is-helper') ?>" data-reschedule-message>
                 <?= escape($message) ?>
             </p>
 
@@ -309,14 +389,17 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                         </label>
                     </div>
 
-                    <div class="reservation-picked-slot" data-picked-slot>
-                        <strong>Nový vybraný termín:</strong>
-                        <span data-picked-slot-value>Zatím není vybraný den a čas.</span>
-                    </div>
-
-                    <div class="reschedule-actions">
-                        <button class="reschedule-button" type="submit">Potvrdit přesun</button>
-                        <a class="reschedule-link" href="/index.php#rezervace">Ponechat původní termín</a>
+                    <div class="reschedule-confirm-panel" data-reschedule-confirm data-ready="false">
+                        <p class="reschedule-confirm-title">Potvrzení nového termínu</p>
+                        <div class="reservation-picked-slot" data-picked-slot>
+                            <strong>Nový vybraný termín:</strong>
+                            <span data-picked-slot-value>Zatím není vybraný den a čas.</span>
+                        </div>
+                        <p class="reschedule-confirm-hint" data-reschedule-hint>Nejprve vyberte nový den a čas, potom potvrďte přesun.</p>
+                        <div class="reschedule-actions">
+                            <button class="reschedule-button" type="submit" aria-disabled="true" data-reschedule-submit data-ready="false">Potvrdit přesun</button>
+                            <a class="reschedule-link" href="/index.php#rezervace">Ponechat původní termín</a>
+                        </div>
                     </div>
                 </form>
 
@@ -335,6 +418,10 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                         const calendarPrev = form.querySelector('[data-calendar-prev]');
                         const calendarNext = form.querySelector('[data-calendar-next]');
                         const timeSlots = form.querySelector('[data-time-slots]');
+                        const submitButton = form.querySelector('[data-reschedule-submit]');
+                        const messageBox = document.querySelector('[data-reschedule-message]');
+                        const hintBox = form.querySelector('[data-reschedule-hint]');
+                        const confirmPanel = form.querySelector('[data-reschedule-confirm]');
                         let availableDays = [];
                         let availableDayMap = new Map();
                         let calendarMonths = [];
@@ -379,6 +466,34 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                             const time = selectedOptionText(timeSelect);
                             if (!pickedSlotValue) return;
                             pickedSlotValue.textContent = (day && time) ? `${day} v ${time}` : 'Zatím není vybraný den a čas.';
+                            if (!submitButton) return;
+                            const hasNewTerm = day && time && (originalDateTime === '' || `${String(daySelect?.value || '')} ${String(timeSelect?.value || '')}` !== originalDateTime);
+                            if (hasNewTerm) {
+                                submitButton.classList.add('is-ready');
+                                submitButton.setAttribute('data-ready', 'true');
+                                submitButton.setAttribute('aria-disabled', 'false');
+                                if (confirmPanel) {
+                                    confirmPanel.setAttribute('data-ready', 'true');
+                                }
+                                if (hintBox) {
+                                    hintBox.textContent = 'Nový termín je připravený. Pokud vám vyhovuje, potvrďte přesun.';
+                                }
+                                if (messageBox && messageBox.classList.contains('is-error')) {
+                                    messageBox.textContent = 'Nový termín je připravený k potvrzení.';
+                                    messageBox.classList.remove('is-error');
+                                    messageBox.classList.add('is-helper');
+                                }
+                            } else {
+                                submitButton.classList.remove('is-ready');
+                                submitButton.setAttribute('data-ready', 'false');
+                                submitButton.setAttribute('aria-disabled', 'true');
+                                if (confirmPanel) {
+                                    confirmPanel.setAttribute('data-ready', 'false');
+                                }
+                                if (hintBox) {
+                                    hintBox.textContent = 'Nejprve vyberte nový den a čas, potom potvrďte přesun.';
+                                }
+                            }
                         };
 
                         const renderTimeSlots = (items, selectedValue = '') => {
@@ -543,9 +658,10 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                         }
 
                         form.addEventListener('submit', (event) => {
+                            const isReady = submitButton?.getAttribute('data-ready') === 'true';
                             const day = String(daySelect?.value || '');
                             const time = String(timeSelect?.value || '');
-                            if (!day || !time) {
+                            if (!day || !time || !isReady) {
                                 event.preventDefault();
                                 alert('Nejprve vyberte den a čas.');
                                 return;
