@@ -117,8 +117,10 @@ function sendReservationConfirmedEmail(
     $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
     $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
     $location = setting($siteSettings, 'contact_address', 'Adresa studia');
-    $rescheduleUrl = buildReservationCustomerRescheduleUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0));
-    $cancelUrl = buildReservationCustomerCancelUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0));
+    $rescheduleUrl = buildReservationCustomerRescheduleUrl($emailConfig, $siteSettings, $reservation);
+    $cancelUrl = buildReservationCustomerCancelUrl($emailConfig, $siteSettings, $reservation);
+    $canManageUntil = reservationCustomerActionDeadline($emailConfig, $reservation);
+    $canManageLabel = $canManageUntil > 0 ? formatCzechDateTime(date('Y-m-d H:i:s', $canManageUntil)) : '';
 
     $textBody = "Dobrý den {$customerName},\n\n"
         . ($isRescheduled ? "váš termín rezervace byl změněn.\n" : "vaše rezervace byla potvrzena.\n")
@@ -134,6 +136,9 @@ function sendReservationConfirmedEmail(
     }
     if ($rescheduleUrl !== '') {
         $textBody .= "\nPokud potřebujete termín přesunout, použijte tento odkaz:\n{$rescheduleUrl}\n";
+    }
+    if (($cancelUrl !== '' || $rescheduleUrl !== '') && $canManageLabel !== '') {
+        $textBody .= "\nZměnu nebo zrušení termínu je možné provést nejpozději do {$canManageLabel}.\n";
     }
 
     $textBody .= "\n"
@@ -162,7 +167,9 @@ function sendReservationConfirmedEmail(
                 . escape($cancelUrl)
                 . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit rezervaci</a>';
         }
-        $htmlBody .= '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.</p>'
+        $htmlBody .= '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.'
+            . ($canManageLabel !== '' ? ' Změnu nebo zrušení lze provést nejpozději do ' . escape($canManageLabel) . '.' : '')
+            . '</p>'
             . '</div>';
     }
 
@@ -184,50 +191,68 @@ function sendReservationConfirmedEmail(
     );
 }
 
-function buildReservationCustomerCancelUrl(array $emailConfig, array $siteSettings, int $reservationId): string
+function reservationCustomerActionCutoffSeconds(array $emailConfig): int
+{
+    $cutoff = (int) ($emailConfig['customer_action_cutoff_seconds'] ?? 86400);
+
+    return max(0, $cutoff);
+}
+
+function reservationCustomerActionDeadline(array $emailConfig, array $reservation): int
+{
+    $reservationTs = strtotime((string) ($reservation['datum_cas'] ?? ''));
+    if (! $reservationTs) {
+        return 0;
+    }
+
+    return $reservationTs - reservationCustomerActionCutoffSeconds($emailConfig);
+}
+
+function canUseReservationCustomerAction(array $emailConfig, array $reservation): bool
+{
+    $deadline = reservationCustomerActionDeadline($emailConfig, $reservation);
+    if ($deadline <= 0) {
+        return false;
+    }
+
+    return time() < $deadline;
+}
+
+function buildReservationCustomerActionUrl(array $emailConfig, array $siteSettings, array $reservation, string $action, string $path): string
 {
     $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
     $secret = (string) ($emailConfig['action_secret'] ?? '');
-    $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
+    $reservationId = (int) ($reservation['id'] ?? 0);
 
     if ($siteUrl === '' || $secret === '' || $reservationId <= 0) {
         return '';
     }
 
-    $expiresAt = time() + max(300, $ttl);
+    $expiresAt = reservationCustomerActionDeadline($emailConfig, $reservation);
+    if ($expiresAt <= time()) {
+        return '';
+    }
+
     $nonce = bin2hex(random_bytes(16));
-    $action = 'cancel';
     $payload = $action . '|' . $reservationId . '|' . $expiresAt . '|' . $nonce;
     $signature = hash_hmac('sha256', $payload, $secret);
 
-    return $siteUrl . '/reservation-cancel.php?id=' . $reservationId
+    return $siteUrl . '/' . ltrim($path, '/')
+        . '?id=' . $reservationId
         . '&action=' . rawurlencode($action)
         . '&exp=' . $expiresAt
         . '&nonce=' . rawurlencode($nonce)
         . '&sig=' . rawurlencode($signature);
 }
 
-function buildReservationCustomerRescheduleUrl(array $emailConfig, array $siteSettings, int $reservationId): string
+function buildReservationCustomerCancelUrl(array $emailConfig, array $siteSettings, array $reservation): string
 {
-    $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
-    $secret = (string) ($emailConfig['action_secret'] ?? '');
-    $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
+    return buildReservationCustomerActionUrl($emailConfig, $siteSettings, $reservation, 'cancel', 'reservation-cancel.php');
+}
 
-    if ($siteUrl === '' || $secret === '' || $reservationId <= 0) {
-        return '';
-    }
-
-    $expiresAt = time() + max(300, $ttl);
-    $nonce = bin2hex(random_bytes(16));
-    $action = 'reschedule';
-    $payload = $action . '|' . $reservationId . '|' . $expiresAt . '|' . $nonce;
-    $signature = hash_hmac('sha256', $payload, $secret);
-
-    return $siteUrl . '/reservation-reschedule.php?id=' . $reservationId
-        . '&action=' . rawurlencode($action)
-        . '&exp=' . $expiresAt
-        . '&nonce=' . rawurlencode($nonce)
-        . '&sig=' . rawurlencode($signature);
+function buildReservationCustomerRescheduleUrl(array $emailConfig, array $siteSettings, array $reservation): string
+{
+    return buildReservationCustomerActionUrl($emailConfig, $siteSettings, $reservation, 'reschedule', 'reservation-reschedule.php');
 }
 
 function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, array $reservation): bool

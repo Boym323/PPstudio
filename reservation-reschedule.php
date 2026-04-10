@@ -18,6 +18,11 @@ $expiresAt = (int) ($_REQUEST['exp'] ?? 0);
 $nonce = trim((string) ($_REQUEST['nonce'] ?? ''));
 $signature = trim((string) ($_REQUEST['sig'] ?? ''));
 $isPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
+$isAjaxRequest = $isPost
+    && (
+        strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'fetch'
+        || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false
+    );
 $linkIsValid = $action === 'reschedule'
     && isValidReservationActionSignature($emailConfig, $reservationId, $action, $expiresAt, $nonce, $signature);
 
@@ -58,8 +63,17 @@ if (! $linkIsValid) {
             $messageType = 'error';
         } else {
             $statusBefore = (string) ($reservation['stav'] ?? '');
+            $customerActionAllowed = canUseReservationCustomerAction($emailConfig, $reservation);
 
-            if (! $isPost) {
+            if (! $customerActionAllowed) {
+                http_response_code(403);
+                $message = 'Termín lze přesunout nejpozději 24 hodin před začátkem procedury.';
+                $messageType = 'error';
+                securityEventLog('reservation_customer_reschedule_cutoff_reached', 'reservation_reschedule', 'warning', [
+                    'reservation_id' => $reservationId,
+                    'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
+                ]);
+            } elseif (! $isPost) {
                 if ($statusBefore === 'zrusena') {
                     $message = 'Tato rezervace už je zrušena.';
                 } elseif ($statusBefore === 'dokoncena') {
@@ -165,6 +179,21 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
     if ($ts) {
         $currentDateTimeMachine = date('Y-m-d H:i', $ts);
     }
+}
+
+if ($isAjaxRequest) {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode([
+        'success' => $messageType === 'success',
+        'status' => $messageType,
+        'message' => $message,
+        'show_form' => $showForm,
+        'reservation' => [
+            'service' => $serviceLabel,
+            'slot' => $currentDateTime !== '' ? $currentDateTime : '—',
+        ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -318,6 +347,12 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             color: var(--color-text-primary);
             border-color: rgba(122, 90, 67, 0.26);
         }
+        .reschedule-success-card {
+            margin-top: 1rem;
+        }
+        .reschedule-success-card[hidden] {
+            display: none !important;
+        }
         @media (max-width: 720px) {
             .reschedule-actions {
                 flex-direction: column;
@@ -344,7 +379,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
             <?php if ($reservation !== null): ?>
                 <div class="reschedule-summary">
                     <div><strong>Služba:</strong> <?= escape($serviceLabel) ?></div>
-                    <div><strong>Aktuální termín:</strong> <?= escape($currentDateTime !== '' ? $currentDateTime : '—') ?></div>
+                    <div><strong>Aktuální termín:</strong> <span data-current-slot><?= escape($currentDateTime !== '' ? $currentDateTime : '—') ?></span></div>
                 </div>
             <?php endif; ?>
 
@@ -403,6 +438,21 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                     </div>
                 </form>
 
+                <div class="reservation-success-card reschedule-success-card" data-reschedule-success hidden>
+                    <div class="reservation-success-badge" aria-hidden="true">✓</div>
+                    <div class="reservation-success-message">
+                        <h3>Termín je úspěšně změněn</h3>
+                        <p data-reschedule-success-message>Potvrzení změny vám během chvíle dorazí e-mailem.</p>
+                    </div>
+                    <div class="reservation-success-summary">
+                        <p><strong>Služba:</strong> <span data-reschedule-success-service><?= escape($serviceLabel) ?></span></p>
+                        <p><strong>Nový termín:</strong> <span data-reschedule-success-slot><?= escape($currentDateTime !== '' ? $currentDateTime : '—') ?></span></p>
+                    </div>
+                    <div class="reservation-success-actions">
+                        <a href="/index.php#rezervace" class="reservation-back">Zpět na web</a>
+                    </div>
+                </div>
+
                 <script>
                     (() => {
                         const form = document.querySelector('[data-reschedule-form]');
@@ -422,6 +472,26 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                         const messageBox = document.querySelector('[data-reschedule-message]');
                         const hintBox = form.querySelector('[data-reschedule-hint]');
                         const confirmPanel = form.querySelector('[data-reschedule-confirm]');
+                        const successCard = document.querySelector('[data-reschedule-success]');
+                        const successMessage = document.querySelector('[data-reschedule-success-message]');
+                        const successService = document.querySelector('[data-reschedule-success-service]');
+                        const successSlot = document.querySelector('[data-reschedule-success-slot]');
+                        const currentSlot = document.querySelector('[data-current-slot]');
+                        const defaultSubmitLabel = submitButton ? submitButton.textContent : 'Potvrdit přesun';
+                        const readyButtonStyles = {
+                            background: '#7a5a43',
+                            borderColor: '#7a5a43',
+                            color: '#ffffff',
+                            boxShadow: '0 20px 38px rgba(122, 90, 67, 0.34)',
+                            transform: 'translateY(-1px)',
+                        };
+                        const idleButtonStyles = {
+                            background: '#fffaf4',
+                            borderColor: '#e0ceb8',
+                            color: '#b7a18d',
+                            boxShadow: '0 8px 18px rgba(122, 90, 67, 0.08)',
+                            transform: 'none',
+                        };
                         let availableDays = [];
                         let availableDayMap = new Map();
                         let calendarMonths = [];
@@ -461,6 +531,51 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                             return res.json();
                         };
 
+                        const showInlineMessage = (type, text) => {
+                            if (!messageBox) return;
+                            messageBox.textContent = text;
+                            messageBox.classList.remove('is-success', 'is-error', 'is-helper');
+                            if (type === 'success') {
+                                messageBox.classList.add('is-success');
+                            } else if (type === 'error') {
+                                messageBox.classList.add('is-error');
+                            } else {
+                                messageBox.classList.add('is-helper');
+                            }
+                        };
+
+                        const showSuccess = (payload) => {
+                            const reservation = payload && payload.reservation ? payload.reservation : {};
+                            if (successMessage) {
+                                successMessage.textContent = String(payload?.message || 'Termín byl úspěšně změněn.');
+                            }
+                            if (successService) {
+                                successService.textContent = String(reservation.service || '—');
+                            }
+                            if (successSlot) {
+                                successSlot.textContent = String(reservation.slot || '—');
+                            }
+                            if (currentSlot) {
+                                currentSlot.textContent = String(reservation.slot || '—');
+                            }
+                            showInlineMessage('success', String(payload?.message || 'Termín byl úspěšně změněn.'));
+                            form.setAttribute('hidden', 'hidden');
+                            if (successCard) {
+                                successCard.hidden = false;
+                                successCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        };
+
+                        const syncSubmitButtonVisual = (isReady) => {
+                            if (!submitButton) return;
+                            const styles = isReady ? readyButtonStyles : idleButtonStyles;
+                            submitButton.style.background = styles.background;
+                            submitButton.style.borderColor = styles.borderColor;
+                            submitButton.style.color = styles.color;
+                            submitButton.style.boxShadow = styles.boxShadow;
+                            submitButton.style.transform = styles.transform;
+                        };
+
                         const updatePickedLabel = () => {
                             const day = selectedOptionText(daySelect);
                             const time = selectedOptionText(timeSelect);
@@ -472,6 +587,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                                 submitButton.classList.add('is-ready');
                                 submitButton.setAttribute('data-ready', 'true');
                                 submitButton.setAttribute('aria-disabled', 'false');
+                                syncSubmitButtonVisual(true);
                                 if (confirmPanel) {
                                     confirmPanel.setAttribute('data-ready', 'true');
                                 }
@@ -487,6 +603,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                                 submitButton.classList.remove('is-ready');
                                 submitButton.setAttribute('data-ready', 'false');
                                 submitButton.setAttribute('aria-disabled', 'true');
+                                syncSubmitButtonVisual(false);
                                 if (confirmPanel) {
                                     confirmPanel.setAttribute('data-ready', 'false');
                                 }
@@ -657,18 +774,48 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
                             });
                         }
 
-                        form.addEventListener('submit', (event) => {
+                        syncSubmitButtonVisual(false);
+                        form.addEventListener('submit', async (event) => {
+                            event.preventDefault();
                             const isReady = submitButton?.getAttribute('data-ready') === 'true';
                             const day = String(daySelect?.value || '');
                             const time = String(timeSelect?.value || '');
                             if (!day || !time || !isReady) {
-                                event.preventDefault();
-                                alert('Nejprve vyberte den a čas.');
+                                showInlineMessage('error', 'Nejprve vyberte nový den a čas.');
                                 return;
                             }
                             if (originalDateTime !== '' && `${day} ${time}` === originalDateTime) {
-                                event.preventDefault();
-                                alert('Zvolte prosím jiný termín než původní.');
+                                showInlineMessage('error', 'Zvolte prosím jiný termín než původní.');
+                                return;
+                            }
+
+                            if (submitButton) {
+                                submitButton.textContent = 'Přesouvám...';
+                                submitButton.style.pointerEvents = 'none';
+                            }
+
+                            try {
+                                const response = await fetch(window.location.href, {
+                                    method: 'POST',
+                                    body: new FormData(form),
+                                    headers: {
+                                        'X-Requested-With': 'fetch',
+                                        'Accept': 'application/json',
+                                    },
+                                });
+                                const payload = await response.json();
+                                if (!response.ok || !payload || !payload.success) {
+                                    showInlineMessage('error', String(payload?.message || 'Termín se nepodařilo změnit.'));
+                                    return;
+                                }
+                                showSuccess(payload);
+                            } catch (_) {
+                                showInlineMessage('error', 'Termín se nepodařilo změnit. Zkuste to prosím znovu.');
+                            } finally {
+                                if (submitButton) {
+                                    submitButton.textContent = defaultSubmitLabel;
+                                    submitButton.style.pointerEvents = '';
+                                }
                             }
                         });
 

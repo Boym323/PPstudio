@@ -55,8 +55,17 @@ if (! $linkIsValid) {
             $messageType = 'error';
         } else {
             $statusBefore = (string) ($reservation['stav'] ?? '');
+            $customerActionAllowed = canUseReservationCustomerAction($emailConfig, $reservation);
 
-            if (! $isPost) {
+            if (! $customerActionAllowed) {
+                http_response_code(403);
+                $message = 'Rezervaci lze zrušit nejpozději 24 hodin před začátkem procedury.';
+                $messageType = 'error';
+                securityEventLog('reservation_customer_cancel_cutoff_reached', 'reservation_cancel', 'warning', [
+                    'reservation_id' => $reservationId,
+                    'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
+                ]);
+            } elseif (! $isPost) {
                 if ($statusBefore === 'zrusena') {
                     $message = 'Tato rezervace už je zrušena.';
                 } else {

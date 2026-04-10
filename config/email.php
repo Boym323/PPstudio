@@ -16,4 +16,5 @@ return [
     'calendar_token' => ppstudioEnv('PPSTUDIO_CALENDAR_TOKEN', ''),
     'action_secret' => ppstudioEnv('PPSTUDIO_ACTION_SECRET', ''),
     'action_ttl_seconds' => (int) (ppstudioEnv('PPSTUDIO_ACTION_TTL_SECONDS', '172800')),
+    'customer_action_cutoff_seconds' => (int) (ppstudioEnv('PPSTUDIO_CUSTOMER_ACTION_CUTOFF_SECONDS', '86400')),
 ];

@@ -15,6 +15,11 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - [feat] Do potvrzovacího e-mailu doplněno tlačítko „Přesunout termín“ vedle zrušení rezervace (commit: `this-commit`)
 - [security] Rozšířena data rezervace o `service_id` a přidán audit event `reservation_customer_rescheduled` (commit: `this-commit`)
 
+## 2026-04-10
+
+- [security] Zákaznické odkazy pro zrušení a přesun termínu nově fungují jen do 24 hodin před začátkem procedury a po limitu se už do e-mailu nenabízejí (commit: `this-commit`)
+- [ux] Stránka `/reservation-reschedule.php` nově potvrzuje změnu termínu přes AJAX bez reloadu a po úspěchu zobrazí finální potvrzovací kartu (commit: `this-commit`)
+
 ## 2026-04-09
 
 - [ux] Veřejný rezervační formulář nově odesílá rezervaci přes AJAX bez reloadu a po úspěchu zobrazí potvrzovací kartu přímo na stránce (commit: `this-commit`)
