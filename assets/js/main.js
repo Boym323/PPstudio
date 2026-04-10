@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     setupRevealAnimations();
     setupAvailabilityPlanner();
+    setupAvailabilityStoryPreview();
     setupAntispamLogDetails();
     setupCategorySorting();
     setupServiceSections();
+    setupMediaSections();
     setupServiceListDetails();
     setupReservationActions();
     setupVoucherRedeemAssist();
@@ -992,6 +994,40 @@ function setupCategorySorting() {
     });
 }
 
+function setupMediaSections() {
+    const root = document.querySelector('[data-media-section-switcher]');
+    if (!root) {
+        return;
+    }
+
+    const triggers = Array.from(root.querySelectorAll('[data-media-section-trigger]'));
+    const panels = Array.from(document.querySelectorAll('[data-media-section-panel]'));
+    if (triggers.length === 0 || panels.length === 0) {
+        return;
+    }
+
+    const setSection = (section) => {
+        const normalized = ['profile', 'gallery', 'certificates'].includes(section) ? section : 'profile';
+        triggers.forEach((trigger) => {
+            const isActive = String(trigger.dataset.mediaSectionTrigger || '') === normalized;
+            trigger.classList.toggle('is-active', isActive);
+            trigger.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        panels.forEach((panel) => {
+            panel.hidden = String(panel.dataset.mediaSectionPanel || '') !== normalized;
+        });
+    };
+
+    triggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            setSection(String(trigger.dataset.mediaSectionTrigger || 'profile'));
+        });
+    });
+
+    setSection(String(root.dataset.initialSection || 'profile'));
+}
+
 function setupReservationActions() {
     const root = document.querySelector('[data-reservations-root]');
     if (!root) {
@@ -1400,6 +1436,69 @@ function setupReservationActions() {
             button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         });
     });
+}
+
+function setupAvailabilityStoryPreview() {
+    const form = document.querySelector('[data-availability-story-form]');
+    const preview = document.querySelector('[data-availability-story-preview]');
+
+    if (!form || !preview) {
+        return;
+    }
+
+    const endpoint = String(form.getAttribute('data-preview-endpoint') || '/admin-availability-story.php');
+    const refreshButton = form.querySelector('[data-availability-story-refresh]');
+    let previewTimer = null;
+
+    const buildPreviewUrl = () => {
+        const params = new URLSearchParams();
+        params.set('preview', '1');
+
+        const fields = [
+            'story_style',
+            'story_title',
+            'story_month_label',
+            'story_from',
+            'story_to',
+            'story_max_days',
+            'story_max_times_per_day',
+            'story_services',
+            'story_background_path',
+        ];
+
+        fields.forEach((fieldName) => {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (!field) {
+                return;
+            }
+            params.set(fieldName, field.value || '');
+        });
+
+        params.set('_ts', String(Date.now()));
+
+        return `${endpoint}?${params.toString()}`;
+    };
+
+    const refreshPreview = () => {
+        preview.src = buildPreviewUrl();
+    };
+
+    const queuePreviewRefresh = () => {
+        window.clearTimeout(previewTimer);
+        previewTimer = window.setTimeout(refreshPreview, 250);
+    };
+
+    form.querySelectorAll('input, select, textarea').forEach((field) => {
+        const eventName = field.tagName === 'SELECT' ? 'change' : 'input';
+        field.addEventListener(eventName, queuePreviewRefresh);
+        if (eventName !== 'change') {
+            field.addEventListener('change', queuePreviewRefresh);
+        }
+    });
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', refreshPreview);
+    }
 }
 
 function setupAntispamLogDetails() {

@@ -101,6 +101,7 @@ const SITE_SETTING_KEYS = [
     'google_place_id',
     'google_reviews_language',
     'notification_emails',
+    'availability_story_background',
 ];
 
 if (! function_exists('defaultSiteSettings')) {
@@ -124,6 +125,7 @@ if (! function_exists('defaultSiteSettings')) {
             'google_place_id' => '',
             'google_reviews_language' => '',
             'notification_emails' => '',
+            'availability_story_background' => '',
         ];
     }
 }

@@ -1,4 +1,27 @@
                 <section class="admin-single" id="dostupnost">
+                    <?php
+                        $storyDefaultFrom = (new DateTimeImmutable('today'))->format('Y-m-d');
+                        $storyDefaultTo = (new DateTimeImmutable('last day of this month'))->format('Y-m-d');
+                        $storyDefaultMonth = ppstudioAvailabilityStoryMonthLabel(
+                            new DateTimeImmutable($storyDefaultFrom),
+                            new DateTimeImmutable($storyDefaultTo)
+                        );
+                        $storyBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
+                        $storyBackgroundUrl = '';
+                        if ($storyBackground !== '' && str_starts_with($storyBackground, 'uploads/')) {
+                            $storyBackgroundUrl = '/' . ltrim($storyBackground, '/');
+                        }
+                        $storyDefaultServices = [];
+                        foreach ($serviceCategoryRows as $categoryRow) {
+                            if ((int) ($categoryRow['aktivni'] ?? 0) !== 1) {
+                                continue;
+                            }
+                            $storyDefaultServices[] = trim((string) ($categoryRow['nazev'] ?? ''));
+                            if (count($storyDefaultServices) >= 4) {
+                                break;
+                            }
+                        }
+                    ?>
                     <div class="admin-card">
                         <p class="eyebrow">Dostupnost</p>
                         <h2>Plánování volných termínů</h2>
@@ -314,5 +337,100 @@
                                 </table>
                             </div>
                         </details>
+                    </div>
+                    <div class="admin-card availability-story-card">
+                        <p class="eyebrow">Instagram story</p>
+                        <h2>Vygenerovat obrázek s volnými termíny</h2>
+                        <p class="form-hint">Můžete si zvolit styl, použít vlastní background a nejdřív zkontrolovat náhled. Export pak stáhne přesně to, co vidíte.</p>
+
+                        <div class="availability-story-template-wrap">
+                            <div class="availability-story-template-card">
+                                <p class="eyebrow">Šablona pozadí</p>
+                                <h3>Vlastní background</h3>
+                                <?php if ($storyBackgroundUrl !== ''): ?>
+                                    <div class="availability-story-template-preview">
+                                        <img src="<?= escape($storyBackgroundUrl) ?>" alt="Aktuální background pro Instagram story" loading="lazy" decoding="async">
+                                    </div>
+                                    <p class="form-hint">Aktuálně se používá vaše vlastní šablona pozadí.</p>
+                                <?php else: ?>
+                                    <p class="form-hint">Zatím není nahrané vlastní pozadí. Použije se vestavěný styl generátoru.</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="availability-story-template-card">
+                                <form method="post" class="admin-form" enctype="multipart/form-data">
+                                    <?= csrfInputField() ?>
+                                    <label>
+                                        <span>Nahrát nové pozadí</span>
+                                        <input type="file" name="story_background" accept=".jpg,.jpeg,.png,.webp,.gif">
+                                    </label>
+                                    <div class="table-actions availability-story-template-actions">
+                                        <button class="button button-secondary" type="submit" name="save_availability_story_background" value="1">Uložit pozadí</button>
+                                        <?php if ($storyBackgroundUrl !== ''): ?>
+                                            <button class="button button-danger" type="submit" name="delete_availability_story_background" value="1">Odebrat pozadí</button>
+                                        <?php endif; ?>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <form method="post" action="/admin-availability-story.php" class="admin-form" data-availability-story-form data-preview-endpoint="/admin-availability-story.php">
+                            <?= csrfInputField() ?>
+                            <input type="hidden" name="story_background_path" value="<?= escape($storyBackground) ?>">
+                            <div class="admin-form admin-form-grid availability-story-grid">
+                                <label>
+                                    <span>Styl výstupu</span>
+                                    <select name="story_style">
+                                        <option value="story" selected>Story</option>
+                                        <option value="minimal">Minimal</option>
+                                        <option value="feed">Feed příspěvek</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Nadpis</span>
+                                    <input type="text" name="story_title" value="Zbývají volné termíny">
+                                </label>
+                                <label>
+                                    <span>Nadpis měsíce</span>
+                                    <input type="text" name="story_month_label" value="<?= escape($storyDefaultMonth) ?>">
+                                </label>
+                                <label>
+                                    <span>Od data</span>
+                                    <input type="date" name="story_from" value="<?= escape($storyDefaultFrom) ?>">
+                                </label>
+                                <label>
+                                    <span>Do data</span>
+                                    <input type="date" name="story_to" value="<?= escape($storyDefaultTo) ?>">
+                                </label>
+                                <label>
+                                    <span>Max. počet dnů</span>
+                                    <input type="number" name="story_max_days" min="1" max="8" step="1" value="5">
+                                </label>
+                                <label>
+                                    <span>Max. časů za den</span>
+                                    <input type="number" name="story_max_times_per_day" min="1" max="8" step="1" value="5">
+                                </label>
+                                <label class="availability-story-services">
+                                    <span>Řádky pod termíny</span>
+                                    <textarea name="story_services" rows="5" placeholder="Každý řádek bude na obrázku jako samostatný štítek"><?= escape(implode("\n", $storyDefaultServices)) ?></textarea>
+                                </label>
+                            </div>
+                            <div class="availability-story-preview-card">
+                                <div class="availability-block-heading">
+                                    <strong>Náhled před stažením</strong>
+                                    <span>Po změně parametrů se náhled průběžně obnovuje.</span>
+                                </div>
+                                <div class="availability-story-preview-frame">
+                                    <img
+                                        src="/admin-availability-story.php?preview=1&amp;story_style=story&amp;story_title=<?= escape(urlencode('Zbývají volné termíny')) ?>&amp;story_month_label=<?= escape(urlencode($storyDefaultMonth)) ?>&amp;story_from=<?= escape($storyDefaultFrom) ?>&amp;story_to=<?= escape($storyDefaultTo) ?>&amp;story_max_days=5&amp;story_max_times_per_day=5&amp;story_services=<?= escape(urlencode(implode("\n", $storyDefaultServices))) ?>&amp;story_background_path=<?= escape(urlencode($storyBackground)) ?>"
+                                        alt="Náhled Instagram story s volnými termíny"
+                                        data-availability-story-preview
+                                    >
+                                </div>
+                            </div>
+                            <div class="table-actions availability-story-actions">
+                                <button class="button button-secondary" type="button" data-availability-story-refresh>Obnovit náhled</button>
+                                <button class="button button-primary" type="submit">Stáhnout PNG pro Instagram</button>
+                            </div>
+                        </form>
                     </div>
                 </section>

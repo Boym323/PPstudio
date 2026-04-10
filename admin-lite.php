@@ -10,6 +10,7 @@ require __DIR__ . '/includes/availability.php';
 require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/media.php';
 require __DIR__ . '/includes/mailer.php';
+require __DIR__ . '/includes/admin/availability_story.php';
 
 startSecureSession();
 

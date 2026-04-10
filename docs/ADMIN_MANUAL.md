@@ -95,6 +95,12 @@ Praktický dopad:
 - `Týdenní režim` zůstává jako pokročilejší editor pro větší změny a kontrolu celého týdne.
 - Nahoře je kompaktní navigace týdne (`Předchozí / Tento týden / Další`).
 - Ve spodním bloku `Uložená okna dostupnosti` je přehled už uložených intervalů a možnost jednotlivé okno ručně smazat.
+- Součástí sekce je i blok `Instagram story`:
+- z aktuálně volných termínů vygeneruje PNG pro Instagram,
+- podporuje styly `Story / Minimal / Feed`,
+- umožňuje nastavit období, nadpis, měsíc, počet dnů a doplňkové řádky,
+- ukazuje živý náhled přímo v adminu,
+- volitelně používá vlastní nahrané pozadí.
 - Cíl: definovat volné sloty, ze kterých se generují časy v rezervaci.
 
 ### Služby
@@ -136,8 +142,22 @@ Pravidlo:
 
 ### Fotky a galerie
 
-- Nahrávání profilové fotky, galerie a certifikátů.
-- Certifikáty se zobrazují i v sekci O mně na webu.
+- Sekce je rozdělená do podsekcí:
+- `Profilová fotka`
+- `Galerie salonu`
+- `Certifikáty`
+- `Profilová fotka`:
+- slouží pro hlavní portrétní fotografii v sekci `O mně`,
+- vždy se používá poslední nahraná profilová fotka,
+- vpravo je náhled toho, co se právě zobrazuje na webu.
+- `Galerie salonu`:
+- slouží pro veřejnou sekci `Prostory`,
+- lze vyplnit nadpis, podnadpis, odkaz a pořadí,
+- podsekce odděluje formulář nahrání od přehledu už uložených snímků.
+- `Certifikáty`:
+- zobrazují se na webu v sekci `O mně`,
+- po nahrání lze u každého upravit název, který se ukáže na webu,
+- certifikát lze samostatně smazat bez zásahu do ostatních souborů.
 
 ### Recenze a social
 

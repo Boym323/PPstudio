@@ -699,6 +699,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_window'])) {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_availability_story_background'])) {
+    $backgroundError = null;
+    $backgroundPath = null;
+
+    if (! isset($_FILES['story_background']) || ! is_array($_FILES['story_background'])) {
+        $error = 'Vyberte prosím obrázek pozadí.';
+    } else {
+        $backgroundPath = storeUploadedImage($_FILES['story_background'], __DIR__ . '/../../../uploads', $backgroundError);
+
+        if ($backgroundPath === null) {
+            $error = $backgroundError !== null && $backgroundError !== ''
+                ? 'Pozadí pro story se nepodařilo uložit. ' . $backgroundError
+                : 'Pozadí pro story se nepodařilo uložit.';
+        } else {
+            $previousBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
+            if ($previousBackground !== '' && str_starts_with($previousBackground, 'uploads/')) {
+                $previousPath = __DIR__ . '/../../../' . ltrim($previousBackground, '/');
+                if (is_file($previousPath)) {
+                    @unlink($previousPath);
+                }
+            }
+
+            if (saveSiteSetting($connection, 'availability_story_background', $backgroundPath)) {
+                $siteSettings['availability_story_background'] = $backgroundPath;
+                $message = 'Pozadí pro Instagram story bylo uloženo.';
+            } else {
+                $error = 'Pozadí pro story se nepodařilo uložit do nastavení.';
+            }
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_availability_story_background'])) {
+    $previousBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
+
+    if (saveSiteSetting($connection, 'availability_story_background', '')) {
+        $siteSettings['availability_story_background'] = '';
+        if ($previousBackground !== '' && str_starts_with($previousBackground, 'uploads/')) {
+            $previousPath = __DIR__ . '/../../../' . ltrim($previousBackground, '/');
+            if (is_file($previousPath)) {
+                @unlink($previousPath);
+            }
+        }
+        $message = 'Pozadí pro Instagram story bylo odstraněno.';
+    } else {
+        $error = 'Pozadí pro story se nepodařilo odstranit.';
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])) {
     $reservationId = (int) ($_POST['reservation_id'] ?? 0);
     $status = trim((string) ($_POST['stav'] ?? 'nova'));
