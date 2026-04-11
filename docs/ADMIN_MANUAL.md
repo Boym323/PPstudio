@@ -169,8 +169,9 @@ Pravidlo:
 
 ### Recenze a social
 
-- Odkazy na Google/Firmy.cz/Instagram.
-- Embed pole pro recenzní nebo sociální widgety.
+- Odkazy na Google a Firmy.cz.
+- Pole `Firmy.cz embed` slouží pro vložení widgetu recenzí na web.
+- Instagram pro klienty se spravuje jen přes `Nastavení studia -> Instagram URL`.
 
 ### Nastavení studia
 

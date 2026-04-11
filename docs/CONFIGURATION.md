@@ -18,14 +18,13 @@ Aktivní klíče, které aplikace načítá přes `SITE_SETTING_KEYS` v `config/
 - `contact_instagram_url`
 - `contact_ico`
 - `contact_opening_hours`
-- `instagram_url`
-- `instagram_feed_embed`
 - `google_reviews_url`
 - `firmy_reviews_url`
 - `firmy_reviews_embed`
 - `google_place_id`
 - `google_reviews_language`
 - `notification_emails`
+- `availability_story_background`
 
 Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` v `config/app.php`.
 

@@ -154,21 +154,33 @@ WHERE r.cena_v_dobe_rezervace IS NULL;
 INSERT INTO nastaveni (setting_key, setting_value)
 VALUES
     ('site_name', 'PPStudio'),
-    ('hero_eyebrow', 'PPStudio'),
-    ('hero_title', 'Misto, kde pece o plet dostava svuj cas, klid a pozornost.'),
-    ('hero_text', 'Kazda navsteva je navrzena jako prijemny ritual s durazem na pohodli, individualni pristup a prirozene sebevedomy vysledek.'),
-    ('owner_name', 'Vase jmeno'),
-    ('owner_role', 'Zakladatelka a specialistka pece o plet'),
-    ('owner_intro', 'Tady bude kratke predstaveni vas, vaseho pristupu a toho, co je pro vas v peci o klientky dulezite.'),
-    ('owner_photo_caption', 'Profilova fotografie'),
-    ('instagram_url', 'https://www.instagram.com/beauty_touch_by_vp/'),
     ('google_reviews_url', ''),
     ('firmy_reviews_url', ''),
     ('firmy_reviews_embed', ''),
     ('google_place_id', ''),
     ('google_reviews_language', 'cs'),
-    ('notification_emails', 'info@ppstudio.cz')
+    ('notification_emails', 'info@ppstudio.cz'),
+    ('availability_story_background', '')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
 DELETE FROM nastaveni WHERE setting_key = 'google_places_api_key';
-DELETE FROM nastaveni WHERE setting_key IN ('site_tagline', 'contact_email', 'contact_phone', 'contact_instagram', 'opening_hours', 'google_reviews_embed');
+DELETE FROM nastaveni WHERE setting_key IN (
+    'site_tagline',
+    'contact_email',
+    'contact_phone',
+    'contact_instagram',
+    'opening_hours',
+    'google_reviews_embed',
+    'hero_eyebrow',
+    'hero_title',
+    'hero_text',
+    'owner_name',
+    'owner_role',
+    'owner_intro',
+    'owner_photo_caption',
+    'contact_transport',
+    'contact_parking',
+    'first_visit_note',
+    'instagram_url',
+    'instagram_feed_embed'
+);

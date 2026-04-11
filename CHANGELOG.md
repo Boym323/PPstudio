@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-10
 
+- [refactor] Z konfigurace a admin sekce `Recenze a social` byly odstraněny nepoužívané klíče `instagram_url` a `instagram_feed_embed`, vyčištěny SQL seedy a smazány staré hodnoty z live DB `nastaveni` (commit: `this-commit`)
 - [security] Zákaznické odkazy pro zrušení a přesun termínu nově fungují jen do 24 hodin před začátkem procedury a po limitu se už do e-mailu nenabízejí (commit: `this-commit`)
 - [ux] Stránka `/reservation-reschedule.php` nově potvrzuje změnu termínu přes AJAX bez reloadu a po úspěchu zobrazí finální potvrzovací kartu (commit: `this-commit`)
 

@@ -325,8 +325,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_integrations']))
         'firmy_reviews_embed',
         'google_place_id',
         'google_reviews_language',
-        'instagram_url',
-        'instagram_feed_embed',
     ];
     $savedAll = true;
 

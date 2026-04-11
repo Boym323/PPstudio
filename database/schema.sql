@@ -161,21 +161,11 @@ INSERT INTO nastaveni (setting_key, setting_value)
 VALUES
     ('site_name', 'PPStudio'),
     ('site_url', 'https://www.ppstudio.cz'),
-    ('hero_eyebrow', 'PPStudio'),
-    ('hero_title', 'Misto, kde pece o plet dostava svuj cas, klid a pozornost.'),
-    ('hero_text', 'Kazda navsteva je navrzena jako prijemny ritual s durazem na pohodli, individualni pristup a prirozene sebevedomy vysledek.'),
-    ('owner_name', 'Vase jmeno'),
-    ('owner_role', 'Zakladatelka a specialistka pece o plet'),
-    ('owner_intro', 'Tady bude kratke predstaveni vas, vaseho pristupu a toho, co je pro vas v peci o klientky dulezite.'),
-    ('owner_photo_caption', 'Profilova fotografie'),
-    ('contact_transport', 'MHD i autem, presne instrukce po potvrzeni rezervace.'),
-    ('contact_parking', 'Parkovani je mozne v okoli studia, doporucujeme prijezd s malou casovou rezervou.'),
-    ('instagram_url', 'https://www.instagram.com/beauty_touch_by_vp/'),
     ('google_reviews_url', ''),
     ('firmy_reviews_url', ''),
     ('firmy_reviews_embed', ''),
     ('google_place_id', ''),
     ('google_reviews_language', 'cs'),
     ('notification_emails', 'info@ppstudio.cz'),
-    ('first_visit_note', 'Staci prijit v pohodlnem obleceni a idealne bez vyrazneho make-upu. Pokud pouzivate specifickou domaci peci, napiste ji do poznamky v rezervaci.')
+    ('availability_story_background', '')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);

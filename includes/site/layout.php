@@ -5,7 +5,7 @@
     $cssVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.css') ?: time());
     $jsVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.js') ?: time());
     $schemaAddress = setting($siteSettings ?? [], 'contact_address', 'náměstí Práce 2512, Zlín');
-    $schemaInstagramUrl = setting($siteSettings ?? [], 'instagram_url', 'https://www.instagram.com/beauty_touch_by_vp/');
+    $schemaInstagramUrl = setting($siteSettings ?? [], 'contact_instagram_url', '');
     $schemaPhone = setting($siteSettings ?? [], 'contact_phone', '+420732856036');
     ?>
     <meta charset="UTF-8">
@@ -45,9 +45,7 @@
                 'postalCode' => '760 01',
                 'addressCountry' => 'CZ',
             ],
-            'sameAs' => [
-                $schemaInstagramUrl,
-            ],
+            'sameAs' => $schemaInstagramUrl !== '' ? [$schemaInstagramUrl] : [],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
     </script>
 
