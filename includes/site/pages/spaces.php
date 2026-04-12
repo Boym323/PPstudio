@@ -15,7 +15,7 @@
             <div class="spaces-desc">
                 <h3>Luxusní a pohodlné zázemí</h3>
                 <p>
-                    Moje služby probíhají v útulných, moderně vybavených prostorách Interhotelu Zlín.<br>
+                    Moje služby probíhají v útulných, moderně vybavených prostorách navržených pro klid, pohodlí a soukromí.<br>
                     Interiér je navržený s důrazem na soukromí, čistotu, relax a komfort každé klientky.<br>
                     Věřím, že prostředí, ve kterém se o vás starám, je stejně důležité jako samotné ošetření.<br>
                     Proto jsem vytvořila prostor, kde se budete cítit příjemně a uvolněně.<br>

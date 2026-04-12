@@ -4,9 +4,27 @@
     <?php
     $cssVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.css') ?: time());
     $jsVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.js') ?: time());
-    $schemaAddress = setting($siteSettings ?? [], 'contact_address', 'náměstí Práce 2512, Zlín');
+    $schemaAddress = trim(setting($siteSettings ?? [], 'contact_address', ''));
     $schemaInstagramUrl = setting($siteSettings ?? [], 'contact_instagram_url', '');
     $schemaPhone = setting($siteSettings ?? [], 'contact_phone', '+420732856036');
+    $schemaData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BeautySalon',
+        'name' => setting($siteSettings ?? [], 'site_name', defaultSiteName()),
+        'url' => $resolvedSiteBaseUrl,
+        'telephone' => $schemaPhone,
+        'image' => ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg',
+        'sameAs' => $schemaInstagramUrl !== '' ? [$schemaInstagramUrl] : [],
+    ];
+
+    if ($schemaAddress !== '') {
+        $schemaData['address'] = [
+            '@type' => 'PostalAddress',
+            'streetAddress' => $schemaAddress,
+            'postalCode' => '760 01',
+            'addressCountry' => 'CZ',
+        ];
+    }
     ?>
     <meta charset="UTF-8">
     <link rel="apple-touch-icon" sizes="180x180" href="/frontend/favicon/apple-touch-icon.png">
@@ -19,7 +37,7 @@
     <meta name="theme-color" content="#f7f1e8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= escape($description) ?>">
-    <meta name="keywords" content="kosmetický salon Zlín, kosmetika, péče o pleť, lash lifting, laminace obočí, kosmetické poradenství, PP Studio, Interhotel Zlín">
+    <meta name="keywords" content="kosmetický salon Zlín, kosmetika, péče o pleť, lash lifting, laminace obočí, kosmetické poradenství, PP Studio">
     <title><?= escape($title) ?></title>
     <meta property="og:title" content="<?= escape($title) ?>">
     <meta property="og:description" content="<?= escape($description) ?>">
@@ -32,21 +50,7 @@
     <link rel="canonical" href="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
 
     <script type="application/ld+json">
-        <?= json_encode([
-            '@context' => 'https://schema.org',
-            '@type' => 'BeautySalon',
-            'name' => setting($siteSettings ?? [], 'site_name', defaultSiteName()),
-            'url' => $resolvedSiteBaseUrl,
-            'telephone' => $schemaPhone,
-            'image' => ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg',
-            'address' => [
-                '@type' => 'PostalAddress',
-                'streetAddress' => $schemaAddress,
-                'postalCode' => '760 01',
-                'addressCountry' => 'CZ',
-            ],
-            'sameAs' => $schemaInstagramUrl !== '' ? [$schemaInstagramUrl] : [],
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+        <?= json_encode($schemaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
     </script>
 
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">

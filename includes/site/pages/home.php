@@ -5,7 +5,7 @@
             <h1>PP <span>Studio</span></h1>
             <p>Vytvořila jsem pro vás prostor, kde se čas na chvíli zastaví. Dopřejte si profesionální péči, harmonickou atmosféru a odejděte odpočatá a sebevědomá.</p>
             <div class="hero-benefits">
-                <span class="hero-benefit">Interhotel Zlín</span>
+                <span class="hero-benefit">Příjemné prostředí</span>
                 <span class="hero-benefit">Individuální přístup</span>
                 <span class="hero-benefit">Online rezervace 24/7</span>
             </div>

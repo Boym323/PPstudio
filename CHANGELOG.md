@@ -17,6 +17,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [seo] Ve veřejných textech webu byla sjednocena komunikace lokace na obecné „ve Zlíně“ bez natvrdo uvedeného Interhotelu (homepage, galerie, sekce prostory) (commit: `this-commit`)
+- [fix] Veřejný kontakt a strukturovaná data nově zobrazují adresu jen pokud je skutečně vyplněná v nastavení (`contact_address`), bez tvrdého fallbacku adresy (commit: `this-commit`)
 - [feat] V adminu přidána nová sekce `Reminder log` s filtrem, stránkováním a přehledem DB auditních záznamů z `reservation-reminders.php` (run token, událost, úroveň, rezervace, kontext) (commit: `this-commit`)
 - [docs] `docs/ADMIN_MANUAL.md` rozšířen o práci se sekcí `Reminder log` včetně doporučení pravidelné kontroly (commit: `this-commit`)
 - [feat] `reservation-reminders.php` nově zapisuje detailní audit běhu do DB tabulky `reservation_reminder_logs` (start, kandidáti, per-rezervace stav, souhrn) a vypisuje `run_token` do CLI výstupu (commit: `this-commit`)

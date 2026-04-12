@@ -179,7 +179,7 @@
         $contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', '');
         $contactIco = setting($siteSettings, 'contact_ico', '234 275 66');
         $contactOpeningHours = setting($siteSettings, 'contact_opening_hours', 'Po-Pá: Dle objednávek');
-        $contactAddress = setting($siteSettings, 'contact_address', "Interhotel Zlin\nnamesti Prace 2512, Zlin\n5. patro, dvere c. 512");
+        $contactAddress = setting($siteSettings, 'contact_address', '');
 
         $emailUser = $contactEmail;
         $emailDomain = '';
@@ -215,10 +215,12 @@
                 </div>
             </div>
             <div>
-                <div class="contact-box" style="margin-bottom: 1.2rem;">
-                    <strong>Adresa:</strong><br>
-                    <?= nl2br(escape($contactAddress)) ?>
-                </div>
+                <?php if ($contactAddress !== ''): ?>
+                    <div class="contact-box" style="margin-bottom: 1.2rem;">
+                        <strong>Adresa:</strong><br>
+                        <?= nl2br(escape($contactAddress)) ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
