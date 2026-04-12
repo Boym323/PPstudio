@@ -248,6 +248,7 @@
 
   // Pricing list grouped by category
   const pricingList = document.getElementById('pricing-list');
+  const pricingCategoryNav = document.getElementById('pricing-category-nav');
   if (pricingList) {
     const formatDuration = (minutes) => {
       const parsed = Number(minutes || 0);
@@ -269,6 +270,45 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+    const slugify = (value) =>
+      String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+    const getCategoryHint = (category) => {
+      const value = String(category || '').toLowerCase();
+      if (value.includes('kosmet')) {
+        return 'Ideální, pokud řešíte pleť, hydrataci, rozjasnění nebo chcete dopřát pleti pravidelnou péči.';
+      }
+      if (value.includes('obo') || value.includes('řas') || value.includes('lash') || value.includes('brow')) {
+        return 'Pro úpravu pohledu a výraznější, ale stále přirozený efekt řas a obočí.';
+      }
+      if (value.includes('mas')) {
+        return 'Vhodné pro uvolnění, jemnější kontury a chvíli klidné péče jen pro sebe.';
+      }
+      if (value.includes('depil')) {
+        return 'Rychlá volba, pokud chcete hladký výsledek a pravidelnou praktickou péči.';
+      }
+      return 'Vyberte si variantu, která je nejblíž vašemu cíli. Pokud budete chtít, finální péči spolu na místě doladíme.';
+    };
+
+    const getServiceBadge = (service, indexInGroup) => {
+      const name = String(service?.name || '').toLowerCase();
+      if (name.includes('uvod') || name.includes('úvod') || name.includes('konzult')) {
+        return 'První návštěva';
+      }
+      if (name.includes('basic') || name.includes('klas')) {
+        return 'Jistá volba';
+      }
+      if (indexInGroup === 0) {
+        return 'Doporučeno';
+      }
+      return '';
+    };
+
     fetch('/api/services.php', { headers: { 'X-Requested-With': 'fetch' } })
       .then((response) => {
         if (!response.ok) throw new Error('Pricing unavailable');
@@ -277,6 +317,9 @@
       .then((payload) => {
         const services = Array.isArray(payload.services) ? payload.services : [];
         pricingList.querySelectorAll('.pricing-group, .pricing-empty').forEach((row) => row.remove());
+        if (pricingCategoryNav) {
+          pricingCategoryNav.innerHTML = '';
+        }
 
         if (services.length === 0) {
           const empty = document.createElement('div');
@@ -305,19 +348,33 @@
         sortedGroups.forEach(([category, group]) => {
           const block = document.createElement('section');
           block.className = 'pricing-group';
+          block.id = `pricing-${slugify(category)}`;
 
           const header = document.createElement('div');
           header.className = 'pricing-group-header';
           header.innerHTML = `
-            <div class="pricing-group-title">${escapeHtml(category)}</div>
+            <div>
+              <div class="pricing-group-title">${escapeHtml(category)}</div>
+              <p class="pricing-group-intro">${escapeHtml(getCategoryHint(category))}</p>
+            </div>
+            <span class="pricing-group-count">${group.items.length} ${group.items.length === 1 ? 'služba' : group.items.length < 5 ? 'služby' : 'služeb'}</span>
           `;
           block.appendChild(header);
 
-          group.items.forEach((service) => {
+          if (pricingCategoryNav) {
+            const navLink = document.createElement('a');
+            navLink.className = 'pricing-category-link';
+            navLink.href = `#${block.id}`;
+            navLink.textContent = category;
+            pricingCategoryNav.appendChild(navLink);
+          }
+
+          group.items.forEach((service, indexInGroup) => {
             const row = document.createElement('div');
             row.className = 'pricing-text-row';
             const serviceName = escapeHtml(service.name || 'Služba');
             const description = String(service.description || '').trim();
+            const badge = getServiceBadge(service, indexInGroup);
             const serviceDescription = description !== ''
               ? `<div class="pricing-service-description">${escapeHtml(description)}</div>`
               : '<div class="pricing-service-description pricing-service-description-empty"></div>';
@@ -328,7 +385,10 @@
             row.innerHTML = `
               <div class="pricing-info-cell">
                 <div class="pricing-main-line">
-                  <div class="pricing-service-name">${serviceName}</div>
+                  <div class="pricing-service-heading">
+                    <div class="pricing-service-name">${serviceName}</div>
+                    ${badge ? `<span class="pricing-service-badge">${escapeHtml(badge)}</span>` : ''}
+                  </div>
                 </div>
                 <div class="pricing-details-line">
                   ${serviceDescription}
