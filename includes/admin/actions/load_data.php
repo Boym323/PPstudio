@@ -803,7 +803,7 @@ if ($voucherTableQuery instanceof mysqli_result) {
 
 if ($voucherModuleReady) {
     $voucherQuery = $connection->query(
-        'SELECT p.id, p.kod, p.puvodni_hodnota, p.zustatek, p.status, p.issued_at, p.expires_at, p.recipient_name, p.note, p.updated_at,
+        'SELECT p.id, p.kod, p.puvodni_hodnota, p.zustatek, p.status, p.issued_at, p.expires_at, p.recipient_name, p.recipient_email, p.note, p.emailed_at, p.updated_at,
                 CASE
                     WHEN p.status = "storno" THEN "storno"
                     WHEN p.expires_at IS NOT NULL AND p.expires_at < CURDATE() THEN "expirovan"

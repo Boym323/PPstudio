@@ -152,6 +152,7 @@ $voucherForm = [
     'value' => '',
     'expires_at' => date('Y-m-d', strtotime('+1 year')),
     'recipient_name' => '',
+    'recipient_email' => '',
     'note' => '',
 ];
 $voucherBatchForm = [

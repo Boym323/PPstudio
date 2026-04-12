@@ -370,6 +370,81 @@ function sendReservationReminderEmail(array $emailConfig, array $siteSettings, a
     );
 }
 
+function sendVoucherEmail(
+    array $emailConfig,
+    array $siteSettings,
+    array $voucher,
+    string $recipientEmail
+): bool
+{
+    $recipientEmail = trim($recipientEmail);
+    if (! ($emailConfig['enabled'] ?? false) || ! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
+    $recipientName = trim((string) ($voucher['recipient_name'] ?? ''));
+    $voucherCode = trim((string) ($voucher['kod'] ?? ''));
+    $voucherValue = formatPrice($voucher['puvodni_hodnota'] ?? null);
+    $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
+    $expiresAt = $expiresAtRaw !== '' ? formatCzechDate($expiresAtRaw) : 'Bez omezení';
+    $voucherUrl = buildVoucherViewUrl(
+        $siteSettings,
+        (int) ($voucher['id'] ?? 0),
+        $voucherCode,
+        isset($siteSettings['voucher_verify_secret']) ? (string) $siteSettings['voucher_verify_secret'] : null
+    );
+
+    $subject = $siteName . ': dárkový poukaz';
+
+    $textBody = "Dobrý den";
+    if ($recipientName !== '') {
+        $textBody .= ' ' . $recipientName;
+    }
+    $textBody .= ",\n\n"
+        . "posíláme vám dárkový poukaz do {$siteName}.\n\n"
+        . "Kód poukazu: {$voucherCode}\n"
+        . "Hodnota: {$voucherValue}\n"
+        . "Platnost do: {$expiresAt}\n";
+
+    if ($voucherUrl !== '') {
+        $textBody .= "\nOtevření dárkového poukazu:\n{$voucherUrl}\n";
+    }
+
+    $textBody .= "\nPři návštěvě studia stačí nahlásit kód poukazu.\n\n{$siteName}";
+
+    $htmlBody = '<p>Dobrý den';
+    if ($recipientName !== '') {
+        $htmlBody .= ' ' . escape($recipientName);
+    }
+    $htmlBody .= ',</p>'
+        . '<p>posíláme vám dárkový poukaz do <strong>' . escape($siteName) . '</strong>.</p>'
+        . '<div style="margin:18px 0;padding:18px 20px;border:1px solid #eadccf;border-radius:20px;background:#fffaf4;">'
+        . '<p style="margin:0 0 10px;"><strong>Kód poukazu:</strong> ' . escape($voucherCode) . '</p>'
+        . '<p style="margin:0 0 10px;"><strong>Hodnota:</strong> ' . escape($voucherValue) . '</p>'
+        . '<p style="margin:0;"><strong>Platnost do:</strong> ' . escape($expiresAt) . '</p>';
+
+    $htmlBody .= '</div>';
+
+    if ($voucherUrl !== '') {
+        $htmlBody .= '<p>Poukaz si můžete kdykoli otevřít, vytisknout nebo uložit jako PDF přes tlačítko níže:</p>'
+            . '<p style="margin:18px 0;">'
+            . '<a href="' . escape($voucherUrl) . '" style="display:inline-block;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Otevřít dárkový poukaz</a>'
+            . '</p>';
+    }
+
+    $htmlBody .= '<p>Při návštěvě studia stačí nahlásit kód poukazu.</p>'
+        . '<p>' . escape($siteName) . '</p>';
+
+    return sendPhpMailerMessage(
+        $recipientEmail,
+        $subject,
+        $htmlBody,
+        $textBody,
+        $emailConfig
+    );
+}
+
 function buildReservationIcal(array $siteSettings, array $reservation): string
 {
     $siteName = setting($siteSettings, 'site_name', defaultSiteName());

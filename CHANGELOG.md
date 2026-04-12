@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [feat] Poukazy lze nově odeslat e-mailem přímo z adminu, ukládá se e-mail příjemce i čas posledního odeslání a v e-mailu se používá nová veřejná stránka dárkového poukazu s tiskem / uložením do PDF (commit: `this-commit`)
 - [ux] Ceník byl přepracován do více orientační podoby: přibyl průvodce výběrem, rychlé skoky do kategorií, krátké úvody kategorií a štítky u vybraných služeb (commit: `this-commit`)
 - [ux] Veřejná rezervace dostala uklidňující mikrokopie a na mobilu se po přechodu mezi kroky automaticky posouvá na začátek aktivního kroku (commit: `this-commit`)
 - [ux] Admin menu bylo přeskupeno do logických skupin `Provoz / Obsah / Nastavení`, samostatný kalendář přesunut do sekce rezervací a sekce `E-mail`, `Recenze a social` i `Nastavení studia` sjednoceny do `Nastavení studia a webu` (commit: `this-commit`)

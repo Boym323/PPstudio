@@ -91,6 +91,13 @@ if (! function_exists('voucherEffectiveStatus')) {
     }
 }
 
+if (! function_exists('normalizeVoucherRecipientEmail')) {
+    function normalizeVoucherRecipientEmail(string $email): string
+    {
+        return mb_strtolower(trim($email));
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
     $savedAll = true;
     foreach (array_keys($studioSettingFields) as $settingKey) {
@@ -186,6 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
         'value' => trim((string) ($_POST['voucher_value'] ?? '')),
         'expires_at' => trim((string) ($_POST['voucher_expires_at'] ?? '')),
         'recipient_name' => trim((string) ($_POST['voucher_recipient_name'] ?? '')),
+        'recipient_email' => normalizeVoucherRecipientEmail((string) ($_POST['voucher_recipient_email'] ?? '')),
         'note' => trim((string) ($_POST['voucher_note'] ?? '')),
     ];
 
@@ -196,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
         $code = $voucherForm['code'] !== '' ? strtoupper($voucherForm['code']) : generateVoucherCode('PP' . date('y'));
         $code = preg_replace('/[^A-Z0-9\-]/', '', $code) ?? '';
         $expiresAt = $voucherForm['expires_at'];
+        $recipientEmail = $voucherForm['recipient_email'];
 
         if ($code === '') {
             $error = 'Kód poukazu je neplatný.';
@@ -203,6 +212,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
             $error = 'Hodnota poukazu musí být vyšší než 0 Kč.';
         } elseif ($expiresAt !== '' && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $expiresAt)) {
             $error = 'Platnost poukazu má neplatný formát data.';
+        } elseif ($recipientEmail !== '' && ! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            $error = 'E-mail příjemce poukazu není ve správném formátu.';
         } else {
             $remaining = $value;
             $expiresAtNullable = $expiresAt !== '' ? $expiresAt : null;
@@ -210,14 +221,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
             $note = $voucherForm['note'];
 
             $insert = $connection->prepare(
-                'INSERT INTO poukazy (kod, puvodni_hodnota, zustatek, status, issued_at, expires_at, recipient_name, note)
-                 VALUES (?, ?, ?, "aktivni", NOW(), ?, ?, ?)'
+                'INSERT INTO poukazy (kod, puvodni_hodnota, zustatek, status, issued_at, expires_at, recipient_name, recipient_email, note)
+                 VALUES (?, ?, ?, "aktivni", NOW(), ?, ?, ?, ?)'
             );
 
             if (! $insert) {
                 $error = 'Poukaz se nepodařilo uložit.';
             } else {
-                $insert->bind_param('sddsss', $code, $value, $remaining, $expiresAtNullable, $recipientName, $note);
+                $insert->bind_param('sddssss', $code, $value, $remaining, $expiresAtNullable, $recipientName, $recipientEmail, $note);
                 if ($insert->execute()) {
                     $message = 'Poukaz byl uložen.';
                     $voucherForm = [
@@ -225,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
                         'value' => '',
                         'expires_at' => date('Y-m-d', strtotime('+1 year')),
                         'recipient_name' => '',
+                        'recipient_email' => '',
                         'note' => '',
                     ];
                 } else {
@@ -233,6 +245,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_voucher'])) {
                         : 'Poukaz se nepodařilo uložit.';
                 }
                 $insert->close();
+            }
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_voucher_email'])) {
+    $voucherId = (int) ($_POST['voucher_id'] ?? 0);
+    $recipientEmail = normalizeVoucherRecipientEmail((string) ($_POST['voucher_recipient_email'] ?? ''));
+
+    if (! voucherModuleTableReady($connection)) {
+        $error = 'Modul poukazů není v databázi dostupný.';
+    } elseif ($voucherId <= 0) {
+        $error = 'Vyberte prosím platný poukaz.';
+    } elseif ($recipientEmail === '' || ! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Zadejte platný e-mail, na který se má poukaz odeslat.';
+    } else {
+        $voucherStatement = $connection->prepare(
+            'SELECT id, kod, puvodni_hodnota, zustatek, status, issued_at, expires_at, recipient_name, recipient_email, note, emailed_at
+             FROM poukazy
+             WHERE id = ?
+             LIMIT 1'
+        );
+
+        if (! $voucherStatement) {
+            $error = 'Poukaz se nepodařilo načíst.';
+        } else {
+            $voucherStatement->bind_param('i', $voucherId);
+            $voucherStatement->execute();
+            $voucherStatement->bind_result(
+                $fetchedId,
+                $fetchedCode,
+                $fetchedOriginalValue,
+                $fetchedRemaining,
+                $fetchedStatus,
+                $fetchedIssuedAt,
+                $fetchedExpiresAt,
+                $fetchedRecipientName,
+                $fetchedRecipientEmail,
+                $fetchedNote,
+                $fetchedEmailedAt
+            );
+            $voucher = null;
+            if ($voucherStatement->fetch()) {
+                $voucher = [
+                    'id' => (int) $fetchedId,
+                    'kod' => (string) $fetchedCode,
+                    'puvodni_hodnota' => $fetchedOriginalValue !== null ? (float) $fetchedOriginalValue : null,
+                    'zustatek' => $fetchedRemaining !== null ? (float) $fetchedRemaining : null,
+                    'status' => (string) $fetchedStatus,
+                    'issued_at' => (string) $fetchedIssuedAt,
+                    'expires_at' => $fetchedExpiresAt,
+                    'recipient_name' => (string) $fetchedRecipientName,
+                    'recipient_email' => (string) $fetchedRecipientEmail,
+                    'note' => (string) $fetchedNote,
+                    'emailed_at' => $fetchedEmailedAt,
+                ];
+            }
+            $voucherStatement->close();
+
+            if (! is_array($voucher)) {
+                $error = 'Poukaz nebyl nalezen.';
+            } else {
+                $voucher['recipient_email'] = $recipientEmail;
+                $effectiveStatus = voucherEffectiveStatus($voucher);
+
+                if ($effectiveStatus !== 'aktivni') {
+                    $error = 'E-mailem lze odeslat jen aktivní poukaz.';
+                } elseif (! ($emailConfig['enabled'] ?? false)) {
+                    $error = 'E-mailové odesílání není v nastavení aktivní.';
+                } elseif (! sendVoucherEmail($emailConfig, $siteSettings, $voucher, $recipientEmail)) {
+                    $error = 'Poukaz se nepodařilo odeslat e-mailem.';
+                } else {
+                    $updateStatement = $connection->prepare(
+                        'UPDATE poukazy
+                         SET recipient_email = ?, emailed_at = NOW()
+                         WHERE id = ?
+                         LIMIT 1'
+                    );
+
+                    if ($updateStatement) {
+                        $updateStatement->bind_param('si', $recipientEmail, $voucherId);
+                        $updateStatement->execute();
+                        $updateStatement->close();
+                    }
+
+                    $message = 'Poukaz byl odeslán na e-mail ' . $recipientEmail . '.';
+                }
             }
         }
     }

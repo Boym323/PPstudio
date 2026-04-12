@@ -98,6 +98,10 @@
                                             <span>Příjemce (volitelné)</span>
                                             <input type="text" name="voucher_recipient_name" value="<?= escape($voucherForm['recipient_name']) ?>" placeholder="Jméno obdarované">
                                         </label>
+                                        <label>
+                                            <span>E-mail příjemce (volitelné)</span>
+                                            <input type="email" name="voucher_recipient_email" value="<?= escape($voucherForm['recipient_email']) ?>" placeholder="např. jana@example.cz">
+                                        </label>
                                         <label class="full-span">
                                             <span>Poznámka</span>
                                             <textarea name="voucher_note" rows="3" placeholder="Např. prodáno na místě"><?= escape($voucherForm['note']) ?></textarea>
@@ -159,6 +163,12 @@
                                                     </td>
                                                     <td data-label="Příjemce">
                                                         <?= escape((string) ($voucher['recipient_name'] ?? '')) ?>
+                                                        <?php if (trim((string) ($voucher['recipient_email'] ?? '')) !== ''): ?>
+                                                            <div class="voucher-note"><?= escape((string) $voucher['recipient_email']) ?></div>
+                                                        <?php endif; ?>
+                                                        <?php if (trim((string) ($voucher['emailed_at'] ?? '')) !== ''): ?>
+                                                            <div class="voucher-note">Naposledy odesláno: <?= escape(formatCzechDateTime((string) $voucher['emailed_at'])) ?></div>
+                                                        <?php endif; ?>
                                                         <?php if (trim((string) ($voucher['note'] ?? '')) !== ''): ?>
                                                             <div class="voucher-note"><?= escape((string) $voucher['note']) ?></div>
                                                         <?php endif; ?>
@@ -176,6 +186,34 @@
                                                             <div class="table-actions" style="margin-bottom: .55rem;">
                                                                 <a class="button button-secondary button-small" href="/admin-voucher-dl.php?id=<?= escape((string) $voucherId) ?>" target="_blank" rel="noopener noreferrer">DL tisk / PDF</a>
                                                             </div>
+                                                            <form method="post" class="admin-form compact-form compact-form-voucher voucher-send-mail-form">
+                                                                <?= csrfInputField() ?>
+                                                                <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
+                                                                <div class="voucher-email-row">
+                                                                    <input
+                                                                        type="email"
+                                                                        name="voucher_recipient_email"
+                                                                        value="<?= escape((string) ($voucher['recipient_email'] ?? '')) ?>"
+                                                                        placeholder="E-mail pro zaslání poukazu"
+                                                                        <?= $effectiveStatus === 'aktivni' ? '' : 'disabled' ?>
+                                                                        required
+                                                                    >
+                                                                    <button
+                                                                        class="button button-primary button-small"
+                                                                        type="submit"
+                                                                        name="send_voucher_email"
+                                                                        value="1"
+                                                                        <?= $effectiveStatus === 'aktivni' ? '' : 'disabled' ?>
+                                                                    >
+                                                                        Odeslat e-mailem
+                                                                    </button>
+                                                                </div>
+                                                                <div class="form-hint">
+                                                                    <?= $effectiveStatus === 'aktivni'
+                                                                        ? 'Po odeslání se e-mail uloží i k poukazu pro další použití.'
+                                                                        : 'E-mailem lze odesílat jen aktivní poukazy.' ?>
+                                                                </div>
+                                                            </form>
                                                             <?php if ($effectiveStatus === 'aktivni'): ?>
                                                                 <form method="post" class="admin-form compact-form compact-form-voucher" data-voucher-redeem-form data-voucher-remaining="<?= escape(number_format($remainingAmount, 2, '.', '')) ?>">
                                                                     <?= csrfInputField() ?>

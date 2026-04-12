@@ -311,6 +311,16 @@ function isValidVoucherVerifySignature(string $secret, int $voucherId, string $v
 
 function buildVoucherVerifyUrl(array $siteSettings, int $voucherId, string $voucherCode, ?string $secret = null): string
 {
+    return buildVoucherSignedPublicUrl($siteSettings, $voucherId, $voucherCode, '/voucher/verify', $secret);
+}
+
+function buildVoucherViewUrl(array $siteSettings, int $voucherId, string $voucherCode, ?string $secret = null): string
+{
+    return buildVoucherSignedPublicUrl($siteSettings, $voucherId, $voucherCode, '/voucher/view', $secret);
+}
+
+function buildVoucherSignedPublicUrl(array $siteSettings, int $voucherId, string $voucherCode, string $path, ?string $secret = null): string
+{
     $secret = trim((string) ($secret ?? ppstudioVoucherVerifySecret()));
     if ($voucherId <= 0 || $voucherCode === '' || $secret === '') {
         return '';
@@ -331,5 +341,5 @@ function buildVoucherVerifyUrl(array $siteSettings, int $voucherId, string $vouc
         $siteUrl = $scheme . '://' . $host;
     }
 
-    return $siteUrl . '/voucher/verify?v=' . $voucherId . '&sig=' . rawurlencode($signature);
+    return $siteUrl . $path . '?v=' . $voucherId . '&sig=' . rawurlencode($signature);
 }

@@ -1203,6 +1203,22 @@ p {
     white-space: normal;
 }
 
+.voucher-send-mail-form {
+    margin-bottom: 0.5rem;
+}
+
+.voucher-email-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.38rem;
+}
+
+.voucher-email-row .button {
+    min-width: 0;
+    width: 100%;
+    white-space: normal;
+}
+
 .voucher-link-reservation > summary {
     cursor: pointer;
     font-size: 0.79rem;

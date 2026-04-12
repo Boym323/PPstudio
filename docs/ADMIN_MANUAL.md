@@ -117,8 +117,16 @@ Praktický dopad:
 
 - Hromadné generování kódů poukazů.
 - Ruční vytvoření poukazu.
+- U jednotlivého poukazu lze uložit e-mail příjemce.
 - Pole `Platnost do` je u nového i hromadně generovaného poukazu předvyplněné na rok od aktuálního dne.
 - Částečné čerpání se zůstatkem a historií transakcí.
+- V detailu aktivního poukazu lze použít akci `Odeslat e-mailem`:
+- odešle dárkový poukaz na zadaný e-mail,
+- uloží e-mail příjemce i čas posledního odeslání k poukazu.
+- V e-mailu se otevírá veřejná stránka dárkového poukazu:
+- je vhodná pro klientku nebo obdarovanou,
+- nabízí tlačítko `Tisk / Uložit jako PDF`,
+- a obsahuje i odkaz na ověření platnosti poukazu.
 - Vazba čerpání na rezervaci:
 - vyhledání rezervace podle jména/telefonu/služby/data,
 - automatické předvyplnění částky podle ceny rezervace (max do výše zůstatku poukazu).

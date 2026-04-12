@@ -98,13 +98,21 @@ CREATE TABLE IF NOT EXISTS poukazy (
     issued_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at DATE NULL,
     recipient_name VARCHAR(180) NULL,
+    recipient_email VARCHAR(190) NULL,
     note TEXT NULL,
+    emailed_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uniq_poukazy_kod (kod),
     KEY idx_poukazy_status (status),
-    KEY idx_poukazy_expires_at (expires_at)
+    KEY idx_poukazy_expires_at (expires_at),
+    KEY idx_poukazy_recipient_email (recipient_email),
+    KEY idx_poukazy_emailed_at (emailed_at)
 );
+
+ALTER TABLE poukazy
+    ADD COLUMN IF NOT EXISTS recipient_email VARCHAR(190) NULL AFTER recipient_name,
+    ADD COLUMN IF NOT EXISTS emailed_at DATETIME NULL AFTER note;
 
 CREATE TABLE IF NOT EXISTS poukaz_cerpani (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
