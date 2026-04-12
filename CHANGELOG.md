@@ -17,6 +17,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [ux] V ceníku na webu byl z hlaviček kategorií odstraněn počet služeb, aby působil klidněji a méně katalogově (commit: `this-commit`)
+- [feat] Štítky v ceníku jsou nově spravované ručně v adminu u každé procedury přes pole `Štítek v ceníku`; web už je neodvozuje automaticky z názvu nebo pořadí (commit: `this-commit`)
+- [docs] `docs/ADMIN_MANUAL.md` doplněn o ruční správu štítků procedur v adminu (commit: `this-commit`)
 - [seo] Ve veřejných textech webu byla sjednocena komunikace lokace na obecné „ve Zlíně“ bez natvrdo uvedeného Interhotelu (homepage, galerie, sekce prostory) (commit: `this-commit`)
 - [fix] Veřejný kontakt a strukturovaná data nově zobrazují adresu jen pokud je skutečně vyplněná v nastavení (`contact_address`), bez tvrdého fallbacku adresy (commit: `this-commit`)
 - [feat] V adminu přidána nová sekce `Reminder log` s filtrem, stránkováním a přehledem DB auditních záznamů z `reservation-reminders.php` (run token, událost, úroveň, rezervace, kontext) (commit: `this-commit`)

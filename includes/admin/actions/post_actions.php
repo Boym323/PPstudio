@@ -634,6 +634,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
     $serviceId = (int) ($_POST['service_id'] ?? 0);
     $name = trim((string) ($_POST['nazev'] ?? ''));
     $categoryId = (int) ($_POST['kategorie_id'] ?? 0);
+    $badge = trim((string) ($_POST['stitek'] ?? ''));
     $description = trim((string) ($_POST['popis'] ?? ''));
     $price = trim((string) ($_POST['cena'] ?? ''));
     $duration = trim((string) ($_POST['doba_trvani'] ?? ''));
@@ -642,6 +643,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
         'id' => $serviceId,
         'nazev' => $name,
         'kategorie_id' => $categoryId > 0 ? (string) $categoryId : '',
+        'stitek' => $badge,
         'kategorie' => '',
         'kategorie_poradi' => '',
         'popis' => $description,
@@ -651,6 +653,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
 
     if ($name === '' || $duration === '') {
         $error = 'Název a délka trvání procedury jsou povinné.';
+    } elseif ($badge !== '' && mb_strlen($badge) > 80) {
+        $error = 'Štítek může mít maximálně 80 znaků.';
     } elseif (! ctype_digit($duration) || (int) $duration <= 0) {
         $error = 'Délka trvání musí být kladné číslo v minutách.';
     } elseif ($categoryId <= 0) {
@@ -689,14 +693,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
             }
             $priceChanged = $originalPrice !== $normalizedPrice;
 
-            $statement = $connection->prepare('UPDATE sluzby SET nazev = ?, kategorie_id = ?, popis = ?, cena = ?, doba_trvani = ? WHERE id = ?');
+            $statement = $connection->prepare('UPDATE sluzby SET nazev = ?, kategorie_id = ?, stitek = ?, popis = ?, cena = ?, doba_trvani = ? WHERE id = ?');
             if ($statement) {
-                $statement->bind_param('sisdii', $name, $resolvedCategoryId, $description, $normalizedPrice, $durationValue, $serviceId);
+                $statement->bind_param('sissdii', $name, $resolvedCategoryId, $badge, $description, $normalizedPrice, $durationValue, $serviceId);
             }
         } else {
-            $statement = $connection->prepare('INSERT INTO sluzby (nazev, kategorie_id, popis, cena, doba_trvani) VALUES (?, ?, ?, ?, ?)');
+            $statement = $connection->prepare('INSERT INTO sluzby (nazev, kategorie_id, stitek, popis, cena, doba_trvani) VALUES (?, ?, ?, ?, ?, ?)');
             if ($statement) {
-                $statement->bind_param('sisdi', $name, $resolvedCategoryId, $description, $normalizedPrice, $durationValue);
+                $statement->bind_param('sissdi', $name, $resolvedCategoryId, $badge, $description, $normalizedPrice, $durationValue);
             }
         }
 
@@ -714,7 +718,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
 
                 $connection->commit();
                 $message = $serviceId > 0 ? 'Procedura byla upravena.' : 'Nová procedura byla přidána.';
-                $serviceForm = ['id' => 0, 'nazev' => '', 'kategorie_id' => '', 'kategorie' => '', 'kategorie_poradi' => '', 'popis' => '', 'cena' => '', 'doba_trvani' => ''];
+                $serviceForm = ['id' => 0, 'nazev' => '', 'kategorie_id' => '', 'stitek' => '', 'kategorie' => '', 'kategorie_poradi' => '', 'popis' => '', 'cena' => '', 'doba_trvani' => ''];
             } catch (Throwable $exception) {
                 $connection->rollback();
                 $error = 'Proceduru se nepodařilo uložit.';

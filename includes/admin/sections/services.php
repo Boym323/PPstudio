@@ -87,6 +87,7 @@
                                 <div class="service-form-fields">
                                     <label><span>Cena v Kč</span><input type="number" name="cena" min="0" step="1" value="<?= escape($serviceForm['cena']) ?>"></label>
                                     <label><span>Délka v minutách</span><input type="number" name="doba_trvani" min="15" step="15" value="<?= escape($serviceForm['doba_trvani']) ?>" required></label>
+                                    <label><span>Štítek v ceníku</span><input type="text" name="stitek" maxlength="80" value="<?= escape($serviceForm['stitek'] ?? '') ?>" placeholder="např. Doporučeno"></label>
                                 </div>
                             </div>
                             <div class="service-form-panel">
@@ -143,6 +144,7 @@
                                     <?php foreach ($serviceRows as $row): ?>
 	                                        <?php
 	                                            $serviceDescription = trim((string) ($row['popis'] ?? ''));
+                                                $serviceBadge = trim((string) ($row['stitek'] ?? ''));
 	                                            $serviceIsActive = (int) ($row['service_active'] ?? 1) === 1;
 	                                            $serviceCategoryLabel = trim((string) ($row['kategorie'] ?? '')) !== '' ? (string) $row['kategorie'] : 'Ostatní služby';
                                                 $serviceHistoryItems = $servicePriceHistoryByService[(int) ($row['id'] ?? 0)] ?? [];
@@ -151,6 +153,9 @@
                                         <tr class="service-list-row">
                                             <td data-label="Procedura">
                                                 <div class="reservation-service-main"><?= escape((string) $row['nazev']) ?></div>
+                                                <?php if ($serviceBadge !== ''): ?>
+                                                    <div class="reservation-service-meta"><?= escape($serviceBadge) ?></div>
+                                                <?php endif; ?>
                                                 <div class="reservation-service-meta"><?= escape($serviceDescription !== '' ? (function_exists('mb_strimwidth') ? mb_strimwidth($serviceDescription, 0, 90, '…', 'UTF-8') : (strlen($serviceDescription) > 90 ? substr($serviceDescription, 0, 87) . '...' : $serviceDescription)) : 'Bez popisu') ?></div>
                                             </td>
                                             <td data-label="Kategorie"><?= escape($serviceCategoryLabel) ?></td>
@@ -176,6 +181,7 @@
                                                         <div class="service-detail-list">
                                                             <div><strong>Název</strong><span><?= escape((string) $row['nazev']) ?></span></div>
                                                             <div><strong>Kategorie</strong><span><?= escape($serviceCategoryLabel) ?></span></div>
+                                                            <div><strong>Štítek</strong><span><?= escape($serviceBadge !== '' ? $serviceBadge : 'Bez štítku') ?></span></div>
                                                             <div><strong>Cena</strong><span><?= escape(formatPrice($row['cena'] ?? null)) ?></span></div>
                                                             <div><strong>Délka</strong><span><?= escape(formatDuration($row['doba_trvani'] ?? null)) ?></span></div>
                                                         </div>

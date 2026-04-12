@@ -106,6 +106,10 @@ Praktický dopad:
 - formulář pro založení nebo úpravu služby,
 - filtrování podle názvu/popisu/kategorie/stavu,
 - kompaktní přehled procedur s tlačítkem `Detail`.
+- U každé procedury lze volitelně vyplnit pole `Štítek v ceníku`:
+- zobrazuje se přímo na webu v ceníku vedle názvu procedury,
+- je plně ruční, už se neodvozuje automaticky z názvu služby,
+- vhodné příklady: `Doporučeno`, `První návštěva`, `Nejoblíbenější`.
 - V detailu procedury je vidět plný popis, rychlá správa aktivace/deaktivace a vlastní cenová historie.
 - V `Kategorie` je:
 - formulář pro název a pořadí,

@@ -194,6 +194,7 @@ $serviceForm = [
     'id' => 0,
     'nazev' => '',
     'kategorie_id' => '',
+    'stitek' => '',
     'kategorie' => '',
     'kategorie_poradi' => '',
     'popis' => '',
@@ -377,7 +378,7 @@ if (! $connection->connect_errno) {
         $editServiceId = (int) $_GET['edit_service'];
         if ($editServiceId > 0) {
             $statement = $connection->prepare(
-                'SELECT s.id, s.nazev, s.kategorie_id, c.nazev AS kategorie, c.poradi AS kategorie_poradi, s.popis, s.cena, s.doba_trvani
+                'SELECT s.id, s.nazev, s.kategorie_id, s.stitek, c.nazev AS kategorie, c.poradi AS kategorie_poradi, s.popis, s.cena, s.doba_trvani
                  FROM sluzby s
                  LEFT JOIN kategorie c ON c.id = s.kategorie_id
                  WHERE s.id = ?
@@ -386,12 +387,13 @@ if (! $connection->connect_errno) {
             if ($statement) {
                 $statement->bind_param('i', $editServiceId);
                 $statement->execute();
-                $statement->bind_result($id, $nazev, $kategorieId, $kategorie, $kategoriePoradi, $popis, $cena, $dobaTrvani);
+                $statement->bind_result($id, $nazev, $kategorieId, $stitek, $kategorie, $kategoriePoradi, $popis, $cena, $dobaTrvani);
                 if ($statement->fetch()) {
                     $serviceForm = [
                         'id' => (int) $id,
                         'nazev' => (string) $nazev,
                         'kategorie_id' => $kategorieId !== null ? (string) $kategorieId : '',
+                        'stitek' => (string) ($stitek ?? ''),
                         'kategorie' => (string) ($kategorie ?? ''),
                         'kategorie_poradi' => $kategoriePoradi !== null ? (string) $kategoriePoradi : '',
                         'popis' => (string) $popis,

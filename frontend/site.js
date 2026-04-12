@@ -295,18 +295,8 @@
       return 'Vyberte si variantu, která je nejblíž vašemu cíli. Pokud budete chtít, finální péči spolu na místě doladíme.';
     };
 
-    const getServiceBadge = (service, indexInGroup) => {
-      const name = String(service?.name || '').toLowerCase();
-      if (name.includes('uvod') || name.includes('úvod') || name.includes('konzult')) {
-        return 'První návštěva';
-      }
-      if (name.includes('basic') || name.includes('klas')) {
-        return 'Jistá volba';
-      }
-      if (indexInGroup === 0) {
-        return 'Doporučeno';
-      }
-      return '';
+    const getServiceBadge = (service) => {
+      return String(service?.badge || '').trim();
     };
 
     fetch('/api/services.php', { headers: { 'X-Requested-With': 'fetch' } })
@@ -357,7 +347,6 @@
               <div class="pricing-group-title">${escapeHtml(category)}</div>
               <p class="pricing-group-intro">${escapeHtml(getCategoryHint(category))}</p>
             </div>
-            <span class="pricing-group-count">${group.items.length} ${group.items.length === 1 ? 'služba' : group.items.length < 5 ? 'služby' : 'služeb'}</span>
           `;
           block.appendChild(header);
 
@@ -374,7 +363,7 @@
             row.className = 'pricing-text-row';
             const serviceName = escapeHtml(service.name || 'Služba');
             const description = String(service.description || '').trim();
-            const badge = getServiceBadge(service, indexInGroup);
+            const badge = getServiceBadge(service);
             const serviceDescription = description !== ''
               ? `<div class="pricing-service-description">${escapeHtml(description)}</div>`
               : '<div class="pricing-service-description pricing-service-description-empty"></div>';

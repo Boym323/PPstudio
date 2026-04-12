@@ -30,7 +30,7 @@ $connection->set_charset($dbConfig['charset']);
 
 $items = [];
 $query = $connection->query(
-    "SELECT s.id, s.nazev, c.nazev AS kategorie, c.poradi AS kategorie_poradi, s.popis, s.cena, s.doba_trvani
+    "SELECT s.id, s.nazev, s.stitek, c.nazev AS kategorie, c.poradi AS kategorie_poradi, s.popis, s.cena, s.doba_trvani
      FROM sluzby s
      LEFT JOIN kategorie c ON c.id = s.kategorie_id
      WHERE s.aktivni = 1
@@ -48,6 +48,7 @@ if ($query instanceof mysqli_result) {
             'name' => (string) ($row['nazev'] ?? ''),
             'category' => $category !== '' ? $category : 'Ostatní služby',
             'category_order' => $row['kategorie_poradi'] !== null ? (int) $row['kategorie_poradi'] : null,
+            'badge' => trim((string) ($row['stitek'] ?? '')),
             'description' => trim((string) ($row['popis'] ?? '')),
             'duration' => (int) ($row['doba_trvani'] ?? 0),
             'price' => $row['cena'] !== null ? (float) $row['cena'] : null,

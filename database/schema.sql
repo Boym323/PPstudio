@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sluzby (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nazev VARCHAR(150) NOT NULL,
     kategorie_id INT UNSIGNED NOT NULL,
+    stitek VARCHAR(80) NULL,
     popis TEXT NULL,
     cena DECIMAL(10,2) NULL,
     doba_trvani INT NULL,

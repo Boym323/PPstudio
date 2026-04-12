@@ -54,7 +54,7 @@ if (($serviceFilters['q'] ?? '') !== '') {
 }
 
 $serviceQuery = $connection->query(
-    "SELECT s.id, s.nazev, s.kategorie_id, s.aktivni AS service_active, c.nazev AS kategorie, c.poradi AS kategorie_poradi, c.aktivni AS category_active, s.popis, s.cena, s.doba_trvani
+    "SELECT s.id, s.nazev, s.kategorie_id, s.stitek, s.aktivni AS service_active, c.nazev AS kategorie, c.poradi AS kategorie_poradi, c.aktivni AS category_active, s.popis, s.cena, s.doba_trvani
      FROM sluzby s
      LEFT JOIN kategorie c ON c.id = s.kategorie_id
      WHERE " . implode(' AND ', $serviceWhere) . "
