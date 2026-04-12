@@ -17,6 +17,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [ux] Text na stránce `Prostory` byl upraven tak, aby jen oznamoval přípravu nových fotografií prostoru bez odkazů na předchozí stav webu nebo staré podklady (commit: `this-commit`)
+- [fix] Ze stránky `Prostory` byly staženy neaktuální fotografie starého salonu a nahrazeny poctivou informací, že nové fotky aktuálního prostoru se teprve připravují (commit: `this-commit`)
 - [refactor] `reservation-reminders.php` nově zapisuje do `reservation_reminder_logs` jen jeden souhrnný záznam za běh místo více dílčích řádků, aby byl reminder log v adminu přehlednější (commit: `this-commit`)
 - [ux] V ceníku na webu byl z hlaviček kategorií odstraněn počet služeb, aby působil klidněji a méně katalogově (commit: `this-commit`)
 - [feat] Štítky v ceníku jsou nově spravované ručně v adminu u každé procedury přes pole `Štítek v ceníku`; web už je neodvozuje automaticky z názvu nebo pořadí (commit: `this-commit`)

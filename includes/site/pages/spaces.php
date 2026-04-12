@@ -3,31 +3,19 @@
         <h1 class="section-title">Naše <span>Prostory</span></h1>
         <div class="spaces-content">
             <div class="spaces-gallery">
-                <a href="/frontend/Prostor5.jpg" class="lightbox-link"><img src="/frontend/Prostor5m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor9.jpeg" class="lightbox-link"><img src="/frontend/Prostor9m.jpg" alt="Relaxační zóna"></a>
-                <a href="/frontend/Prostor1.jpg" class="lightbox-link"><img src="/frontend/Prostor1m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor2.jpg" class="lightbox-link"><img src="/frontend/Prostor2m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor4.jpg" class="lightbox-link"><img src="/frontend/Prostor4m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor6.jpg" class="lightbox-link"><img src="/frontend/Prostor6m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor7.jpg" class="lightbox-link"><img src="/frontend/Prostor7m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
-                <a href="/frontend/Prostor8.jpg" class="lightbox-link"><img src="/frontend/Prostor8m.jpg" alt="Kosmetický salon - hlavní místnost"></a>
+                <div class="pricing-guide-card">
+                    <strong>Nové fotografie připravujeme</strong>
+                    <span>Fotky nového prostoru teď připravujeme. Jakmile budou hotové, doplníme je sem.</span>
+                </div>
             </div>
             <div class="spaces-desc">
-                <h3>Luxusní a pohodlné zázemí</h3>
+                <h3>Fotky nového prostoru brzy doplním</h3>
                 <p>
-                    Moje služby probíhají v útulných, moderně vybavených prostorách navržených pro klid, pohodlí a soukromí.<br>
-                    Interiér je navržený s důrazem na soukromí, čistotu, relax a komfort každé klientky.<br>
-                    Věřím, že prostředí, ve kterém se o vás starám, je stejně důležité jako samotné ošetření.<br>
-                    Proto jsem vytvořila prostor, kde se budete cítit příjemně a uvolněně.<br>
-                    Studio je vybaveno nejmodernějšími přístroji a kvalitní kosmetikou, abych vám mohla nabídnout tu nejlepší péči.<br>
-                    Přijďte si odpočinout a nechat se hýčkat v prostředí, které jsem pro vás s láskou připravila.<br>
+                    Fotky nového prostoru ještě připravuji, proto je sem doplním až ve chvíli, kdy budou hotové.<br>
+                    Do té doby se můžete spolehnout, že vás čeká příjemné, klidné prostředí a péče bez spěchu.<br>
                     Těším se na vaši návštěvu!
                 </p>
             </div>
         </div>
-    </div>
-    <div id="lightbox-overlay" style="display:none;">
-        <img id="lightbox-img" src="" alt="Prostor">
-        <span id="lightbox-close">&times;</span>
     </div>
 </section>
