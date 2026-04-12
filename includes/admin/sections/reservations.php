@@ -73,6 +73,7 @@
                                             $statusKey = (string) ($row['stav'] ?? 'nova');
                                             $statusLabel = reservationStatusLabel($statusKey);
                                             $sourceLabel = $reservationSourceOptions[(string) ($row['zdroj'] ?? '')] ?? ucfirst((string) ($row['zdroj'] ?? 'web'));
+                                            $reminderSentAt = trim((string) ($row['reminder_sent_at'] ?? ''));
                                             $clientNote = trim((string) ($row['poznamka_klienta'] ?? ''));
                                             $adminNote = trim((string) ($row['poznamka_admina'] ?? ''));
                                             $cancelReason = trim((string) ($row['duvod_zruseni'] ?? ''));
@@ -115,6 +116,7 @@
                                                                     <div><strong>Klientka</strong><span><?= escape((string) $row['jmeno']) ?></span></div>
                                                                     <div><strong>Kontakt</strong><span><?= escape((string) $row['email']) ?><?php if ((string) ($row['telefon'] ?? '') !== ''): ?><br><?= escape((string) $row['telefon']) ?><?php endif; ?></span></div>
                                                                     <div><strong>Zdroj</strong><span><?= escape($sourceLabel) ?></span></div>
+                                                                    <div><strong>Reminder</strong><span><?= escape($reminderSentAt !== '' ? 'Odeslán ' . formatCzechDateTime($reminderSentAt) : 'Zatím neodeslán') ?></span></div>
                                                                 </div>
                                                             </div>
                                                             <div class="reservation-detail-block">

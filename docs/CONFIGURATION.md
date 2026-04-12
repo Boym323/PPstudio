@@ -65,6 +65,12 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `PPSTUDIO_ACTION_SECRET`
 - `PPSTUDIO_VOUCHER_VERIFY_SECRET`
 - `PPSTUDIO_ACTION_TTL_SECONDS`
+- `PPSTUDIO_CUSTOMER_ACTION_CUTOFF_SECONDS`
+- `PPSTUDIO_RESERVATION_REMINDER_LEAD_SECONDS`
+- `PPSTUDIO_RESERVATION_REMINDER_WINDOW_SECONDS`
+- Doporučené výchozí nastavení reminderu:
+- `PPSTUDIO_RESERVATION_REMINDER_LEAD_SECONDS=93600` (`26 hodin`)
+- `PPSTUDIO_RESERVATION_REMINDER_WINDOW_SECONDS=3600` (`1 hodina`)
 
 ### Integrace a bezpečnost
 
@@ -84,6 +90,9 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `config/admin_lite.php`: přihlášení do user adminu.
 - `config/email.php`: SMTP a e-mailové klíče.
 - `includes/settings.php`: čtení/zápis `nastaveni`.
+- `reservation-reminders.php`: CLI runner pro automatické reminder e-maily rezervací.
+- Doporučený cron příkaz:
+- `php /Volumes/web/ppstudio.cz/reservation-reminders.php`
 
 ## 4) Praktická pravidla
 

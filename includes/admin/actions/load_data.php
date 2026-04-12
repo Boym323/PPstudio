@@ -365,7 +365,7 @@ $offset = ($reservationFilters['page'] - 1) * $reservationFilters['per_page'];
 
 $reservationQuery = $connection->query(
     "SELECT r.id, r.sluzba AS service_id, r.jmeno, r.email, r.telefon, r.zdroj, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav, r.cena_v_dobe_rezervace,
-            r.duvod_zruseni, r.zruseno_kym, r.zruseno_uzivatel, r.zruseno_at, s.nazev
+            r.duvod_zruseni, r.zruseno_kym, r.zruseno_uzivatel, r.zruseno_at, r.reminder_sent_at, s.nazev
      FROM rezervace r
      INNER JOIN sluzby s ON s.id = r.sluzba
      WHERE {$whereSql}

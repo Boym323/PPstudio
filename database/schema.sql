@@ -40,8 +40,10 @@ CREATE TABLE IF NOT EXISTS rezervace (
     zruseno_kym VARCHAR(40) NULL,
     zruseno_uzivatel VARCHAR(120) NULL,
     zruseno_at DATETIME NULL,
+    reminder_sent_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_rezervace_zruseno_at (zruseno_at),
+    KEY idx_rezervace_reminder_sent_at (reminder_sent_at),
     CONSTRAINT fk_rezervace_sluzba
         FOREIGN KEY (sluzba) REFERENCES sluzby(id)
         ON UPDATE CASCADE

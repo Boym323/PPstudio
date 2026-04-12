@@ -17,4 +17,6 @@ return [
     'action_secret' => ppstudioEnv('PPSTUDIO_ACTION_SECRET', ''),
     'action_ttl_seconds' => (int) (ppstudioEnv('PPSTUDIO_ACTION_TTL_SECONDS', '172800')),
     'customer_action_cutoff_seconds' => (int) (ppstudioEnv('PPSTUDIO_CUSTOMER_ACTION_CUTOFF_SECONDS', '86400')),
+    'reservation_reminder_lead_seconds' => (int) (ppstudioEnv('PPSTUDIO_RESERVATION_REMINDER_LEAD_SECONDS', '93600')),
+    'reservation_reminder_window_seconds' => (int) (ppstudioEnv('PPSTUDIO_RESERVATION_REMINDER_WINDOW_SECONDS', '3600')),
 ];

@@ -50,6 +50,10 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 - Veřejný rezervační formulář se po odeslání nově potvrzuje přímo na stránce bez reloadu; klientka po úspěchu uvidí finální potvrzovací kartu.
 - Stránka klientského přesunu termínu používá stejný kalendář dostupnosti jako rezervace a potvrzení přesunu probíhá nově bez reloadu, přímo s potvrzovací kartou na stránce.
 - Zákaznické odkazy `Přesunout termín` a `Zrušit rezervaci` fungují nejpozději do 24 hodin před začátkem procedury; později se klientce už v potvrzovacím e-mailu nezobrazí.
+- Potvrzené rezervace s e-mailem dostávají automatický reminder zhruba den před termínem (výchozí okno 26 hodin předem, s hodinovým tolerančním oknem).
+- V detailu rezervace je nově vidět i stav reminderu:
+- `Zatím neodeslán`
+- nebo přesný čas `Odeslán ...`
 
 #### Stavy rezervace
 
@@ -76,6 +80,9 @@ Praktický dopad:
 
 - Test notifikací a kontrola e-mailových šablon.
 - Ověření, že SMTP odesílá korektně.
+- Automatický reminder rezervací spouští CLI skript `reservation-reminders.php` (typicky přes cron jednou za hodinu).
+- Doporučený cron příkaz:
+- `php /Volumes/web/ppstudio.cz/reservation-reminders.php`
 
 ### Antispam log
 

@@ -293,6 +293,83 @@ function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, 
     );
 }
 
+function sendReservationReminderEmail(array $emailConfig, array $siteSettings, array $reservation): bool
+{
+    if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
+        return false;
+    }
+
+    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
+    $subject = $siteName . ': připomínka rezervace';
+    $customerName = trim((string) ($reservation['jmeno'] ?? ''));
+    $serviceName = trim((string) ($reservation['service_name'] ?? 'Vybraná procedura'));
+    $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+    $address = trim((string) setting($siteSettings, 'contact_address', ''));
+    $rescheduleUrl = buildReservationCustomerRescheduleUrl($emailConfig, $siteSettings, $reservation);
+    $cancelUrl = buildReservationCustomerCancelUrl($emailConfig, $siteSettings, $reservation);
+
+    $textBody = "Dobrý den";
+    if ($customerName !== '') {
+        $textBody .= ' ' . $customerName;
+    }
+    $textBody .= ",\n\n"
+        . "připomínáme vaši rezervaci v {$siteName}.\n\n"
+        . "Procedura: {$serviceName}\n"
+        . "Termín: {$dateTime}\n";
+
+    if ($address !== '') {
+        $textBody .= "Místo: {$address}\n";
+    }
+
+    if ($rescheduleUrl !== '' || $cancelUrl !== '') {
+        $textBody .= "\nPokud potřebujete termín upravit, můžete využít odkaz v tomto e-mailu.\n";
+    }
+
+    $textBody .= "\nTěšíme se na vaši návštěvu.\n\n{$siteName}";
+
+    $htmlBody = '<p>Dobrý den';
+    if ($customerName !== '') {
+        $htmlBody .= ' ' . escape($customerName);
+    }
+    $htmlBody .= ',</p>'
+        . '<p>připomínáme vaši rezervaci v <strong>' . escape($siteName) . '</strong>.</p>'
+        . '<div style="margin:18px 0;padding:16px 18px;border:1px solid #eadccf;border-radius:18px;background:#fffaf4;">'
+        . '<p style="margin:0 0 10px;"><strong>Procedura:</strong> ' . escape($serviceName) . '</p>'
+        . '<p style="margin:0 0 10px;"><strong>Termín:</strong> ' . escape($dateTime) . '</p>';
+
+    if ($address !== '') {
+        $htmlBody .= '<p style="margin:0;"><strong>Místo:</strong> ' . nl2br(escape($address)) . '</p>';
+    }
+
+    $htmlBody .= '</div>';
+
+    if ($rescheduleUrl !== '' || $cancelUrl !== '') {
+        $htmlBody .= '<p>Pokud potřebujete termín upravit, můžete využít některou z těchto možností:</p>'
+            . '<div style="margin:18px 0;">';
+
+        if ($rescheduleUrl !== '') {
+            $htmlBody .= '<a href="' . escape($rescheduleUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Přesunout termín</a>';
+        }
+
+        if ($cancelUrl !== '') {
+            $htmlBody .= '<a href="' . escape($cancelUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#fff7f0;border:1px solid #d8b2a9;color:#8b5f56;text-decoration:none;font-weight:700;">Zrušit termín</a>';
+        }
+
+        $htmlBody .= '</div>';
+    }
+
+    $htmlBody .= '<p>Těšíme se na vaši návštěvu.</p>'
+        . '<p>' . escape($siteName) . '</p>';
+
+    return sendPhpMailerMessage(
+        (string) $reservation['email'],
+        $subject,
+        $htmlBody,
+        $textBody,
+        $emailConfig
+    );
+}
+
 function buildReservationIcal(array $siteSettings, array $reservation): string
 {
     $siteName = setting($siteSettings, 'site_name', defaultSiteName());
@@ -602,7 +679,7 @@ function loadReservationDetails(mysqli $connection, int $reservationId): ?array
 {
     $statement = $connection->prepare(
         'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
-                r.cena_v_dobe_rezervace, s.nazev, s.doba_trvani
+                r.cena_v_dobe_rezervace, r.reminder_sent_at, s.nazev, s.doba_trvani
          FROM rezervace r
          INNER JOIN sluzby s ON s.id = r.sluzba
          WHERE r.id = ?
@@ -615,7 +692,7 @@ function loadReservationDetails(mysqli $connection, int $reservationId): ?array
 
     $statement->bind_param('i', $reservationId);
     $statement->execute();
-    $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $serviceName, $serviceDuration);
+    $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $reminderSentAt, $serviceName, $serviceDuration);
     $reservation = null;
 
     if ($statement->fetch()) {
@@ -630,6 +707,7 @@ function loadReservationDetails(mysqli $connection, int $reservationId): ?array
             'datum_cas' => $dateTime,
             'stav' => $status,
             'service_price' => $servicePrice !== null ? (float) $servicePrice : null,
+            'reminder_sent_at' => $reminderSentAt,
             'service_name' => $serviceName,
             'service_duration' => $serviceDuration,
         ];

@@ -66,6 +66,11 @@ function securityEventLog(
         return false;
     }
 
+    if (! class_exists('mysqli')) {
+        securityEventLogFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
+        return false;
+    }
+
     $connection = @new mysqli(
         (string) ($dbConfig['host'] ?? ''),
         (string) ($dbConfig['username'] ?? ''),

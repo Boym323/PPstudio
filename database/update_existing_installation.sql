@@ -8,9 +8,11 @@ ALTER TABLE rezervace
     ADD COLUMN IF NOT EXISTS duvod_zruseni VARCHAR(255) NULL AFTER stav,
     ADD COLUMN IF NOT EXISTS zruseno_kym VARCHAR(40) NULL AFTER duvod_zruseni,
     ADD COLUMN IF NOT EXISTS zruseno_uzivatel VARCHAR(120) NULL AFTER zruseno_kym,
-    ADD COLUMN IF NOT EXISTS zruseno_at DATETIME NULL AFTER zruseno_uzivatel;
+    ADD COLUMN IF NOT EXISTS zruseno_at DATETIME NULL AFTER zruseno_uzivatel,
+    ADD COLUMN IF NOT EXISTS reminder_sent_at DATETIME NULL AFTER zruseno_at;
 
 CREATE INDEX IF NOT EXISTS idx_rezervace_zruseno_at ON rezervace (zruseno_at);
+CREATE INDEX IF NOT EXISTS idx_rezervace_reminder_sent_at ON rezervace (reminder_sent_at);
 
 CREATE TABLE IF NOT EXISTS kategorie (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

@@ -15,6 +15,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - [feat] Do potvrzovacího e-mailu doplněno tlačítko „Přesunout termín“ vedle zrušení rezervace (commit: `this-commit`)
 - [security] Rozšířena data rezervace o `service_id` a přidán audit event `reservation_customer_rescheduled` (commit: `this-commit`)
 
+## 2026-04-12
+
+- [feat] Přidán automatický reminder potvrzených rezervací e-mailem (výchozí 26 hodin předem) včetně evidence `reminder_sent_at`, CLI runneru `reservation-reminders.php` a zobrazení stavu reminderu v detailu rezervace (commit: `this-commit`)
+
 ## 2026-04-10
 
 - [refactor] Z konfigurace a admin sekce `Recenze a social` byly odstraněny nepoužívané klíče `instagram_url` a `instagram_feed_embed`, vyčištěny SQL seedy a smazány staré hodnoty z live DB `nastaveni` (commit: `this-commit`)
