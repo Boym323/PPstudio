@@ -290,22 +290,34 @@ $antispamPagination = [
 ];
 $allowedAdminTabs = [
     'dashboard',
-    'kalendar',
-    'emaily',
     'antispam-log',
     'dostupnost',
     'rezervace-list',
     'sluzby-admin',
     'poukazy',
     'media',
-    'recenze-napojeni',
     'nastaveni',
 ];
 $adminTab = trim((string) ($_GET['tab'] ?? 'dashboard'));
+if ($adminTab === 'kalendar') {
+    $adminTab = 'rezervace-list';
+}
+if ($adminTab === 'recenze-napojeni') {
+    $adminTab = 'nastaveni';
+    $_GET['settings_section'] = 'recenze';
+}
+if ($adminTab === 'emaily') {
+    $adminTab = 'nastaveni';
+    $_GET['settings_section'] = 'email';
+}
 if (! in_array($adminTab, $allowedAdminTabs, true)) {
     $adminTab = 'dashboard';
 }
 $adminBasePath = 'admin.php';
+$settingsSection = (string) ($_GET['settings_section'] ?? 'studio');
+if (! in_array($settingsSection, ['studio', 'recenze', 'email'], true)) {
+    $settingsSection = 'studio';
+}
 $studioSettingFields = [
     'site_name' => 'Název studia',
     'site_url' => 'URL webu',

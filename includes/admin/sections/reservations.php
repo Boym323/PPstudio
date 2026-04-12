@@ -2,6 +2,17 @@
                     <div class="admin-note" data-reservations-root>
                         <p class="eyebrow">Rezervace</p>
                         <h2>Objednávky a jejich aktuální stav</h2>
+                        <?php if ($subscriptionCalendarUrl !== ''): ?>
+                            <div class="reservation-calendar-cta">
+                                <div>
+                                    <h3>Kalendář rezervací</h3>
+                                    <p class="form-hint">Kalendářový feed rezervací je pořád po ruce přímo tady v sekci rezervací.</p>
+                                </div>
+                                <div class="table-actions">
+                                    <a class="button button-secondary button-small" href="<?= escape(webcalToHttps($subscriptionCalendarUrl)) ?>" target="_blank" rel="noreferrer">Otevřít kalendář</a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                         <form method="get" action="<?= escape($adminBasePath ?? 'admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="rezervace-list">
                             <label>

@@ -39,6 +39,7 @@ Tento manuál je praktický návod pro každodenní práci v adminu.
 ### Rezervace
 
 - Filtrování podle jména/e-mailu/telefonu/stavu/období.
+- Nahoře je i rychlá akce `Otevřít kalendář`, která otevře kalendářový feed rezervací.
 - Přehled je nově kompaktní seznam s tlačítkem `Detail`.
 - V detailu rezervace lze:
 - upravit stav rezervace,
@@ -70,33 +71,6 @@ Praktický dopad:
 - proceduru lze vybrat jen z aktivních služeb v aktivních kategoriích,
 - termín se vybírá zvlášť jako `Den` + `Čas`,
 - nabídnou se jen skutečně volné termíny podle aktuální dostupnosti.
-
-### Kalendář
-
-- Týdenní/měsíční přehled rezervací.
-- Náhled obsazenosti a návaznost na plánování dostupnosti.
-
-### E-mail
-
-- Test notifikací a kontrola e-mailových šablon.
-- Ověření, že SMTP odesílá korektně.
-- Automatický reminder rezervací spouští CLI skript `reservation-reminders.php` (typicky přes cron jednou za hodinu).
-- Doporučený cron příkaz:
-- `php /Volumes/web/ppstudio.cz/reservation-reminders.php`
-
-### Antispam log
-
-- Přehled bezpečnostních událostí s filtrem podle důvodu, textu a počtu řádků.
-- Seznam je zjednodušený, detail události se otevírá přes tlačítko `Detail`.
-- V detailu je vidět:
-- čas,
-- důvod,
-- sekce,
-- IP adresa,
-- user-agent,
-- plný kontext události.
-- Je přidané stránkování, takže lze procházet i starší události.
-- Pokud systém běží ve fallback režimu bez DB tabulky `security_events`, zobrazuje pouze události rezervačního formuláře.
 
 ### Dostupnost
 
@@ -174,17 +148,47 @@ Pravidlo:
 - po nahrání lze u každého upravit název, který se ukáže na webu,
 - certifikát lze samostatně smazat bez zásahu do ostatních souborů.
 
-### Recenze a social
+### Nastavení studia a webu
 
-- Odkazy na Google a Firmy.cz.
-- Pole `Firmy.cz embed` slouží pro vložení widgetu recenzí na web.
-- Instagram pro klienty se spravuje jen přes `Nastavení studia -> Instagram URL`.
+- Sekce je nově rozdělená do podsekcí:
+- `Studio a kontakt`
+- `Recenze a sociální sítě`
+- `E-mailové notifikace`
 
-### Nastavení studia
+#### Studio a kontakt
 
 - Hlavní kontaktní údaje.
 - Název webu, URL, provozní informace.
-- Odesílací a notifikační vazby jsou zde jen částečně, tajné údaje jsou v `.env`.
+- Instagram pro klienty se spravuje právě zde přes `Instagram URL`.
+
+#### Recenze a sociální sítě
+
+- Odkazy na Google a Firmy.cz.
+- Pole `Firmy.cz embed` slouží pro vložení widgetu recenzí na web.
+- Správa napojení Google recenzí (`Google place ID`, jazyk recenzí).
+
+#### E-mailové notifikace
+
+- Přehled odesílací adresy, reply-to a SMTP hostu.
+- Úprava adres v poli `Komu chodí notifikace`.
+- Připomenutí, že technické SMTP údaje a tajné klíče zůstávají v `.env`.
+- Automatický reminder rezervací spouští CLI skript `reservation-reminders.php` (typicky přes cron jednou za hodinu).
+- Doporučený cron příkaz:
+- `php /Volumes/web/ppstudio.cz/reservation-reminders.php`
+
+### Antispam log
+
+- Přehled bezpečnostních událostí s filtrem podle důvodu, textu a počtu řádků.
+- Seznam je zjednodušený, detail události se otevírá přes tlačítko `Detail`.
+- V detailu je vidět:
+- čas,
+- důvod,
+- sekce,
+- IP adresa,
+- user-agent,
+- plný kontext události.
+- Je přidané stránkování, takže lze procházet i starší události.
+- Pokud systém běží ve fallback režimu bez DB tabulky `security_events`, zobrazuje pouze události rezervačního formuláře.
 
 ## 4) Doporučený provozní postup
 
