@@ -22,6 +22,7 @@
                 $sectionByTab = [
                     'dashboard' => __DIR__ . '/../sections/dashboard.php',
                     'antispam-log' => __DIR__ . '/../sections/antispam.php',
+                    'reminder-log' => __DIR__ . '/../sections/reminder_logs.php',
                     'dostupnost' => __DIR__ . '/../sections/availability.php',
                     'rezervace-list' => __DIR__ . '/../sections/reservations.php',
                     'sluzby-admin' => __DIR__ . '/../sections/services.php',

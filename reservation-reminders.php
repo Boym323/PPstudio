@@ -138,6 +138,134 @@ function reminderRunnerMarkSent(mysqli|PDO $connection, int $reservationId): voi
     $statement->execute([$reservationId]);
 }
 
+function reminderRunnerRunToken(): string
+{
+    try {
+        return date('YmdHis') . '-' . bin2hex(random_bytes(6));
+    } catch (Throwable) {
+        return date('YmdHis') . '-' . uniqid('', true);
+    }
+}
+
+function reminderRunnerContextJson(array $context): string
+{
+    return (string) (json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}');
+}
+
+function reminderRunnerEnsureLogTable(mysqli|PDO $connection): void
+{
+    $sql = 'CREATE TABLE IF NOT EXISTS reservation_reminder_logs (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                run_token VARCHAR(64) NOT NULL,
+                event_type VARCHAR(100) NOT NULL,
+                severity ENUM(\'info\', \'warning\', \'error\') NOT NULL DEFAULT \'info\',
+                reservation_id INT UNSIGNED NULL,
+                context_json TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                KEY idx_reminder_logs_run_token_created (run_token, created_at),
+                KEY idx_reminder_logs_event_created (event_type, created_at),
+                KEY idx_reminder_logs_reservation_created (reservation_id, created_at),
+                CONSTRAINT fk_reminder_logs_reservation
+                    FOREIGN KEY (reservation_id) REFERENCES rezervace(id)
+                    ON UPDATE CASCADE
+                    ON DELETE SET NULL
+            )';
+
+    try {
+        if ($connection instanceof mysqli) {
+            $connection->query($sql);
+            return;
+        }
+
+        $connection->exec($sql);
+    } catch (Throwable) {
+        // Pokud DB uzivatel nema prava na DDL, runner pokracuje bez DB audit logu.
+    }
+}
+
+function reminderRunnerLogEvent(
+    mysqli|PDO $connection,
+    string $runToken,
+    string $eventType,
+    string $severity = 'info',
+    ?int $reservationId = null,
+    ?array $context = null
+): void {
+    $contextJson = reminderRunnerContextJson(is_array($context) ? $context : []);
+
+    try {
+        if ($connection instanceof mysqli) {
+            if ($reservationId === null) {
+                $statement = $connection->prepare(
+                    'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
+                     VALUES (?, ?, ?, NULL, ?)'
+                );
+                if (! $statement) {
+                    return;
+                }
+                $statement->bind_param('ssss', $runToken, $eventType, $severity, $contextJson);
+                $statement->execute();
+                $statement->close();
+                return;
+            }
+
+            $statement = $connection->prepare(
+                'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
+                 VALUES (?, ?, ?, ?, ?)'
+            );
+            if (! $statement) {
+                return;
+            }
+            $statement->bind_param('sssis', $runToken, $eventType, $severity, $reservationId, $contextJson);
+            $statement->execute();
+            $statement->close();
+            return;
+        }
+
+        if ($reservationId === null) {
+            $statement = $connection->prepare(
+                'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
+                 VALUES (?, ?, ?, NULL, ?)'
+            );
+            $statement->execute([$runToken, $eventType, $severity, $contextJson]);
+            return;
+        }
+
+        $statement = $connection->prepare(
+            'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+        $statement->execute([$runToken, $eventType, $severity, $reservationId, $contextJson]);
+    } catch (Throwable) {
+        // Logging nesmí nikdy zastavit odesílání reminderů.
+    }
+}
+
+function reminderRunnerCleanupLogs(mysqli|PDO $connection): void
+{
+    $sql = 'DELETE FROM reservation_reminder_logs
+            WHERE created_at < (NOW() - INTERVAL 90 DAY)
+            ORDER BY created_at ASC
+            LIMIT 500';
+
+    try {
+        if ($connection instanceof mysqli) {
+            $statement = $connection->prepare($sql);
+            if (! $statement) {
+                return;
+            }
+            $statement->execute();
+            $statement->close();
+            return;
+        }
+
+        $statement = $connection->prepare($sql);
+        $statement->execute();
+    } catch (Throwable) {
+        // Cleanup je best-effort, nesmí shodit běh.
+    }
+}
+
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 
 $dbConfig = require __DIR__ . '/config/database.php';
@@ -151,17 +279,57 @@ try {
 }
 
 $siteSettings = reminderRunnerLoadSiteSettings($connection);
+reminderRunnerEnsureLogTable($connection);
 $leadSeconds = max(3600, (int) ($emailConfig['reservation_reminder_lead_seconds'] ?? 93600));
 $windowSeconds = max(900, (int) ($emailConfig['reservation_reminder_window_seconds'] ?? 3600));
+$runToken = reminderRunnerRunToken();
 $windowStart = (new DateTimeImmutable('now'))->modify('+' . $leadSeconds . ' seconds')->format('Y-m-d H:i:s');
 $windowEnd = (new DateTimeImmutable('now'))->modify('+' . ($leadSeconds + $windowSeconds) . ' seconds')->format('Y-m-d H:i:s');
+
+reminderRunnerLogEvent(
+    $connection,
+    $runToken,
+    'run_started',
+    'info',
+    null,
+    [
+        'dry_run' => $dryRun,
+        'lead_seconds' => $leadSeconds,
+        'window_seconds' => $windowSeconds,
+        'window_start' => $windowStart,
+        'window_end' => $windowEnd,
+    ]
+);
 
 try {
     $rows = reminderRunnerFetchReservations($connection, $windowStart, $windowEnd);
 } catch (Throwable $exception) {
+    reminderRunnerLogEvent(
+        $connection,
+        $runToken,
+        'run_query_failed',
+        'error',
+        null,
+        [
+            'error' => $exception->getMessage(),
+            'window_start' => $windowStart,
+            'window_end' => $windowEnd,
+        ]
+    );
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);
 }
+
+reminderRunnerLogEvent(
+    $connection,
+    $runToken,
+    'run_candidates_loaded',
+    'info',
+    null,
+    [
+        'candidates' => count($rows),
+    ]
+);
 
 $sent = 0;
 $failed = 0;
@@ -186,16 +354,48 @@ foreach ($rows as $row) {
 
     if ((string) $reservation['email'] === '') {
         $skipped++;
+        reminderRunnerLogEvent(
+            $connection,
+            $runToken,
+            'reservation_skipped_missing_email',
+            'warning',
+            $reservation['id'],
+            [
+                'reservation_datetime' => $reservation['datum_cas'],
+            ]
+        );
         continue;
     }
 
     if ($dryRun) {
         $sent++;
+        reminderRunnerLogEvent(
+            $connection,
+            $runToken,
+            'reservation_dry_run_candidate',
+            'info',
+            $reservation['id'],
+            [
+                'email' => $reservation['email'],
+                'reservation_datetime' => $reservation['datum_cas'],
+            ]
+        );
         continue;
     }
 
     if (! sendReservationReminderEmail($emailConfig, $siteSettings, $reservation)) {
         $failed++;
+        reminderRunnerLogEvent(
+            $connection,
+            $runToken,
+            'reservation_send_failed',
+            'warning',
+            $reservation['id'],
+            [
+                'reservation_datetime' => $reservation['datum_cas'],
+                'email' => $reservation['email'],
+            ]
+        );
         securityEventLog(
             'reservation_reminder_failed',
             'reservation_reminder',
@@ -213,6 +413,17 @@ foreach ($rows as $row) {
 
     reminderRunnerMarkSent($connection, $reservation['id']);
     $sent++;
+    reminderRunnerLogEvent(
+        $connection,
+        $runToken,
+        'reservation_sent',
+        'info',
+        $reservation['id'],
+        [
+            'reservation_datetime' => $reservation['datum_cas'],
+            'email' => $reservation['email'],
+        ]
+    );
 
     securityEventLog(
         'reservation_reminder_sent',
@@ -228,6 +439,24 @@ foreach ($rows as $row) {
     );
 }
 
+reminderRunnerLogEvent(
+    $connection,
+    $runToken,
+    'run_finished',
+    'info',
+    null,
+    [
+        'dry_run' => $dryRun,
+        'sent' => $sent,
+        'failed' => $failed,
+        'skipped' => $skipped,
+        'candidates' => count($rows),
+        'window_start' => $windowStart,
+        'window_end' => $windowEnd,
+    ]
+);
+reminderRunnerCleanupLogs($connection);
+
 if ($connection instanceof mysqli) {
     $connection->close();
 } else {
@@ -235,8 +464,9 @@ if ($connection instanceof mysqli) {
 }
 
 echo sprintf(
-    "Reservation reminders%s: sent=%d failed=%d skipped=%d window=%s..%s\n",
+    "Reservation reminders%s: run=%s sent=%d failed=%d skipped=%d window=%s..%s\n",
     $dryRun ? ' (dry-run)' : '',
+    $runToken,
     $sent,
     $failed,
     $skipped,

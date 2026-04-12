@@ -98,6 +98,23 @@ CREATE TABLE IF NOT EXISTS security_events (
     KEY idx_security_events_source_created (event_source, created_at)
 );
 
+CREATE TABLE IF NOT EXISTS reservation_reminder_logs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    run_token VARCHAR(64) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    severity ENUM('info', 'warning', 'error') NOT NULL DEFAULT 'info',
+    reservation_id INT UNSIGNED NULL,
+    context_json TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_reminder_logs_run_token_created (run_token, created_at),
+    KEY idx_reminder_logs_event_created (event_type, created_at),
+    KEY idx_reminder_logs_reservation_created (reservation_id, created_at),
+    CONSTRAINT fk_reminder_logs_reservation
+        FOREIGN KEY (reservation_id) REFERENCES rezervace(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS poukazy (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     kod VARCHAR(40) NOT NULL,

@@ -17,6 +17,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [feat] V adminu přidána nová sekce `Reminder log` s filtrem, stránkováním a přehledem DB auditních záznamů z `reservation-reminders.php` (run token, událost, úroveň, rezervace, kontext) (commit: `this-commit`)
+- [docs] `docs/ADMIN_MANUAL.md` rozšířen o práci se sekcí `Reminder log` včetně doporučení pravidelné kontroly (commit: `this-commit`)
+- [feat] `reservation-reminders.php` nově zapisuje detailní audit běhu do DB tabulky `reservation_reminder_logs` (start, kandidáti, per-rezervace stav, souhrn) a vypisuje `run_token` do CLI výstupu (commit: `this-commit`)
+- [docs] `docs/CONFIGURATION.md` doplněn o technický popis reminder audit logu v DB včetně retenčního cleanupu (90 dní / 500 řádků na běh) (commit: `this-commit`)
 - [perf] Databáze rezervací a dostupnosti byla doplněna o nové indexy, přepsány datumové filtry na intervalové dotazy a odstraněny redundantní indexy po ověření `EXPLAIN` plánů (commit: `this-commit`)
 - [security] DB nyní vynucuje základní integritní pravidla pro dostupnost, historii cen a poukazy přes `CHECK` constrainty a unikátní otevřený záznam historie ceny služby (commit: `this-commit`)
 - [feat] Přidán opakovatelný maintenance runner `database/run_db_maintenance.php`, který aplikuje DB migrace i následné ověření indexů, constraintů a explain plánů (commit: `this-commit`)

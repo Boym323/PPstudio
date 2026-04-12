@@ -16,6 +16,7 @@
 
                 <p class="admin-nav-group">Nastavení</p>
                 <a href="admin.php?tab=nastaveni" <?= $adminTab === 'nastaveni' ? 'aria-current="page"' : '' ?>>Nastavení studia a webu</a>
+                <a href="admin.php?tab=reminder-log" <?= $adminTab === 'reminder-log' ? 'aria-current="page"' : '' ?>>Reminder log</a>
                 <a href="admin.php?tab=antispam-log" <?= $adminTab === 'antispam-log' ? 'aria-current="page"' : '' ?>>Antispam log</a>
                 <a href="index.php" target="_blank" rel="noreferrer">Otevřít web</a>
             </nav>

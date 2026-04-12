@@ -289,9 +289,36 @@ $antispamFilters = [
 $antispamPagination = [
     'total_pages' => 1,
 ];
+$reminderLogRows = [];
+$reminderLogStats = [
+    'total' => 0,
+    'shown' => 0,
+    'source' => 'db',
+];
+$reminderLogEventOptions = [
+    'all' => 'Všechny události',
+];
+$reminderLogSeverityOptions = [
+    'all' => 'Všechny úrovně',
+    'info' => 'Info',
+    'warning' => 'Warning',
+    'error' => 'Error',
+];
+$reminderLogLimitOptions = [50, 100, 200, 500];
+$reminderLogFilters = [
+    'q' => trim((string) ($_GET['reminder_q'] ?? '')),
+    'event' => (string) ($_GET['reminder_event'] ?? 'all'),
+    'severity' => (string) ($_GET['reminder_severity'] ?? 'all'),
+    'limit' => (int) ($_GET['reminder_limit'] ?? 100),
+    'page' => max(1, (int) ($_GET['reminder_page'] ?? 1)),
+];
+$reminderLogPagination = [
+    'total_pages' => 1,
+];
 $allowedAdminTabs = [
     'dashboard',
     'antispam-log',
+    'reminder-log',
     'dostupnost',
     'rezervace-list',
     'sluzby-admin',

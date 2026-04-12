@@ -203,13 +203,29 @@ Pravidlo:
 - Je přidané stránkování, takže lze procházet i starší události.
 - Pokud systém běží ve fallback režimu bez DB tabulky `security_events`, zobrazuje pouze události rezervačního formuláře.
 
+### Reminder log
+
+- Přehled auditních záznamů z runneru `reservation-reminders.php`.
+- Filtry:
+- `Vyhledat` (run token / event / context),
+- `Událost`,
+- `Úroveň` (`info`, `warning`, `error`),
+- počet řádků + stránkování.
+- Typicky zde najdeš:
+- začátek běhu (`run_started`),
+- načtení kandidátů (`run_candidates_loaded`),
+- stav jednotlivých rezervací (`reservation_sent`, `reservation_send_failed`, `reservation_dry_run_candidate`),
+- souhrn běhu (`run_finished`).
+- Každý běh má vlastní `run_token`, podle kterého lze dohledat kompletní průběh.
+- Pokud tabulka `reservation_reminder_logs` ještě není v DB, sekce to v adminu explicitně ukáže.
+
 ## 4) Doporučený provozní postup
 
 1. Každé ráno zkontrolovat nové rezervace.
 2. Potvrdit nebo upravit stav.
 3. Zkontrolovat dostupnost na následující 1–2 týdny.
 4. Po změně ceníku ověřit webovou sekci Ceník + formulář rezervace.
-5. 1× týdně projít antispam log.
+5. 1× týdně projít antispam log a reminder log.
 
 ## 4a) Údržba databáze
 
