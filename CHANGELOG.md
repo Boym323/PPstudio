@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [refactor] `reservation-reminders.php` nově zapisuje do `reservation_reminder_logs` jen jeden souhrnný záznam za běh místo více dílčích řádků, aby byl reminder log v adminu přehlednější (commit: `this-commit`)
 - [ux] V ceníku na webu byl z hlaviček kategorií odstraněn počet služeb, aby působil klidněji a méně katalogově (commit: `this-commit`)
 - [feat] Štítky v ceníku jsou nově spravované ručně v adminu u každé procedury přes pole `Štítek v ceníku`; web už je neodvozuje automaticky z názvu nebo pořadí (commit: `this-commit`)
 - [docs] `docs/ADMIN_MANUAL.md` doplněn o ruční správu štítků procedur v adminu (commit: `this-commit`)

@@ -2,7 +2,7 @@
                     <div class="section-heading">
                         <p class="eyebrow">Reminder</p>
                         <h2>Log odesílání reminderů</h2>
-                        <p>Audit běhů skriptu <code>reservation-reminders.php</code> včetně výsledků jednotlivých rezervací.</p>
+                        <p>Audit běhů skriptu <code>reservation-reminders.php</code> se souhrnným jedním záznamem za každý běh.</p>
                     </div>
 
                     <article class="admin-card">

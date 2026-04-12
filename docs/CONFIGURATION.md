@@ -91,7 +91,7 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `config/email.php`: SMTP a e-mailové klíče.
 - `includes/settings.php`: čtení/zápis `nastaveni`.
 - `reservation-reminders.php`: CLI runner pro automatické reminder e-maily rezervací.
-- `reservation_reminder_logs` (DB tabulka): audit běhů runneru `reservation-reminders.php` (start, kandidáti, odesláno/chyba/skip, souhrn běhu).
+- `reservation_reminder_logs` (DB tabulka): audit běhů runneru `reservation-reminders.php` se souhrnným jedním záznamem za běh (`run_finished` nebo `run_failed`).
 - `database/run_db_maintenance.php`: CLI runner pro databázovou maintenance migraci a ověření stavu DB po nasazení.
 - Doporučený cron příkaz:
 - `php /Volumes/web/ppstudio.cz/reservation-reminders.php`

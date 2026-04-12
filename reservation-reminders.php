@@ -183,59 +183,35 @@ function reminderRunnerEnsureLogTable(mysqli|PDO $connection): void
     }
 }
 
-function reminderRunnerLogEvent(
+function reminderRunnerLogSummary(
     mysqli|PDO $connection,
     string $runToken,
     string $eventType,
     string $severity = 'info',
-    ?int $reservationId = null,
     ?array $context = null
 ): void {
     $contextJson = reminderRunnerContextJson(is_array($context) ? $context : []);
 
     try {
         if ($connection instanceof mysqli) {
-            if ($reservationId === null) {
-                $statement = $connection->prepare(
-                    'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
-                     VALUES (?, ?, ?, NULL, ?)'
-                );
-                if (! $statement) {
-                    return;
-                }
-                $statement->bind_param('ssss', $runToken, $eventType, $severity, $contextJson);
-                $statement->execute();
-                $statement->close();
-                return;
-            }
-
             $statement = $connection->prepare(
                 'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
-                 VALUES (?, ?, ?, ?, ?)'
+                 VALUES (?, ?, ?, NULL, ?)'
             );
             if (! $statement) {
                 return;
             }
-            $statement->bind_param('sssis', $runToken, $eventType, $severity, $reservationId, $contextJson);
+            $statement->bind_param('ssss', $runToken, $eventType, $severity, $contextJson);
             $statement->execute();
             $statement->close();
             return;
         }
 
-        if ($reservationId === null) {
-            $statement = $connection->prepare(
-                'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
-                 VALUES (?, ?, ?, NULL, ?)'
-            );
-            $statement->execute([$runToken, $eventType, $severity, $contextJson]);
-            return;
-        }
-
         $statement = $connection->prepare(
             'INSERT INTO reservation_reminder_logs (run_token, event_type, severity, reservation_id, context_json)
-             VALUES (?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, NULL, ?)'
         );
-        $statement->execute([$runToken, $eventType, $severity, $reservationId, $contextJson]);
+        $statement->execute([$runToken, $eventType, $severity, $contextJson]);
     } catch (Throwable) {
         // Logging nesmí nikdy zastavit odesílání reminderů.
     }
@@ -286,31 +262,18 @@ $runToken = reminderRunnerRunToken();
 $windowStart = (new DateTimeImmutable('now'))->modify('+' . $leadSeconds . ' seconds')->format('Y-m-d H:i:s');
 $windowEnd = (new DateTimeImmutable('now'))->modify('+' . ($leadSeconds + $windowSeconds) . ' seconds')->format('Y-m-d H:i:s');
 
-reminderRunnerLogEvent(
-    $connection,
-    $runToken,
-    'run_started',
-    'info',
-    null,
-    [
-        'dry_run' => $dryRun,
-        'lead_seconds' => $leadSeconds,
-        'window_seconds' => $windowSeconds,
-        'window_start' => $windowStart,
-        'window_end' => $windowEnd,
-    ]
-);
-
 try {
     $rows = reminderRunnerFetchReservations($connection, $windowStart, $windowEnd);
 } catch (Throwable $exception) {
-    reminderRunnerLogEvent(
+    reminderRunnerLogSummary(
         $connection,
         $runToken,
-        'run_query_failed',
+        'run_failed',
         'error',
-        null,
         [
+            'dry_run' => $dryRun,
+            'lead_seconds' => $leadSeconds,
+            'window_seconds' => $windowSeconds,
             'error' => $exception->getMessage(),
             'window_start' => $windowStart,
             'window_end' => $windowEnd,
@@ -319,17 +282,6 @@ try {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);
 }
-
-reminderRunnerLogEvent(
-    $connection,
-    $runToken,
-    'run_candidates_loaded',
-    'info',
-    null,
-    [
-        'candidates' => count($rows),
-    ]
-);
 
 $sent = 0;
 $failed = 0;
@@ -354,48 +306,16 @@ foreach ($rows as $row) {
 
     if ((string) $reservation['email'] === '') {
         $skipped++;
-        reminderRunnerLogEvent(
-            $connection,
-            $runToken,
-            'reservation_skipped_missing_email',
-            'warning',
-            $reservation['id'],
-            [
-                'reservation_datetime' => $reservation['datum_cas'],
-            ]
-        );
         continue;
     }
 
     if ($dryRun) {
         $sent++;
-        reminderRunnerLogEvent(
-            $connection,
-            $runToken,
-            'reservation_dry_run_candidate',
-            'info',
-            $reservation['id'],
-            [
-                'email' => $reservation['email'],
-                'reservation_datetime' => $reservation['datum_cas'],
-            ]
-        );
         continue;
     }
 
     if (! sendReservationReminderEmail($emailConfig, $siteSettings, $reservation)) {
         $failed++;
-        reminderRunnerLogEvent(
-            $connection,
-            $runToken,
-            'reservation_send_failed',
-            'warning',
-            $reservation['id'],
-            [
-                'reservation_datetime' => $reservation['datum_cas'],
-                'email' => $reservation['email'],
-            ]
-        );
         securityEventLog(
             'reservation_reminder_failed',
             'reservation_reminder',
@@ -413,17 +333,6 @@ foreach ($rows as $row) {
 
     reminderRunnerMarkSent($connection, $reservation['id']);
     $sent++;
-    reminderRunnerLogEvent(
-        $connection,
-        $runToken,
-        'reservation_sent',
-        'info',
-        $reservation['id'],
-        [
-            'reservation_datetime' => $reservation['datum_cas'],
-            'email' => $reservation['email'],
-        ]
-    );
 
     securityEventLog(
         'reservation_reminder_sent',
@@ -439,12 +348,11 @@ foreach ($rows as $row) {
     );
 }
 
-reminderRunnerLogEvent(
+reminderRunnerLogSummary(
     $connection,
     $runToken,
     'run_finished',
-    'info',
-    null,
+    $failed > 0 ? 'warning' : 'info',
     [
         'dry_run' => $dryRun,
         'sent' => $sent,

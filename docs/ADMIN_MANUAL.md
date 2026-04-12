@@ -210,16 +210,15 @@ Pravidlo:
 ### Reminder log
 
 - Přehled auditních záznamů z runneru `reservation-reminders.php`.
+- Každý běh zapisuje do DB právě jeden souhrnný řádek.
 - Filtry:
 - `Vyhledat` (run token / event / context),
 - `Událost`,
 - `Úroveň` (`info`, `warning`, `error`),
 - počet řádků + stránkování.
 - Typicky zde najdeš:
-- začátek běhu (`run_started`),
-- načtení kandidátů (`run_candidates_loaded`),
-- stav jednotlivých rezervací (`reservation_sent`, `reservation_send_failed`, `reservation_dry_run_candidate`),
-- souhrn běhu (`run_finished`).
+- úspěšný souhrn běhu (`run_finished`),
+- nebo chybový souhrn (`run_failed`).
 - Každý běh má vlastní `run_token`, podle kterého lze dohledat kompletní průběh.
 - Pokud tabulka `reservation_reminder_logs` ještě není v DB, sekce to v adminu explicitně ukáže.
 
