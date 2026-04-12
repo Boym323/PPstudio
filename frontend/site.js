@@ -522,6 +522,22 @@
       });
     };
 
+    const scrollStepIntoView = (step) => {
+      const activeStep = form.querySelector(`[data-step="${step}"]`);
+      if (!activeStep || window.innerWidth > 900) return;
+
+      const topOffset = 96;
+      const targetTop = Math.max(
+        0,
+        window.scrollY + activeStep.getBoundingClientRect().top - topOffset
+      );
+
+      window.scrollTo({
+        top: targetTop,
+        behavior: 'smooth',
+      });
+    };
+
     const firstInvalidInStep = (step) => {
       const scope = form.querySelector(`[data-step="${step}"]`);
       if (!scope) return null;
@@ -854,13 +870,18 @@
         if (currentStep < 3) {
           showStep(currentStep + 1);
           updateSummary();
+          requestAnimationFrame(() => scrollStepIntoView(currentStep));
         }
       });
     });
 
     stepBackButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        if (currentStep > 1) showStep(currentStep - 1);
+        if (currentStep > 1) {
+          showStep(currentStep - 1);
+          updateSummary();
+          requestAnimationFrame(() => scrollStepIntoView(currentStep));
+        }
       });
     });
 
@@ -875,6 +896,7 @@
         }
         showStep(currentStep + 1);
         updateSummary();
+        requestAnimationFrame(() => scrollStepIntoView(currentStep));
         return;
       }
 

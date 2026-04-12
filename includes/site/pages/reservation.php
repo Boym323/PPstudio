@@ -4,6 +4,20 @@
         <div class="reservation-box">
             <h3>Online rezervace</h3>
             <p>Vyberte službu, termín a vyplňte kontakt. Potvrzení rezervace vám dorazí e-mailem.</p>
+            <div class="reservation-reassurance" aria-label="Důležité informace k rezervaci">
+                <div class="reservation-reassurance-item">
+                    <strong>Potvrzení e-mailem</strong>
+                    <span>Po odeslání vám během chvíle dorazí potvrzení rezervace do e-mailu.</span>
+                </div>
+                <div class="reservation-reassurance-item">
+                    <strong>Změna nebo zrušení</strong>
+                    <span>Termín lze přesunout nebo zrušit nejpozději 24 hodin před začátkem procedury.</span>
+                </div>
+                <div class="reservation-reassurance-item">
+                    <strong>Nejste si jistá službou?</strong>
+                    <span>Vyberte nejbližší variantu a do poznámky napište, s čím potřebujete poradit.</span>
+                </div>
+            </div>
             <div class="reservation-feedback" data-reservation-feedback><?= $reservationAlertHtml ?></div>
             <form class="reservation-form" method="post" action="/reservation-submit.php" data-reservation-form>
                 <input type="hidden" name="_csrf" value="<?= escape($csrfToken) ?>">
@@ -97,6 +111,7 @@
                             Poznámka
                             <textarea name="poznamka" rows="3" placeholder="např. citlivá pleť, preference termínu"></textarea>
                         </label>
+                        <p class="reservation-field-hint">Pokud si nejste jistá výběrem služby, napište to do poznámky. Na místě ji případně společně upravíme podle pleti a cíle ošetření.</p>
                         <div class="reservation-step-actions">
                             <button type="button" class="reservation-back" data-step-back>Zpět</button>
                             <button type="button" class="reservation-next" data-step-next>Pokračovat na potvrzení</button>

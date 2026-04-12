@@ -17,6 +17,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [ux] Veřejná rezervace dostala uklidňující mikrokopie a na mobilu se po přechodu mezi kroky automaticky posouvá na začátek aktivního kroku (commit: `this-commit`)
 - [ux] Admin menu bylo přeskupeno do logických skupin `Provoz / Obsah / Nastavení`, samostatný kalendář přesunut do sekce rezervací a sekce `E-mail`, `Recenze a social` i `Nastavení studia` sjednoceny do `Nastavení studia a webu` (commit: `this-commit`)
 - [feat] Přidán automatický reminder potvrzených rezervací e-mailem (výchozí 26 hodin předem) včetně evidence `reminder_sent_at`, CLI runneru `reservation-reminders.php` a zobrazení stavu reminderu v detailu rezervace (commit: `this-commit`)
 

@@ -2085,6 +2085,33 @@
             font-size: .98rem;
         }
 
+        .reservation-reassurance {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: .7rem;
+            margin: 0 0 1rem 0;
+        }
+
+        .reservation-reassurance-item {
+            display: grid;
+            gap: .22rem;
+            padding: .75rem .85rem;
+            border-radius: 12px;
+            border: 1px solid #e3d3bf;
+            background: #fffaf4;
+            color: #675447;
+        }
+
+        .reservation-reassurance-item strong {
+            color: #4d382c;
+            font-size: .94rem;
+        }
+
+        .reservation-reassurance-item span {
+            font-size: .9rem;
+            line-height: 1.45;
+        }
+
         .reservation-form {
             display: grid;
             gap: .85rem;
@@ -2509,6 +2536,13 @@
             font-size: .92rem;
         }
 
+        .reservation-field-hint {
+            margin: -.15rem 0 0 0;
+            color: #7a6a5b;
+            font-size: .91rem;
+            line-height: 1.45;
+        }
+
         .reservation-alert {
             border-radius: 10px;
             padding: .7rem .9rem;
@@ -2681,6 +2715,10 @@
             }
 
             .reservation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reservation-reassurance {
                 grid-template-columns: 1fr;
             }
 
