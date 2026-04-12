@@ -164,6 +164,39 @@ function normalizeNullableFloat(string $value): ?float
     return (float) str_replace(',', '.', $value);
 }
 
+function sqlDayBounds(string $date): ?array
+{
+    $dayStart = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+    if (! $dayStart) {
+        return null;
+    }
+
+    $dayStart = $dayStart->setTime(0, 0, 0);
+    $dayEnd = $dayStart->modify('+1 day');
+
+    return [
+        'start' => $dayStart->format('Y-m-d H:i:s'),
+        'end' => $dayEnd->format('Y-m-d H:i:s'),
+    ];
+}
+
+function normalizeSqlDateTime(string $dateTime): ?string
+{
+    $value = trim(str_replace('T', ' ', $dateTime));
+    if ($value === '') {
+        return null;
+    }
+
+    foreach (['Y-m-d H:i:s', 'Y-m-d H:i'] as $format) {
+        $parsed = DateTimeImmutable::createFromFormat($format, $value);
+        if ($parsed instanceof DateTimeImmutable) {
+            return $parsed->format('Y-m-d H:i:s');
+        }
+    }
+
+    return null;
+}
+
 function summarizeOpeningHours(string $hours): array
 {
     $parts = array_filter(array_map('trim', explode('|', $hours)));

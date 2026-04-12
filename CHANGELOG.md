@@ -17,6 +17,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-12
 
+- [perf] Databáze rezervací a dostupnosti byla doplněna o nové indexy, přepsány datumové filtry na intervalové dotazy a odstraněny redundantní indexy po ověření `EXPLAIN` plánů (commit: `this-commit`)
+- [security] DB nyní vynucuje základní integritní pravidla pro dostupnost, historii cen a poukazy přes `CHECK` constrainty a unikátní otevřený záznam historie ceny služby (commit: `this-commit`)
+- [feat] Přidán opakovatelný maintenance runner `database/run_db_maintenance.php`, který aplikuje DB migrace i následné ověření indexů, constraintů a explain plánů (commit: `this-commit`)
+- [fix] Vytváření webových i ručních rezervací bylo zpevněno transakční kontrolou dostupnosti a kolizí termínů při souběžném zápisu (commit: `this-commit`)
 - [feat] Poukazy lze nově odeslat e-mailem přímo z adminu, ukládá se e-mail příjemce i čas posledního odeslání a v e-mailu se používá nová veřejná stránka dárkového poukazu s tiskem / uložením do PDF (commit: `this-commit`)
 - [ux] Ceník byl přepracován do více orientační podoby: přibyl průvodce výběrem, rychlé skoky do kategorií, krátké úvody kategorií a štítky u vybraných služeb (commit: `this-commit`)
 - [ux] Veřejná rezervace dostala uklidňující mikrokopie a na mobilu se po přechodu mezi kroky automaticky posouvá na začátek aktivního kroku (commit: `this-commit`)

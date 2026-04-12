@@ -327,11 +327,18 @@ if ($reservationFilters['status'] !== 'all') {
 }
 
 if ($reservationFilters['period'] === 'today') {
-    $where[] = 'DATE(r.datum_cas) = CURDATE()';
+    $todayBounds = sqlDayBounds(date('Y-m-d'));
+    if ($todayBounds !== null) {
+        $where[] = "r.datum_cas >= '{$todayBounds['start']}' AND r.datum_cas < '{$todayBounds['end']}'";
+    }
 } elseif ($reservationFilters['period'] === 'week') {
-    $where[] = 'YEARWEEK(r.datum_cas, 1) = YEARWEEK(CURDATE(), 1)';
+    $weekStart = (new DateTimeImmutable('monday this week'))->setTime(0, 0, 0);
+    $weekEnd = $weekStart->modify('+1 week');
+    $where[] = "r.datum_cas >= '" . $weekStart->format('Y-m-d H:i:s') . "' AND r.datum_cas < '" . $weekEnd->format('Y-m-d H:i:s') . "'";
 } elseif ($reservationFilters['period'] === 'month') {
-    $where[] = 'YEAR(r.datum_cas) = YEAR(CURDATE()) AND MONTH(r.datum_cas) = MONTH(CURDATE())';
+    $monthStart = (new DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+    $monthEnd = $monthStart->modify('+1 month');
+    $where[] = "r.datum_cas >= '" . $monthStart->format('Y-m-d H:i:s') . "' AND r.datum_cas < '" . $monthEnd->format('Y-m-d H:i:s') . "'";
 }
 
 if ($reservationFilters['q'] !== '') {
@@ -380,13 +387,19 @@ if ($reservationQuery instanceof mysqli_result) {
     $reservationQuery->free();
 }
 
+$todayBounds = sqlDayBounds(date('Y-m-d'));
+$tomorrowBounds = sqlDayBounds((new DateTimeImmutable('tomorrow'))->format('Y-m-d'));
+$todayRangeSql = $todayBounds !== null
+    ? "datum_cas >= '{$todayBounds['start']}' AND datum_cas < '{$todayBounds['end']}'"
+    : '1=0';
+
 $statsQuery = $connection->query(
     'SELECT
         (SELECT COUNT(*) FROM rezervace WHERE stav = "nova") AS new_reservations,
         (SELECT COUNT(*) FROM rezervace WHERE datum_cas >= NOW() AND stav IN ("nova", "potvrzena")) AS upcoming_reservations,
         (SELECT COUNT(*) FROM dostupnost WHERE end_at >= NOW()) AS availability_windows,
         (SELECT COUNT(*) FROM sluzby WHERE aktivni = 1) AS services_total,
-        (SELECT COUNT(*) FROM rezervace WHERE DATE(datum_cas) = CURDATE() AND stav IN ("nova", "potvrzena", "dokoncena")) AS today_reservations,
+        (SELECT COUNT(*) FROM rezervace WHERE ' . $todayRangeSql . ' AND stav IN ("nova", "potvrzena", "dokoncena")) AS today_reservations,
         (SELECT COUNT(*) FROM rezervace WHERE datum_cas >= NOW() AND stav = "nova") AS pending_reservations,
         (
             SELECT COALESCE(ROUND(AVG(COALESCE(r.cena_v_dobe_rezervace, s.cena))), 0)
@@ -444,7 +457,9 @@ $dashboardTodayQuery = $connection->query(
     'SELECT r.id, r.datum_cas, r.jmeno, r.stav, s.nazev
      FROM rezervace r
      INNER JOIN sluzby s ON s.id = r.sluzba
-     WHERE DATE(r.datum_cas) = CURDATE()
+     WHERE ' . ($todayBounds !== null
+        ? "r.datum_cas >= '{$todayBounds['start']}' AND r.datum_cas < '{$todayBounds['end']}'"
+        : '1=0') . '
        AND r.stav IN ("nova", "potvrzena", "dokoncena")
      ORDER BY r.datum_cas ASC
      LIMIT 6'
@@ -460,7 +475,9 @@ $dashboardTomorrowQuery = $connection->query(
     'SELECT r.id, r.datum_cas, r.jmeno, r.stav, s.nazev
      FROM rezervace r
      INNER JOIN sluzby s ON s.id = r.sluzba
-     WHERE DATE(r.datum_cas) = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+     WHERE ' . ($tomorrowBounds !== null
+        ? "r.datum_cas >= '{$tomorrowBounds['start']}' AND r.datum_cas < '{$tomorrowBounds['end']}'"
+        : '1=0') . '
        AND r.stav IN ("nova", "potvrzena", "dokoncena")
      ORDER BY r.datum_cas ASC
      LIMIT 6'

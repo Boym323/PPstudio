@@ -149,40 +149,29 @@ if ($connection->connect_errno) {
 
 $connection->set_charset($dbConfig['charset']);
 $siteSettings = loadSiteSettings($connection);
+$reservationInsert = createReservationWithLock($connection, $name, $email, $phone, $source, $note, $serviceId, $dateTime, 'nova');
 
-if (! isValidReservationSlot($connection, $serviceId, $dateTime)) {
+if (in_array($reservationInsert['status'] ?? 'error', ['slot_unavailable', 'service_unavailable'], true)) {
     $connection->close();
     $respond('slot', false, 409);
 }
 
-$service = getServiceById($connection, $serviceId);
-$statement = $connection->prepare(
-    'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, datum_cas, stav)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, "nova")'
-);
-
-if (! $statement) {
+if (($reservationInsert['status'] ?? 'error') !== 'ok') {
     $connection->close();
     $respond('insert', false, 500);
 }
 
-$servicePrice = isset($service['cena']) ? (float) $service['cena'] : null;
-$statement->bind_param('sssssids', $name, $email, $phone, $source, $note, $serviceId, $servicePrice, $dateTime);
-
-if (! $statement->execute()) {
-    $statement->close();
-    $connection->close();
-    $respond('insert', false, 500);
-}
+$service = is_array($reservationInsert['service'] ?? null) ? $reservationInsert['service'] : [];
+$servicePrice = $reservationInsert['service_price'] ?? null;
 
 $reservation = [
-    'id' => $connection->insert_id,
+    'id' => (int) ($reservationInsert['reservation_id'] ?? 0),
     'jmeno' => $name,
     'email' => $email,
     'telefon' => $phone,
     'zdroj' => $source,
     'poznamka_klienta' => $note,
-    'datum_cas' => $dateTime,
+    'datum_cas' => (string) ($reservationInsert['date_time'] ?? $dateTime),
     'service_name' => (string) ($service['nazev'] ?? 'Vybraná procedura'),
     'service_price' => $servicePrice,
     'service_duration' => (int) ($service['doba_trvani'] ?? 60),
@@ -190,8 +179,6 @@ $reservation = [
 
 sendReservationReceivedEmail($emailConfig, $siteSettings, $reservation);
 sendReservationAdminNotification($emailConfig, $siteSettings, $reservation);
-
-$statement->close();
 $connection->close();
 
 $respond('success', true, 200, [

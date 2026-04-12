@@ -701,14 +701,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_service'])) {
         }
 
         if (isset($statement) && $statement) {
-            if ($statement->execute()) {
+            $connection->begin_transaction();
+            try {
+                if (! $statement->execute()) {
+                    throw new RuntimeException('save_service_failed');
+                }
+
                 $savedServiceId = $serviceId > 0 ? $serviceId : (int) $connection->insert_id;
                 if ($serviceId <= 0 || $priceChanged) {
                     syncServicePriceHistory($connection, $savedServiceId, $normalizedPrice);
                 }
+
+                $connection->commit();
                 $message = $serviceId > 0 ? 'Procedura byla upravena.' : 'Nová procedura byla přidána.';
                 $serviceForm = ['id' => 0, 'nazev' => '', 'kategorie_id' => '', 'kategorie' => '', 'kategorie_poradi' => '', 'popis' => '', 'cena' => '', 'doba_trvani' => ''];
-            } else {
+            } catch (Throwable $exception) {
+                $connection->rollback();
                 $error = 'Proceduru se nepodařilo uložit.';
             }
             $statement->close();
@@ -746,12 +754,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_availability_gri
     } else {
         $deleteStatement = $connection->prepare(
             'DELETE FROM dostupnost
-             WHERE DATE(start_at) >= ?
-               AND DATE(start_at) <= ?'
+             WHERE start_at >= ?
+               AND start_at < ?'
         );
 
         if ($deleteStatement) {
-            $deleteStatement->bind_param('ss', $rangeStart, $rangeEnd);
+            $deleteRangeStart = $rangeStart . ' 00:00:00';
+            $deleteRangeEnd = date('Y-m-d H:i:s', strtotime($rangeEnd . ' +1 day'));
+            $deleteStatement->bind_param('ss', $deleteRangeStart, $deleteRangeEnd);
             $deleteStatement->execute();
             $deleteStatement->close();
         }
@@ -969,62 +979,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_manual_reservati
     } elseif (! isValidReservationSlot($connection, $serviceId, $dateTime . ':00') && ! isValidReservationSlot($connection, $serviceId, $dateTime)) {
         $error = 'Vybraný termín už není volný nebo neodpovídá dostupnosti.';
     } else {
-        $service = getServiceById($connection, $serviceId);
-        $statement = $connection->prepare(
-            'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, datum_cas, stav)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        $status = 'potvrzena';
+        $dateTimeForSave = strlen($dateTime) === 16 ? $dateTime . ':00' : $dateTime;
+        $reservationInsert = createReservationWithLock(
+            $connection,
+            $manualReservationForm['jmeno'],
+            $manualReservationForm['email'],
+            $manualReservationForm['telefon'],
+            $manualReservationForm['zdroj'],
+            $manualReservationForm['poznamka_klienta'],
+            $serviceId,
+            $dateTimeForSave,
+            $status
         );
 
-        if ($statement) {
-            $status = 'potvrzena';
-            $dateTimeForSave = strlen($dateTime) === 16 ? $dateTime . ':00' : $dateTime;
-            $servicePrice = isset($service['cena']) ? (float) $service['cena'] : null;
-            $statement->bind_param(
-                'sssssidss',
-                $manualReservationForm['jmeno'],
-                $manualReservationForm['email'],
-                $manualReservationForm['telefon'],
-                $manualReservationForm['zdroj'],
-                $manualReservationForm['poznamka_klienta'],
-                $serviceId,
-                $servicePrice,
-                $dateTimeForSave,
-                $status
-            );
+        if (($reservationInsert['status'] ?? 'error') === 'ok') {
+            $service = is_array($reservationInsert['service'] ?? null) ? $reservationInsert['service'] : [];
+            $servicePrice = $reservationInsert['service_price'] ?? null;
+            $reservation = [
+                'id' => (int) ($reservationInsert['reservation_id'] ?? 0),
+                'jmeno' => $manualReservationForm['jmeno'],
+                'email' => $manualReservationForm['email'],
+                'telefon' => $manualReservationForm['telefon'],
+                'zdroj' => $manualReservationForm['zdroj'],
+                'poznamka_klienta' => $manualReservationForm['poznamka_klienta'],
+                'datum_cas' => (string) ($reservationInsert['date_time'] ?? $dateTimeForSave),
+                'service_name' => (string) ($service['nazev'] ?? 'Vybraná procedura'),
+                'service_price' => $servicePrice,
+                'service_duration' => (int) ($service['doba_trvani'] ?? 60),
+            ];
 
-            if ($statement->execute()) {
-                $reservation = [
-                    'id' => $connection->insert_id,
-                    'jmeno' => $manualReservationForm['jmeno'],
-                    'email' => $manualReservationForm['email'],
-                    'telefon' => $manualReservationForm['telefon'],
-                    'zdroj' => $manualReservationForm['zdroj'],
-                    'poznamka_klienta' => $manualReservationForm['poznamka_klienta'],
-                    'datum_cas' => $dateTimeForSave,
-                    'service_name' => (string) ($service['nazev'] ?? 'Vybraná procedura'),
-                    'service_price' => $servicePrice,
-                    'service_duration' => (int) ($service['doba_trvani'] ?? 60),
-                ];
-
-                if ($manualReservationForm['email'] !== '') {
-                    sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservation);
-                }
-
-                $manualReservationForm = [
-                    'jmeno' => '',
-                    'email' => '',
-                    'telefon' => '',
-                    'zdroj' => 'telefon',
-                    'sluzba_id' => '',
-                    'datum_cas' => '',
-                    'poznamka_klienta' => '',
-                ];
-                $message = 'Ruční rezervace byla vložena.';
-            } else {
-                $error = 'Ruční rezervaci se nepodařilo uložit.';
+            if ($manualReservationForm['email'] !== '') {
+                sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservation);
             }
 
-            $statement->close();
+            $manualReservationForm = [
+                'jmeno' => '',
+                'email' => '',
+                'telefon' => '',
+                'zdroj' => 'telefon',
+                'sluzba_id' => '',
+                'datum_cas' => '',
+                'poznamka_klienta' => '',
+            ];
+            $message = 'Ruční rezervace byla vložena.';
+        } elseif (in_array($reservationInsert['status'] ?? 'error', ['slot_unavailable', 'service_unavailable'], true)) {
+            $error = 'Vybraný termín už není volný nebo neodpovídá dostupnosti.';
+        } else {
+            $error = 'Ruční rezervaci se nepodařilo uložit.';
         }
     }
 }

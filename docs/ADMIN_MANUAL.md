@@ -211,6 +211,24 @@ Pravidlo:
 4. Po změně ceníku ověřit webovou sekci Ceník + formulář rezervace.
 5. 1× týdně projít antispam log.
 
+## 4a) Údržba databáze
+
+- Pro opakovatelnou údržbu databáze je připraven CLI skript:
+- `php /Volumes/web/ppstudio.cz/database/run_db_maintenance.php`
+- Skript bezpečně:
+- znovu aplikuje DB maintenance migrace,
+- ověří přítomnost důležitých indexů a constraintů,
+- zkontroluje generovaný sloupec pro historii cen,
+- vypíše `EXPLAIN` nad klíčovými dotazy rezervací a dostupnosti.
+- Skript je vhodné použít:
+- po nasazení změn do DB vrstvy,
+- po větších úpravách rezervací, dostupnosti nebo poukazů,
+- nebo při kontrole výkonu a konzistence dat.
+- Praktický přínos:
+- nižší riziko kolizí rezervací,
+- menší riziko poškozených dat v DB,
+- jistota, že admin a provozní přehledy používají správné indexy.
+
 ## 5) Bezpečnostní zásady
 
 - Admin účty nezdílet mezi více lidmi.

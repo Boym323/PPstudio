@@ -38,13 +38,30 @@ function getServiceById(mysqli $connection, int $serviceId): ?array
     return $service ?: null;
 }
 
+function reservationFitsAvailabilityWindows(DateTimeImmutable $start, DateTimeImmutable $end, array $windows): bool
+{
+    foreach ($windows as $window) {
+        if ($start >= $window['start'] && $end <= $window['end']) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function getBookedIntervals(mysqli $connection, string $date): array
 {
+    $bounds = sqlDayBounds($date);
+    if ($bounds === null) {
+        return [];
+    }
+
     $statement = $connection->prepare(
         'SELECT r.datum_cas, s.doba_trvani
          FROM rezervace r
          INNER JOIN sluzby s ON s.id = r.sluzba
-         WHERE DATE(r.datum_cas) = ?
+         WHERE r.datum_cas >= ?
+           AND r.datum_cas < ?
            AND r.stav IN ("nova", "potvrzena", "dokoncena")
          ORDER BY r.datum_cas ASC'
     );
@@ -53,7 +70,7 @@ function getBookedIntervals(mysqli $connection, string $date): array
         return [];
     }
 
-    $statement->bind_param('s', $date);
+    $statement->bind_param('ss', $bounds['start'], $bounds['end']);
     $statement->execute();
     $intervals = [];
 
@@ -75,10 +92,16 @@ function getBookedIntervals(mysqli $connection, string $date): array
 
 function getAvailabilityWindows(mysqli $connection, string $date): array
 {
+    $bounds = sqlDayBounds($date);
+    if ($bounds === null) {
+        return [];
+    }
+
     $statement = $connection->prepare(
         'SELECT id, start_at, end_at
          FROM dostupnost
-         WHERE DATE(start_at) = ?
+         WHERE start_at < ?
+           AND end_at > ?
            AND end_at > start_at
          ORDER BY start_at ASC'
     );
@@ -87,7 +110,7 @@ function getAvailabilityWindows(mysqli $connection, string $date): array
         return [];
     }
 
-    $statement->bind_param('s', $date);
+    $statement->bind_param('ss', $bounds['end'], $bounds['start']);
     $statement->execute();
     $windows = [];
 
@@ -150,6 +173,157 @@ function getAvailableTimesForDate(mysqli $connection, int $serviceId, string $da
     }
 
     return array_values($slots);
+}
+
+function createReservationWithLock(
+    mysqli $connection,
+    string $name,
+    string $email,
+    string $phone,
+    string $source,
+    string $clientNote,
+    int $serviceId,
+    string $dateTime,
+    string $status = 'nova'
+): array {
+    $normalizedDateTime = normalizeSqlDateTime($dateTime);
+    if ($normalizedDateTime === null) {
+        return ['status' => 'invalid_datetime'];
+    }
+
+    $service = getServiceById($connection, $serviceId);
+    if (! is_array($service)) {
+        return ['status' => 'service_unavailable'];
+    }
+
+    $reservationStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $normalizedDateTime);
+    if (! $reservationStart instanceof DateTimeImmutable) {
+        return ['status' => 'invalid_datetime'];
+    }
+
+    $durationMinutes = max(15, (int) ($service['doba_trvani'] ?? 0));
+    $reservationEnd = $reservationStart->modify('+' . $durationMinutes . ' minutes');
+    $bounds = sqlDayBounds($reservationStart->format('Y-m-d'));
+    if ($bounds === null) {
+        return ['status' => 'invalid_datetime'];
+    }
+
+    $servicePrice = isset($service['cena']) ? (float) $service['cena'] : null;
+    $connection->begin_transaction();
+
+    try {
+        $availabilityStatement = $connection->prepare(
+            'SELECT start_at, end_at
+             FROM dostupnost
+             WHERE start_at < ?
+               AND end_at > ?
+               AND end_at > start_at
+             ORDER BY start_at ASC
+             FOR UPDATE'
+        );
+        if (! $availabilityStatement) {
+            throw new RuntimeException('availability_prepare_failed');
+        }
+
+        $availabilityStatement->bind_param('ss', $bounds['end'], $bounds['start']);
+        $availabilityStatement->execute();
+        $availabilityStatement->bind_result($windowStartAt, $windowEndAt);
+        $windows = [];
+        while ($availabilityStatement->fetch()) {
+            $windowStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $windowStartAt);
+            $windowEnd = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $windowEndAt);
+            if ($windowStart instanceof DateTimeImmutable && $windowEnd instanceof DateTimeImmutable && $windowEnd > $windowStart) {
+                $windows[] = [
+                    'start' => $windowStart,
+                    'end' => $windowEnd,
+                ];
+            }
+        }
+        $availabilityStatement->close();
+
+        if (! reservationFitsAvailabilityWindows($reservationStart, $reservationEnd, $windows)) {
+            $connection->rollback();
+            return ['status' => 'slot_unavailable'];
+        }
+
+        $reservationsStatement = $connection->prepare(
+            'SELECT r.datum_cas, s.doba_trvani
+             FROM rezervace r
+             INNER JOIN sluzby s ON s.id = r.sluzba
+             WHERE r.datum_cas >= ?
+               AND r.datum_cas < ?
+               AND r.stav IN ("nova", "potvrzena", "dokoncena")
+             ORDER BY r.datum_cas ASC
+             FOR UPDATE'
+        );
+        if (! $reservationsStatement) {
+            throw new RuntimeException('reservation_lock_prepare_failed');
+        }
+
+        $reservationsStatement->bind_param('ss', $bounds['start'], $bounds['end']);
+        $reservationsStatement->execute();
+        $reservationsStatement->bind_result($bookedStartAt, $bookedDurationMinutes);
+        $bookedIntervals = [];
+        while ($reservationsStatement->fetch()) {
+            $bookedStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $bookedStartAt);
+            if (! $bookedStart instanceof DateTimeImmutable) {
+                continue;
+            }
+
+            $bookedDuration = max(15, (int) $bookedDurationMinutes);
+            $bookedIntervals[] = [
+                'start' => $bookedStart,
+                'end' => $bookedStart->modify('+' . $bookedDuration . ' minutes'),
+            ];
+        }
+        $reservationsStatement->close();
+
+        if (intervalOverlaps($reservationStart, $reservationEnd, $bookedIntervals)) {
+            $connection->rollback();
+            return ['status' => 'slot_unavailable'];
+        }
+
+        $insertStatement = $connection->prepare(
+            'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, datum_cas, stav)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        if (! $insertStatement) {
+            throw new RuntimeException('reservation_insert_prepare_failed');
+        }
+
+        $insertStatement->bind_param(
+            'sssssidss',
+            $name,
+            $email,
+            $phone,
+            $source,
+            $clientNote,
+            $serviceId,
+            $servicePrice,
+            $normalizedDateTime,
+            $status
+        );
+
+        if (! $insertStatement->execute()) {
+            $insertStatement->close();
+            throw new RuntimeException('reservation_insert_failed');
+        }
+
+        $reservationId = (int) $connection->insert_id;
+        $insertStatement->close();
+        $connection->commit();
+
+        return [
+            'status' => 'ok',
+            'reservation_id' => $reservationId,
+            'date_time' => $normalizedDateTime,
+            'service' => $service,
+            'service_price' => $servicePrice,
+        ];
+    } catch (Throwable $exception) {
+        $connection->rollback();
+        return ['status' => 'error'];
+    }
 }
 
 function getAvailableDays(mysqli $connection, int $serviceId, int $daysAhead = 60): array

@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS rezervace (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_rezervace_zruseno_at (zruseno_at),
     KEY idx_rezervace_reminder_sent_at (reminder_sent_at),
+    KEY idx_rezervace_stav_datum_cas (stav, datum_cas),
+    KEY idx_rezervace_datum_cas_stav (datum_cas, stav),
+    KEY idx_rezervace_sluzba_datum_cas_stav (sluzba, datum_cas, stav),
+    KEY idx_rezervace_reminder_queue (reminder_sent_at, stav, datum_cas),
     CONSTRAINT fk_rezervace_sluzba
         FOREIGN KEY (sluzba) REFERENCES sluzby(id)
         ON UPDATE CASCADE
@@ -56,9 +60,13 @@ CREATE TABLE IF NOT EXISTS historie_cen_sluzeb (
     cena DECIMAL(10,2) NOT NULL,
     platna_od DATETIME NOT NULL,
     platna_do DATETIME NULL,
+    otevrena_flag TINYINT
+        AS (CASE WHEN platna_do IS NULL THEN 1 ELSE NULL END) STORED,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_historie_cen_sluzeb_sluzba_platna_od (sluzba_id, platna_od),
     KEY idx_historie_cen_sluzeb_sluzba_platna_do (sluzba_id, platna_do),
+    UNIQUE KEY uniq_historie_cen_sluzeb_otevrena (sluzba_id, otevrena_flag),
+    CONSTRAINT chk_historie_cen_sluzeb_time_order CHECK (platna_do IS NULL OR platna_do > platna_od),
     CONSTRAINT fk_historie_cen_sluzeb_sluzba
         FOREIGN KEY (sluzba_id) REFERENCES sluzby(id)
         ON UPDATE CASCADE
@@ -70,7 +78,9 @@ CREATE TABLE IF NOT EXISTS dostupnost (
     start_at DATETIME NOT NULL,
     end_at DATETIME NOT NULL,
     poznamka VARCHAR(255) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_dostupnost_start_end (start_at, end_at),
+    CONSTRAINT chk_dostupnost_time_order CHECK (end_at > start_at)
 );
 
 CREATE TABLE IF NOT EXISTS nastaveni (
@@ -121,7 +131,8 @@ CREATE TABLE IF NOT EXISTS poukazy (
     KEY idx_poukazy_status (status),
     KEY idx_poukazy_expires_at (expires_at),
     KEY idx_poukazy_recipient_email (recipient_email),
-    KEY idx_poukazy_emailed_at (emailed_at)
+    KEY idx_poukazy_emailed_at (emailed_at),
+    CONSTRAINT chk_poukazy_nonnegative CHECK (puvodni_hodnota >= 0 AND zustatek >= 0 AND zustatek <= puvodni_hodnota)
 );
 
 CREATE TABLE IF NOT EXISTS poukaz_cerpani (
@@ -134,6 +145,7 @@ CREATE TABLE IF NOT EXISTS poukaz_cerpani (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_poukaz_cerpani_poukaz (poukaz_id, created_at),
     KEY idx_poukaz_cerpani_rezervace (rezervace_id),
+    CONSTRAINT chk_poukaz_cerpani_castka_positive CHECK (castka > 0),
     CONSTRAINT fk_poukaz_cerpani_poukaz
         FOREIGN KEY (poukaz_id) REFERENCES poukazy(id)
         ON UPDATE CASCADE
