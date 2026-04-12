@@ -49,6 +49,7 @@ function ppstudioPublicLockRenderPage(string $errorMessage = ''): never
     $siteName = defaultSiteName();
     $csrf = getCsrfToken();
     $currentUrl = ppstudioPublicLockCurrentUrl();
+    $instagramUrl = 'https://www.instagram.com/ppstudio.cz/';
 
     http_response_code(401);
     header('Content-Type: text/html; charset=UTF-8');
@@ -68,22 +69,110 @@ function ppstudioPublicLockRenderPage(string $errorMessage = ''): never
             min-height: 100vh;
             display: grid;
             place-items: center;
-            padding: 20px;
+            padding: 24px;
             font-family: Georgia, "Times New Roman", serif;
-            background: linear-gradient(180deg, #f8f1e8 0%, #f3e7d9 100%);
+            background:
+                radial-gradient(circle at top right, rgba(214, 188, 154, .18), transparent 24rem),
+                radial-gradient(circle at bottom left, rgba(214, 188, 154, .12), transparent 22rem),
+                linear-gradient(180deg, #faf4ec 0%, #f3e7d9 100%);
             color: #4a3529;
         }
         .lock-card {
-            width: min(460px, 100%);
+            width: min(760px, 100%);
             background: #fffaf4;
             border: 1px solid #dcc4aa;
-            border-radius: 16px;
-            padding: 22px 20px;
-            box-shadow: 0 14px 34px rgba(59, 40, 27, .12);
+            border-radius: 24px;
+            padding: 34px 34px 28px;
+            box-shadow: 0 18px 44px rgba(59, 40, 27, .12);
         }
-        h1 { margin: 0 0 8px 0; font-size: 1.7rem; line-height: 1.2; }
-        p { margin: 0 0 14px 0; color: #6e5f52; }
-        label { display: block; margin: 10px 0 8px 0; font-weight: 700; }
+        .lock-eyebrow {
+            margin: 0 0 14px 0;
+            font-size: .9rem;
+            font-weight: 700;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: #8a6246;
+        }
+        h1 {
+            margin: 0 0 18px 0;
+            font-size: clamp(1.8rem, 3.4vw, 2.55rem);
+            line-height: 1.12;
+            max-width: 14ch;
+            letter-spacing: -0.02em;
+            color: #4a3529;
+        }
+        .lock-lead {
+            margin: 0 0 12px 0;
+            font-size: 1.04rem;
+            line-height: 1.78;
+            color: #5f4d40;
+            max-width: 40rem;
+        }
+        .lock-copy {
+            margin: 0 0 22px 0;
+            font-size: .96rem;
+            line-height: 1.74;
+            color: #746558;
+            max-width: 38rem;
+        }
+        .lock-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 0 0 26px 0;
+        }
+        .lock-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 54px;
+            padding: 0 22px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+        .lock-link:hover {
+            transform: translateY(-1px);
+        }
+        .lock-link-primary {
+            background: #8a6246;
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(77, 53, 37, .14);
+        }
+        .lock-link-primary:hover {
+            background: #77523a;
+        }
+        .lock-link-secondary {
+            background: #fff;
+            color: #6e5f52;
+            border: 1px solid #d6bea4;
+        }
+        .lock-panel {
+            margin-top: 6px;
+            border-top: 1px solid #ead9c7;
+            padding-top: 22px;
+        }
+        .lock-panel-title {
+            margin: 0 0 8px 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #4a3529;
+        }
+        .lock-panel-copy {
+            margin: 0 0 14px 0;
+            color: #8c7d70;
+            line-height: 1.6;
+            font-size: .94rem;
+        }
+        .lock-form-wrap {
+            background: #fdf8f2;
+            border: 1px solid #eee0d1;
+            border-radius: 18px;
+            padding: 16px;
+        }
+        label { display: block; margin: 8px 0 8px 0; font-weight: 700; }
         input[type="password"] {
             width: 100%;
             border: 1px solid #d2b79c;
@@ -117,22 +206,52 @@ function ppstudioPublicLockRenderPage(string $errorMessage = ''): never
             font-size: .94rem;
         }
         .lock-note { margin-top: 10px; font-size: .85rem; color: #8a7b6d; }
+        .lock-subtle {
+            font-size: .9rem;
+            color: #8b7d71;
+        }
+        @media (max-width: 640px) {
+            .lock-card {
+                padding: 24px 18px 22px;
+                border-radius: 20px;
+            }
+            .lock-actions {
+                flex-direction: column;
+            }
+            .lock-link {
+                width: 100%;
+            }
+            h1 {
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
     <main class="lock-card">
-        <h1>Web je dočasně uzamčen</h1>
-        <p>Stránka je zatím dostupná pouze na heslo.</p>
+        <p class="lock-eyebrow">PP Studio</p>
+        <h1>Připravujeme pro vás nový web PP Studio.</h1>
+        <p class="lock-lead">Na stránce právě pracujeme a brzy ji spustíme v plné podobě.</p>
+        <p class="lock-copy">Mezitím můžete sledovat novinky, volné termíny a aktuality studia na Instagramu.</p>
+        <div class="lock-actions">
+            <a class="lock-link lock-link-primary" href="<?= escape($instagramUrl) ?>" target="_blank" rel="noopener noreferrer">Sledovat PP Studio na Instagramu</a>
+        </div>
         <?php if ($errorMessage !== ''): ?>
             <div class="lock-error"><?= escape($errorMessage) ?></div>
         <?php endif; ?>
-        <form method="post" action="<?= escape($currentUrl) ?>">
-            <input type="hidden" name="_csrf" value="<?= escape($csrf) ?>">
-            <label for="public-site-password">Heslo</label>
-            <input id="public-site-password" type="password" name="public_site_password" required autocomplete="current-password">
-            <button type="submit" name="public_site_unlock" value="1">Odemknout web</button>
-        </form>
-        <div class="lock-note">Po odemknutí zůstane přístup aktivní jen v tomto prohlížeči.</div>
+        <section class="lock-panel" aria-labelledby="lock-panel-title">
+            <h2 id="lock-panel-title" class="lock-panel-title">Interní vstup</h2>
+            <p class="lock-panel-copy">Pokud máte přístupové heslo, můžete si stránku zobrazit už teď.</p>
+            <div class="lock-form-wrap">
+                <form method="post" action="<?= escape($currentUrl) ?>">
+                    <input type="hidden" name="_csrf" value="<?= escape($csrf) ?>">
+                    <label for="public-site-password">Heslo</label>
+                    <input id="public-site-password" type="password" name="public_site_password" required autocomplete="current-password">
+                    <button type="submit" name="public_site_unlock" value="1">Vstoupit na web</button>
+                </form>
+            </div>
+            <div class="lock-note lock-subtle">Po odemknutí zůstane přístup aktivní jen v tomto prohlížeči.</div>
+        </section>
     </main>
 </body>
 </html>
