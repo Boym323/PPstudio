@@ -35,3 +35,6 @@ var/*
 
 # Dependencies (if ever installed locally)
 node_modules/
+
+# Release/build output
+dist/

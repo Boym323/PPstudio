@@ -1,0 +1,7 @@
+# Files/folders not needed on production FTP deploy packages.
+.github/ export-ignore
+docs/ export-ignore
+
+# Local build output
+dist/ export-ignore
+

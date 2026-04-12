@@ -25,6 +25,23 @@ Detailnější dokumentace:
 3. Po nasazení doporučeno spustit maintenance:
    - `php database/run_db_maintenance.php`
 
+## Release ZIP pro FTP (tag + balíček)
+
+Pro ruční nasazení přes FTP je nejjednodušší dělat verzované ZIP balíčky z tagu.
+
+1. Vytvořte tag (příklad):
+   - `git tag -a v2026-04-12 -m "Release v2026-04-12"`
+2. Vytvořte ZIP z tagu:
+   - `bash scripts/make-release-zip.sh v2026-04-12`
+3. Výstup:
+   - `dist/ppstudio-v2026-04-12.zip`
+
+Poznámky:
+
+- ZIP je vytvořený pomocí `git archive` (obsahuje jen verzované soubory).
+- `.gitattributes` zajišťuje, že se do ZIPu nedostanou interní věci jako `docs/` nebo `.github/`.
+- `.env`, `uploads/` a `var/` nejsou součástí repozitáře, takže v ZIPu typicky nebudou (kromě `.gitkeep`/`.htaccess`).
+
 ### Cron (remindery)
 
 Runner: `reservation-reminders.php`
@@ -47,4 +64,3 @@ Doporučený cron (např. 1× za hodinu):
 ## Bezpečnost
 
 Pro hlášení zranitelností viz `SECURITY.md`.
-
