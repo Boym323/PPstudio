@@ -25,3 +25,7 @@ Užitečné informace v reportu:
 - Netestujte na produkci destruktivně (DoS, masové skenování, exfiltrace dat).
 - Pokud je nutné ověřit přístup k datům, dělejte to na minimálním vzorku a bez ukládání.
 
+## Implementace
+
+- CSRF tokeny, secure session cookie parametry, request/rate-limit pomocné funkce a audit bezpečnostních událostí jsou zapouzdřené ve třídách v `src/Security/`.
+- Procedurální funkce v `includes/security.php` a `includes/security_events.php` zůstávají dočasně jako kompatibilní wrappery pro starší entrypointy.

@@ -99,17 +99,14 @@ if (! function_exists('normalizeVoucherRecipientEmail')) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
-    $savedAll = true;
+    $settingsToSave = [];
     foreach (array_keys($studioSettingFields) as $settingKey) {
-        $settingValue = trim((string) ($_POST[$settingKey] ?? ''));
-        if (! saveSiteSetting($connection, $settingKey, $settingValue)) {
-            $savedAll = false;
-            break;
-        }
-        $siteSettings[$settingKey] = $settingValue;
+        $settingsToSave[$settingKey] = trim((string) ($_POST[$settingKey] ?? ''));
     }
+    $savedAll = ppstudioSiteSettingsService($connection)->saveMany($settingsToSave);
 
     if ($savedAll) {
+        $siteSettings = array_replace($siteSettings, $settingsToSave);
         $message = 'Nastavení studia bylo uloženo.';
     } else {
         $error = 'Nastavení studia se nepodařilo uložit.';
@@ -425,18 +422,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_integrations']))
         'google_place_id',
         'google_reviews_language',
     ];
-    $savedAll = true;
-
+    $settingsToSave = [];
     foreach ($integrationKeys as $settingKey) {
-        $settingValue = trim((string) ($_POST[$settingKey] ?? ''));
-        if (! saveSiteSetting($connection, $settingKey, $settingValue)) {
-            $savedAll = false;
-            break;
-        }
-        $siteSettings[$settingKey] = $settingValue;
+        $settingsToSave[$settingKey] = trim((string) ($_POST[$settingKey] ?? ''));
     }
+    $savedAll = ppstudioSiteSettingsService($connection)->saveMany($settingsToSave);
 
     if ($savedAll) {
+        $siteSettings = array_replace($siteSettings, $settingsToSave);
         $message = 'Napojení recenzí a sociálních odkazů bylo uloženo.';
     } else {
         $error = 'Napojení se nepodařilo uložit.';
@@ -447,18 +440,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_email_settings']
     $emailSettingKeys = [
         'notification_emails',
     ];
-    $savedAll = true;
-
+    $settingsToSave = [];
     foreach ($emailSettingKeys as $settingKey) {
-        $settingValue = trim((string) ($_POST[$settingKey] ?? ''));
-        if (! saveSiteSetting($connection, $settingKey, $settingValue)) {
-            $savedAll = false;
-            break;
-        }
-        $siteSettings[$settingKey] = $settingValue;
+        $settingsToSave[$settingKey] = trim((string) ($_POST[$settingKey] ?? ''));
     }
+    $savedAll = ppstudioSiteSettingsService($connection)->saveMany($settingsToSave);
 
     if ($savedAll) {
+        $siteSettings = array_replace($siteSettings, $settingsToSave);
         $message = 'E-mailové notifikace byly uloženy.';
     } else {
         $error = 'E-mailové notifikace se nepodařilo uložit.';

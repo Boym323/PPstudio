@@ -6,6 +6,7 @@ namespace PPStudio\Service;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Http\Request\ReservationSubmitRequest;
+use PPStudio\Repository\SiteSettingsRepository;
 
 final class ReservationSubmitService
 {
@@ -26,7 +27,7 @@ final class ReservationSubmitService
         }
 
         $dateTime = $request->dateTime();
-        $siteSettings = loadSiteSettings($connection);
+        $siteSettings = new SiteSettingsService(new SiteSettingsRepository($connection), \defaultSiteSettings())->load();
         $reservationInsert = ppstudioReservationService($connection)->createReservationWithLock(
             $request->name,
             $request->email,

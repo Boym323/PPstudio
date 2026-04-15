@@ -7,6 +7,7 @@ use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
+use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Repository\ServiceRepository;
 use PPStudio\Security\ReservationLinkSigner;
 
@@ -296,7 +297,7 @@ final class ReservationActionService
         }
 
         $repository = new ReservationRepository($connection);
-        $siteSettings = \loadSiteSettings($connection);
+        $siteSettings = new SiteSettingsService(new SiteSettingsRepository($connection), \defaultSiteSettings())->load();
         $reservation = $repository->findDetailsById($reservationId);
 
         if ($reservation === null) {
