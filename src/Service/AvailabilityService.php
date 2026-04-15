@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace PPStudio\Service;
 
 use DateTimeImmutable;
+use PPStudio\Domain\AvailabilityWindow;
+use PPStudio\Domain\ReservationSlot;
+use PPStudio\Domain\ServiceItem;
 use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
 use PPStudio\Repository\ServiceRepository;
@@ -19,10 +22,28 @@ final class AvailabilityService
 
     public function getServiceById(int $serviceId): ?array
     {
-        return $this->serviceRepository->findActiveById($serviceId);
+        $service = $this->getServiceItemById($serviceId);
+
+        return $service instanceof ServiceItem ? $service->toLegacyArray() : null;
+    }
+
+    public function getServiceItemById(int $serviceId): ?ServiceItem
+    {
+        return $this->serviceRepository->findActiveItemById($serviceId);
     }
 
     public function getAvailabilityWindows(string $date): array
+    {
+        return array_map(
+            static fn (AvailabilityWindow $window): array => $window->toArray(true),
+            $this->getAvailabilityWindowObjects($date)
+        );
+    }
+
+    /**
+     * @return AvailabilityWindow[]
+     */
+    public function getAvailabilityWindowObjects(string $date): array
     {
         $bounds = self::sqlDayBounds($date);
         if ($bounds === null) {
@@ -37,6 +58,17 @@ final class AvailabilityService
 
     public function getBookedIntervals(string $date): array
     {
+        return array_map(
+            static fn (ReservationSlot $slot): array => $slot->toArray(),
+            $this->getBookedSlots($date)
+        );
+    }
+
+    /**
+     * @return ReservationSlot[]
+     */
+    public function getBookedSlots(string $date): array
+    {
         $bounds = self::sqlDayBounds($date);
         if ($bounds === null) {
             return [];
@@ -49,25 +81,25 @@ final class AvailabilityService
 
     public function getAvailableTimesForDate(int $serviceId, string $date): array
     {
-        $service = $this->serviceRepository->findActiveById($serviceId);
+        $service = $this->serviceRepository->findActiveItemById($serviceId);
 
         if (! $service) {
             return [];
         }
 
-        $duration = max(15, (int) ($service['doba_trvani'] ?? 0));
-        $windows = $this->getAvailabilityWindows($date);
-        $bookedIntervals = $this->getBookedIntervals($date);
+        $duration = $service->normalizedDurationMinutes();
+        $windows = $this->getAvailabilityWindowObjects($date);
+        $bookedSlots = $this->getBookedSlots($date);
         $slots = [];
 
         foreach ($windows as $window) {
-            $cursor = $window['start'];
-            $latestStart = $window['end']->modify('-' . $duration . ' minutes');
+            $cursor = $window->start;
+            $latestStart = $window->end->modify('-' . $duration . ' minutes');
 
             while ($cursor <= $latestStart) {
-                $slotEnd = $cursor->modify('+' . $duration . ' minutes');
+                $slot = ReservationSlot::fromStartAndDuration($cursor, $duration);
 
-                if (! self::intervalOverlaps($cursor, $slotEnd, $bookedIntervals)) {
+                if (! self::slotOverlaps($slot, $bookedSlots)) {
                     $value = $cursor->format('H:i');
                     $slots[$value] = [
                         'value' => $value,
@@ -97,8 +129,8 @@ final class AvailabilityService
         );
 
         foreach ($windows as $window) {
-            $windowStart = $window['start'];
-            $windowEnd = $window['end'];
+            $windowStart = $window->start;
+            $windowEnd = $window->end;
             $cursor = $windowStart < $today ? $today : $windowStart->setTime(0, 0);
             $windowLastDay = $windowEnd->modify('-1 second')->setTime(0, 0);
 
@@ -153,25 +185,22 @@ final class AvailabilityService
         return false;
     }
 
+    /**
+     * @return AvailabilityWindow[]
+     */
     public function normalizeAvailabilityWindows(array $rows, bool $includeId): array
     {
         $windows = [];
 
         foreach ($rows as $row) {
-            $windowStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) ($row['start_at'] ?? ''));
-            $windowEnd = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) ($row['end_at'] ?? ''));
+            $window = AvailabilityWindow::fromDatabaseRow($row);
 
-            if (! $windowStart instanceof DateTimeImmutable || ! $windowEnd instanceof DateTimeImmutable || $windowEnd <= $windowStart) {
+            if (! $window instanceof AvailabilityWindow) {
                 continue;
             }
 
-            $window = [
-                'start' => $windowStart,
-                'end' => $windowEnd,
-            ];
-
-            if ($includeId) {
-                $window = ['id' => (int) ($row['id'] ?? 0)] + $window;
+            if (! $includeId && $window->id !== null) {
+                $window = new AvailabilityWindow($window->start, $window->end);
             }
 
             $windows[] = $window;
@@ -180,21 +209,21 @@ final class AvailabilityService
         return $windows;
     }
 
+    /**
+     * @return ReservationSlot[]
+     */
     public function normalizeBookedIntervals(array $rows): array
     {
         $intervals = [];
 
         foreach ($rows as $row) {
-            $start = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) ($row['start_at'] ?? ''));
-            if (! $start instanceof DateTimeImmutable) {
+            $slot = ReservationSlot::fromBookedRow($row);
+
+            if (! $slot instanceof ReservationSlot) {
                 continue;
             }
 
-            $duration = max(15, (int) ($row['duration_minutes'] ?? 0));
-            $intervals[] = [
-                'start' => $start,
-                'end' => $start->modify('+' . $duration . ' minutes'),
-            ];
+            $intervals[] = $slot;
         }
 
         return $intervals;
@@ -202,8 +231,10 @@ final class AvailabilityService
 
     public static function reservationFitsAvailabilityWindows(DateTimeImmutable $start, DateTimeImmutable $end, array $windows): bool
     {
+        $slot = new ReservationSlot($start, $end);
+
         foreach ($windows as $window) {
-            if ($start >= $window['start'] && $end <= $window['end']) {
+            if (self::availabilityWindowFromMixed($window)?->contains($slot)) {
                 return true;
             }
         }
@@ -213,8 +244,15 @@ final class AvailabilityService
 
     public static function intervalOverlaps(DateTimeImmutable $start, DateTimeImmutable $end, array $intervals): bool
     {
+        return self::slotOverlaps(new ReservationSlot($start, $end), $intervals);
+    }
+
+    public static function slotOverlaps(ReservationSlot $slot, array $intervals): bool
+    {
         foreach ($intervals as $interval) {
-            if ($start < $interval['end'] && $end > $interval['start']) {
+            $bookedSlot = self::reservationSlotFromMixed($interval);
+
+            if ($bookedSlot instanceof ReservationSlot && $slot->overlaps($bookedSlot)) {
                 return true;
             }
         }
@@ -247,5 +285,31 @@ final class AvailabilityService
         }
 
         return $dateObject->format('d.m.Y');
+    }
+
+    private static function availabilityWindowFromMixed(mixed $window): ?AvailabilityWindow
+    {
+        if ($window instanceof AvailabilityWindow) {
+            return $window;
+        }
+
+        if (! is_array($window) || ! ($window['start'] ?? null) instanceof DateTimeImmutable || ! ($window['end'] ?? null) instanceof DateTimeImmutable) {
+            return null;
+        }
+
+        return new AvailabilityWindow($window['start'], $window['end'], isset($window['id']) ? (int) $window['id'] : null);
+    }
+
+    private static function reservationSlotFromMixed(mixed $slot): ?ReservationSlot
+    {
+        if ($slot instanceof ReservationSlot) {
+            return $slot;
+        }
+
+        if (! is_array($slot) || ! ($slot['start'] ?? null) instanceof DateTimeImmutable || ! ($slot['end'] ?? null) instanceof DateTimeImmutable) {
+            return null;
+        }
+
+        return new ReservationSlot($slot['start'], $slot['end']);
     }
 }

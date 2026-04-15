@@ -5,6 +5,7 @@ namespace PPStudio\Http\Controller;
 
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Domain\ServiceItem;
 use PPStudio\Repository\ServiceRepository;
 
 final class ApiServicesController
@@ -43,20 +44,19 @@ final class ApiServicesController
 
         $items = [];
 
-        foreach ($this->serviceRepository->findActiveWithCategories() as $row) {
-            $category = trim((string) ($row['kategorie'] ?? ''));
+        foreach ($this->serviceRepository->findActiveItemsWithCategories() as $service) {
             $items[] = [
-                'id' => (int) ($row['id'] ?? 0),
-                'name' => (string) ($row['nazev'] ?? ''),
-                'category' => $category !== '' ? $category : 'Ostatní služby',
-                'category_order' => $row['kategorie_poradi'] !== null ? (int) $row['kategorie_poradi'] : null,
-                'badge' => trim((string) ($row['stitek'] ?? '')),
-                'description' => trim((string) ($row['popis'] ?? '')),
-                'duration' => (int) ($row['doba_trvani'] ?? 0),
-                'price' => $row['cena'] !== null ? (float) $row['cena'] : null,
-                'label' => (string) ($row['nazev'] ?? '')
-                    . ' (' . $this->formatDuration($row['doba_trvani'] ?? null) . ') - '
-                    . $this->formatPrice($row['cena'] ?? null),
+                'id' => $service->id,
+                'name' => $service->name,
+                'category' => $service->category ?? 'Ostatní služby',
+                'category_order' => $service->categoryOrder,
+                'badge' => $service->badge ?? '',
+                'description' => $service->description,
+                'duration' => $service->durationMinutes,
+                'price' => $service->price,
+                'label' => $service->name
+                    . ' (' . $this->formatDuration($service) . ') - '
+                    . $this->formatPrice($service),
             ];
         }
 
@@ -79,22 +79,22 @@ final class ApiServicesController
         exit;
     }
 
-    private function formatPrice(mixed $price): string
+    private function formatPrice(ServiceItem $service): string
     {
-        if ($price === null || $price === '') {
+        if ($service->price === null) {
             return 'Cena na dotaz';
         }
 
-        return number_format((float) $price, 0, ',', ' ') . ' Kč';
+        return number_format($service->price, 0, ',', ' ') . ' Kč';
     }
 
-    private function formatDuration(mixed $duration): string
+    private function formatDuration(ServiceItem $service): string
     {
-        if ($duration === null || $duration === '') {
+        if ($service->durationMinutes <= 0) {
             return 'Dle vybrané procedury';
         }
 
-        return (int) $duration . ' min';
+        return $service->durationMinutes . ' min';
     }
 
     private static function sendJsonHeaders(): void

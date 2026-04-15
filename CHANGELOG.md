@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [fix] Opraven pád admin záložky rezervací při načítání bez aktivního filtru inicializací výchozí SQL podmínky v loaderu rezervací (commit: `this-commit`)
+- [refactor] Do OOP rezervační vrstvy byly doplněny lehké doménové objekty `ServiceItem`, `AvailabilityWindow`, `ReservationSlot` a `ReservationData`; interní výpočty dostupnosti a zápis rezervace už méně spoléhají na nepojmenovaná asociativní pole při zachování kompatibilních výstupů (commit: `this-commit`)
 - [refactor] Admin orchestrace byla rozdělena na základní modulové controllery `AdminDashboardController`, `AdminReservationController`, `AdminServiceController`, `AdminAvailabilityController`, `AdminMediaController`, `AdminSettingsController`, `AdminVoucherController` a `AdminSecurityLogController`; původní `admin.php` zůstává kompatibilní vstupní orchestrátor (commit: `this-commit`)
 - [refactor] Nastavení webu a bezpečnostní helpery byly odděleny do OOP tříd `SiteSettingsRepository`, `SiteSettingsService`, `CsrfService`, `SessionService`, `RequestSecurityService` a `SecurityEventLogger`; původní include funkce zůstávají jako kompatibilní wrappery (commit: `this-commit`)
 - [refactor] Reminder runner `reservation-reminders.php` byl ztenčen; výběr kandidátů, pravidla odeslání, notifikace, označení `reminder_sent_at` a souhrnné logování nově řeší `ReservationReminderService` při zachování stejného CLI spuštění (commit: `this-commit`)

@@ -1,5 +1,6 @@
 <?php
 
+$where = ['1=1'];
 
 if ($reservationFilters['status'] !== 'all') {
     $statusEscaped = $connection->real_escape_string($reservationFilters['status']);

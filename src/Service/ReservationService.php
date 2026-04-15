@@ -5,6 +5,9 @@ namespace PPStudio\Service;
 
 use DateTimeImmutable;
 use mysqli;
+use PPStudio\Domain\ReservationData;
+use PPStudio\Domain\ReservationSlot;
+use PPStudio\Domain\ServiceItem;
 use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
 use PPStudio\Repository\ServiceRepository;
@@ -36,8 +39,8 @@ final class ReservationService
             return ['status' => 'invalid_datetime'];
         }
 
-        $service = $this->serviceRepository->findActiveById($serviceId);
-        if (! is_array($service)) {
+        $service = $this->serviceRepository->findActiveItemById($serviceId);
+        if (! $service instanceof ServiceItem) {
             return ['status' => 'service_unavailable'];
         }
 
@@ -46,14 +49,12 @@ final class ReservationService
             return ['status' => 'invalid_datetime'];
         }
 
-        $durationMinutes = max(15, (int) ($service['doba_trvani'] ?? 0));
-        $reservationEnd = $reservationStart->modify('+' . $durationMinutes . ' minutes');
+        $reservationSlot = ReservationSlot::fromStartAndDuration($reservationStart, $service->normalizedDurationMinutes());
         $bounds = AvailabilityService::sqlDayBounds($reservationStart->format('Y-m-d'));
         if ($bounds === null) {
             return ['status' => 'invalid_datetime'];
         }
 
-        $servicePrice = isset($service['cena']) ? (float) $service['cena'] : null;
         $this->connection->begin_transaction();
 
         try {
@@ -62,7 +63,7 @@ final class ReservationService
                 false
             );
 
-            if (! AvailabilityService::reservationFitsAvailabilityWindows($reservationStart, $reservationEnd, $windows)) {
+            if (! AvailabilityService::reservationFitsAvailabilityWindows($reservationSlot->start, $reservationSlot->end, $windows)) {
                 $this->connection->rollback();
 
                 return ['status' => 'slot_unavailable'];
@@ -72,23 +73,24 @@ final class ReservationService
                 $this->reservationRepository->lockBookedBetween($bounds['start'], $bounds['end'])
             );
 
-            if (AvailabilityService::intervalOverlaps($reservationStart, $reservationEnd, $bookedIntervals)) {
+            if (AvailabilityService::slotOverlaps($reservationSlot, $bookedIntervals)) {
                 $this->connection->rollback();
 
                 return ['status' => 'slot_unavailable'];
             }
 
-            $reservationId = $this->reservationRepository->insert(
+            $reservationData = new ReservationData(
                 $name,
                 $email,
                 $phone,
                 $source,
                 $clientNote,
                 $serviceId,
-                $servicePrice,
+                $service->price,
                 $normalizedDateTime,
                 $status
             );
+            $reservationId = $this->reservationRepository->insertData($reservationData);
 
             $this->connection->commit();
 
@@ -96,8 +98,8 @@ final class ReservationService
                 'status' => 'ok',
                 'reservation_id' => $reservationId,
                 'date_time' => $normalizedDateTime,
-                'service' => $service,
-                'service_price' => $servicePrice,
+                'service' => $service->toLegacyArray(),
+                'service_price' => $service->price,
             ];
         } catch (Throwable) {
             $this->connection->rollback();

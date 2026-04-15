@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PPStudio\Repository;
 
 use mysqli;
+use PPStudio\Domain\ReservationData;
 use RuntimeException;
 
 final class ReservationRepository
@@ -34,6 +35,21 @@ final class ReservationRepository
         string $dateTime,
         string $status
     ): int {
+        return $this->insertData(new ReservationData(
+            $name,
+            $email,
+            $phone,
+            $source,
+            $clientNote,
+            $serviceId,
+            $servicePrice,
+            $dateTime,
+            $status
+        ));
+    }
+
+    public function insertData(ReservationData $reservation): int
+    {
         $statement = $this->connection->prepare(
             'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, datum_cas, stav)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -42,6 +58,16 @@ final class ReservationRepository
         if (! $statement) {
             throw new RuntimeException('reservation_insert_prepare_failed');
         }
+
+        $name = $reservation->name;
+        $email = $reservation->email;
+        $phone = $reservation->phone;
+        $source = $reservation->source;
+        $clientNote = $reservation->clientNote;
+        $serviceId = $reservation->serviceId;
+        $servicePrice = $reservation->servicePrice;
+        $dateTime = $reservation->dateTime;
+        $status = $reservation->status;
 
         $statement->bind_param(
             'sssssidss',
