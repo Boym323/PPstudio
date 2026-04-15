@@ -330,9 +330,56 @@ function getAvailableDays(mysqli $connection, int $serviceId, int $daysAhead = 6
 {
     $days = [];
     $today = new DateTimeImmutable('today');
+    $lastDay = $today->modify('+' . max(0, $daysAhead) . ' days');
+    $boundsStart = $today->format('Y-m-d 00:00:00');
+    $boundsEnd = $lastDay->modify('+1 day')->format('Y-m-d 00:00:00');
+    $candidateDates = [];
 
-    for ($offset = 0; $offset <= $daysAhead; $offset++) {
-        $date = $today->modify('+' . $offset . ' days')->format('Y-m-d');
+    $statement = $connection->prepare(
+        'SELECT start_at, end_at
+         FROM dostupnost
+         WHERE start_at < ?
+           AND end_at > ?
+           AND end_at > start_at
+         ORDER BY start_at ASC'
+    );
+
+    if ($statement) {
+        $statement->bind_param('ss', $boundsEnd, $boundsStart);
+        $statement->execute();
+        $statement->bind_result($startAt, $endAt);
+
+        while ($statement->fetch()) {
+            $windowStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $startAt);
+            $windowEnd = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $endAt);
+
+            if (! $windowStart instanceof DateTimeImmutable || ! $windowEnd instanceof DateTimeImmutable) {
+                continue;
+            }
+
+            $cursor = $windowStart < $today ? $today : $windowStart->setTime(0, 0);
+            $windowLastDay = $windowEnd->modify('-1 second')->setTime(0, 0);
+            if ($windowLastDay > $lastDay) {
+                $windowLastDay = $lastDay;
+            }
+
+            while ($cursor <= $windowLastDay) {
+                $candidateDates[$cursor->format('Y-m-d')] = true;
+                $cursor = $cursor->modify('+1 day');
+            }
+        }
+
+        $statement->close();
+    }
+
+    $dates = array_keys($candidateDates);
+    sort($dates);
+
+    if ($dates === []) {
+        return [];
+    }
+
+    foreach ($dates as $date) {
         $times = getAvailableTimesForDate($connection, $serviceId, $date);
 
         if ($times !== []) {

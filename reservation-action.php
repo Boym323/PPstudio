@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
@@ -8,7 +9,6 @@ require_once __DIR__ . '/includes/security_events.php';
 require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/mailer.php';
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $emailConfig = require __DIR__ . '/config/email.php';
 
 $reservationId = (int) ($_GET['id'] ?? 0);
@@ -32,18 +32,12 @@ if (
         'expires_at' => $expiresAt,
     ]);
 } else {
-    $connection = @new mysqli(
-        $dbConfig['host'],
-        $dbConfig['username'],
-        $dbConfig['password'],
-        $dbConfig['database']
-    );
+    $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-    if ($connection->connect_errno) {
+    if (! $connection instanceof mysqli) {
         http_response_code(500);
         $message = 'Databáze není dostupná.';
     } else {
-        $connection->set_charset($dbConfig['charset']);
         $siteSettings = loadSiteSettings($connection);
         $reservationBefore = loadReservationDetails($connection, $reservationId);
 

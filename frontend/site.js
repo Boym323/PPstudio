@@ -489,7 +489,13 @@
     };
 
     const fetchJson = async (url) => {
-      const res = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
+      const res = await fetch(url, {
+        credentials: 'same-origin',
+        headers: {
+          'X-Requested-With': 'fetch',
+          Accept: 'application/json',
+        },
+      });
       if (!res.ok) throw new Error('Chyba načtení');
       return res.json();
     };
@@ -966,6 +972,7 @@
       fetch(form.action, {
         method: 'POST',
         body: formData,
+        credentials: 'same-origin',
         headers: {
           'X-Requested-With': 'fetch',
           Accept: 'application/json',

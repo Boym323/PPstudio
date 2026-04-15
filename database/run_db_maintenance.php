@@ -7,27 +7,14 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
+require dirname(__DIR__) . '/includes/bootstrap.php';
 require dirname(__DIR__) . '/config/app.php';
 
-$dbConfig = require dirname(__DIR__) . '/config/database.php';
-
-function maintenanceConnect(array $dbConfig): mysqli
+function maintenanceConnect(): mysqli
 {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-    $connection = new mysqli(
-        (string) ($dbConfig['host'] ?? '127.0.0.1'),
-        (string) ($dbConfig['username'] ?? ''),
-        (string) ($dbConfig['password'] ?? ''),
-        (string) ($dbConfig['database'] ?? '')
-    );
-
-    $charset = (string) ($dbConfig['charset'] ?? '');
-    if ($charset !== '') {
-        $connection->set_charset($charset);
-    }
-
-    return $connection;
+    return \PPStudio\Database\DatabaseFactory::connect();
 }
 
 function maintenanceRunSqlFile(mysqli $connection, string $path): void
@@ -65,7 +52,7 @@ function maintenancePrintSection(string $title): void
 }
 
 try {
-    $connection = maintenanceConnect($dbConfig);
+    $connection = maintenanceConnect();
 } catch (Throwable $exception) {
     fwrite(STDERR, "DB connection failed: " . $exception->getMessage() . "\n");
     exit(1);

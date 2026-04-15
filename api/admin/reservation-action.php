@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/../../includes/bootstrap.php';
 require __DIR__ . '/../../config/app.php';
 require __DIR__ . '/../../includes/functions.php';
 require __DIR__ . '/../../includes/security.php';
@@ -44,17 +45,11 @@ if (! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
     exit;
 }
 
-$dbConfig = require __DIR__ . '/../../config/database.php';
 $emailConfig = require __DIR__ . '/../../config/email.php';
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-if ($connection->connect_errno) {
+if (! $connection instanceof mysqli) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
@@ -62,8 +57,6 @@ if ($connection->connect_errno) {
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
-
-$connection->set_charset($dbConfig['charset']);
 $siteSettings = loadSiteSettings($connection);
 $reservationId = (int) ($_POST['reservation_id'] ?? 0);
 

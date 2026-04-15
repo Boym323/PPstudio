@@ -72,6 +72,11 @@ Nový kód patří do `src/` pod namespace `PPStudio\`. Projekt má připravený
 Dokud Composer není na prostředí dostupný, funguje fallback autoloader
 `includes/bootstrap.php`.
 
+Databázové připojení se v endpointech získává jednotně přes
+`PPStudio\Database\DatabaseFactory`, která načítá výchozí konfiguraci projektu a
+předává ji do `PPStudio\Database\DatabaseConnection`. Přímé `new mysqli(...)`
+patří jen do této infrastrukturní connection třídy.
+
 Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
 v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.
 

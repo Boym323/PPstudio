@@ -54,36 +54,18 @@ function securityEventLog(
         return false;
     }
 
-    $dbConfigPath = dirname(__DIR__) . '/config/database.php';
-    if (! is_file($dbConfigPath)) {
-        securityEventLogFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
-        return false;
-    }
-
-    $dbConfig = require $dbConfigPath;
-    if (! is_array($dbConfig)) {
-        securityEventLogFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
-        return false;
-    }
-
     if (! class_exists('mysqli')) {
         securityEventLogFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
         return false;
     }
 
-    $connection = @new mysqli(
-        (string) ($dbConfig['host'] ?? ''),
-        (string) ($dbConfig['username'] ?? ''),
-        (string) ($dbConfig['password'] ?? ''),
-        (string) ($dbConfig['database'] ?? '')
-    );
+    require_once __DIR__ . '/bootstrap.php';
 
-    if ($connection->connect_errno) {
+    $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
+    if (! $connection instanceof mysqli) {
         securityEventLogFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
         return false;
     }
-
-    $connection->set_charset((string) ($dbConfig['charset'] ?? 'utf8mb4'));
 
     $statement = $connection->prepare(
         'INSERT INTO security_events (event_type, event_source, severity, ip_address, user_agent, context_json)

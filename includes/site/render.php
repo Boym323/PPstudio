@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../../config/app.php';
 require_once __DIR__ . '/../functions.php';
 require_once __DIR__ . '/../security.php';
@@ -74,16 +75,9 @@ function renderSitePage(array $config): never
     $csrfToken = getCsrfToken();
     $siteSettings = defaultSiteSettings();
 
-    $dbConfig = require __DIR__ . '/../../config/database.php';
-    $connection = @new mysqli(
-        $dbConfig['host'],
-        $dbConfig['username'],
-        $dbConfig['password'],
-        $dbConfig['database']
-    );
+    $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-    if (! $connection->connect_errno) {
-        $connection->set_charset($dbConfig['charset']);
+    if ($connection instanceof mysqli) {
         $siteSettings = loadSiteSettings($connection);
         $connection->close();
     }

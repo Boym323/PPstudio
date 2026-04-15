@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
 require __DIR__ . '/includes/settings.php';
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $siteUrl = rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
 $lastMod = gmdate('Y-m-d');
 $pages = [
@@ -19,15 +19,9 @@ $pages = [
     '/rezervace.php',
 ];
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-if (! $connection->connect_errno) {
-    $connection->set_charset($dbConfig['charset']);
+if ($connection instanceof mysqli) {
     $siteSettings = loadSiteSettings($connection);
     $siteUrl = rtrim(setting($siteSettings, 'site_url', $siteUrl), '/');
     $connection->close();

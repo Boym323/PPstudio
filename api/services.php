@@ -7,7 +7,6 @@ require __DIR__ . '/../includes/functions.php';
 require __DIR__ . '/../includes/security.php';
 require __DIR__ . '/../includes/site_lock.php';
 
-$dbConfig = require __DIR__ . '/../config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -17,7 +16,7 @@ requirePublicSiteAccessOrJsonError();
 $connection = null;
 
 try {
-    $connection = \PPStudio\Database\DatabaseConnection::fromArray($dbConfig)->connect();
+    $connection = \PPStudio\Database\DatabaseFactory::connect();
 } catch (Throwable) {
     http_response_code(500);
     echo json_encode(['error' => 'Databaze neni dostupna.'], JSON_UNESCAPED_UNICODE);

@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
@@ -10,7 +11,6 @@ require __DIR__ . '/includes/availability.php';
 require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/mailer.php';
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $emailConfig = require __DIR__ . '/config/email.php';
 
 startSecureSession();
@@ -136,18 +136,11 @@ if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || ! preg_match('/^\d{2}:\d{2}$/
 
 $dateTime = $day . ' ' . $time . ':00';
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-if ($connection->connect_errno) {
+if (! $connection instanceof mysqli) {
     $respond('db', false, 500);
 }
-
-$connection->set_charset($dbConfig['charset']);
 $siteSettings = loadSiteSettings($connection);
 $reservationInsert = createReservationWithLock($connection, $name, $email, $phone, $source, $note, $serviceId, $dateTime, 'nova');
 

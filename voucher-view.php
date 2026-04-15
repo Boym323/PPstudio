@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
@@ -9,24 +10,16 @@ require __DIR__ . '/includes/settings.php';
 
 startSecureSession();
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $voucherId = (int) ($_GET['v'] ?? 0);
 $signature = trim((string) ($_GET['sig'] ?? ''));
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-if ($connection->connect_errno) {
+if (! $connection instanceof mysqli) {
     http_response_code(500);
     echo 'Databáze není dostupná.';
     exit;
 }
-
-$connection->set_charset($dbConfig['charset']);
 $siteSettings = loadSiteSettings($connection);
 $siteName = setting($siteSettings, 'site_name', defaultSiteName());
 

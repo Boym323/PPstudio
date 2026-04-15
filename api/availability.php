@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/../includes/bootstrap.php';
 require __DIR__ . '/../config/app.php';
 require __DIR__ . '/../includes/functions.php';
 require __DIR__ . '/../includes/security.php';
 require __DIR__ . '/../includes/site_lock.php';
 require __DIR__ . '/../includes/availability.php';
 
-$dbConfig = require __DIR__ . '/../config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -29,20 +29,13 @@ if ($date !== '' && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     exit;
 }
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
-if ($connection->connect_errno) {
+if (! $connection instanceof mysqli) {
     http_response_code(500);
     echo json_encode(['error' => 'Databaze neni dostupna.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$connection->set_charset($dbConfig['charset']);
 
 if ($date !== '') {
     $times = getAvailableTimesForDate($connection, $serviceId, $date);

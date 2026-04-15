@@ -6,6 +6,7 @@ namespace PPStudio\Database;
 use mysqli;
 use mysqli_sql_exception;
 use RuntimeException;
+use Throwable;
 
 final class DatabaseConnection
 {
@@ -15,22 +16,52 @@ final class DatabaseConnection
     }
 
     /**
-     * @param array{host?: mixed, database?: mixed, username?: mixed, password?: mixed, charset?: mixed} $config
+     * @param array{host?: mixed, database?: mixed, username?: mixed, password?: mixed, charset?: mixed, port?: mixed} $config
      */
     public static function fromArray(array $config): self
     {
         return new self(DatabaseConfig::fromArray($config));
     }
 
+    /**
+     * @param array{host?: mixed, database?: mixed, username?: mixed, password?: mixed, charset?: mixed, port?: mixed} $config
+     */
+    public static function connectFromArray(array $config): mysqli
+    {
+        return self::fromArray($config)->connect();
+    }
+
+    /**
+     * @param array{host?: mixed, database?: mixed, username?: mixed, password?: mixed, charset?: mixed, port?: mixed} $config
+     */
+    public static function tryFromArray(array $config): ?mysqli
+    {
+        try {
+            return self::connectFromArray($config);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     public function connect(): mysqli
     {
         try {
-            $connection = @new mysqli(
-                $this->config->host,
-                $this->config->username,
-                $this->config->password,
-                $this->config->database
-            );
+            if ($this->config->port !== null) {
+                $connection = @new mysqli(
+                    $this->config->host,
+                    $this->config->username,
+                    $this->config->password,
+                    $this->config->database,
+                    $this->config->port
+                );
+            } else {
+                $connection = @new mysqli(
+                    $this->config->host,
+                    $this->config->username,
+                    $this->config->password,
+                    $this->config->database
+                );
+            }
         } catch (mysqli_sql_exception $exception) {
             throw new RuntimeException('Database connection failed: ' . $exception->getMessage(), (int) $exception->getCode(), $exception);
         }

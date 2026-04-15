@@ -7,6 +7,7 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
@@ -14,8 +15,9 @@ require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/security_events.php';
 require __DIR__ . '/includes/mailer.php';
 
-function reminderRunnerConnect(array $dbConfig): mysqli|PDO
+function reminderRunnerConnect(): mysqli|PDO
 {
+    $dbConfig = \PPStudio\Database\DatabaseFactory::loadProjectConfig(['port' => 3306]);
     $host = (string) ($dbConfig['host'] ?? '127.0.0.1');
     $database = (string) ($dbConfig['database'] ?? '');
     $username = (string) ($dbConfig['username'] ?? '');
@@ -23,16 +25,7 @@ function reminderRunnerConnect(array $dbConfig): mysqli|PDO
     $charset = (string) ($dbConfig['charset'] ?? 'utf8mb4');
 
     if (class_exists('mysqli')) {
-        $connection = @new mysqli($host, $username, $password, $database, 3306);
-        if ($connection->connect_error) {
-            throw new RuntimeException('DB connection failed: ' . $connection->connect_error);
-        }
-
-        if ($charset !== '') {
-            $connection->set_charset($charset);
-        }
-
-        return $connection;
+        return \PPStudio\Database\DatabaseFactory::connect(['port' => 3306]);
     }
 
     if (class_exists('PDO') && extension_loaded('pdo_mysql')) {
@@ -244,11 +237,10 @@ function reminderRunnerCleanupLogs(mysqli|PDO $connection): void
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $emailConfig = require __DIR__ . '/config/email.php';
 
 try {
-    $connection = reminderRunnerConnect($dbConfig);
+    $connection = reminderRunnerConnect();
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);

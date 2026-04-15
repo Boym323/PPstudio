@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 require __DIR__ . '/includes/security.php';
@@ -14,7 +15,6 @@ require __DIR__ . '/includes/admin/availability_story.php';
 
 startSecureSession();
 
-$dbConfig = require __DIR__ . '/config/database.php';
 $adminConfig = require __DIR__ . '/config/admin.php';
 $emailConfig = require __DIR__ . '/config/email.php';
 
@@ -127,12 +127,7 @@ if (! $isAuthenticated) {
     exit;
 }
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
 $message = '';
 $error = $error ?? '';
@@ -369,8 +364,7 @@ if (
     $error = 'Odesílaný formulář je příliš velký pro server. Zmenšete prosím obrázek nebo navyšte limit post_max_size v PHP.';
 }
 
-if (! $connection->connect_errno) {
-    $connection->set_charset($dbConfig['charset']);
+if ($connection instanceof mysqli) {
     $siteSettings = loadSiteSettings($connection);
     $subscriptionCalendarUrl = buildSubscriptionCalendarUrl($emailConfig, $siteSettings);
 
