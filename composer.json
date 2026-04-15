@@ -1,0 +1,13 @@
+{
+  "name": "ppstudio/web",
+  "description": "Web a rezervační systém PP Studio.",
+  "type": "project",
+  "require": {
+    "php": ">=8.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "PPStudio\\": "src/"
+    }
+  }
+}

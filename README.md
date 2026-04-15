@@ -61,6 +61,16 @@ Doporučený cron (např. 1× za hodinu):
 - `var/` runtime úložiště (logy, security, backupy) – necommitovat
 - `uploads/` nahrané soubory – necommitovat
 
+## Postupný OOP základ
+
+Nový kód patří do `src/` pod namespace `PPStudio\`. Projekt má připravený
+`composer.json` s PSR-4 autoloadem, takže po dostupnosti Composeru stačí spustit:
+
+`composer dump-autoload`
+
+Dokud Composer není na prostředí dostupný, funguje fallback autoloader
+`includes/bootstrap.php`.
+
 ## Bezpečnost
 
 Pro hlášení zranitelností viz `SECURITY.md`.
