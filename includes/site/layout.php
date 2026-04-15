@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="cs">
 <head>
     <?php
     $cssVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.css') ?: time());
     $jsVersion = (string) (@filemtime(__DIR__ . '/../../frontend/site.js') ?: time());
+    $resolvedSiteBaseUrl = $siteBaseUrl ?? rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
     $schemaAddress = trim(setting($siteSettings ?? [], 'contact_address', ''));
     $schemaInstagramUrl = setting($siteSettings ?? [], 'contact_instagram_url', '');
     $schemaPhone = setting($siteSettings ?? [], 'contact_phone', '+420732856036');
@@ -41,7 +42,6 @@
     <title><?= escape($title) ?></title>
     <meta property="og:title" content="<?= escape($title) ?>">
     <meta property="og:description" content="<?= escape($description) ?>">
-    <?php $resolvedSiteBaseUrl = $siteBaseUrl ?? rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/'); ?>
     <meta property="og:image" content="<?= escape(($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/frontend/Paji.jpeg') ?>">
     <meta property="og:url" content="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
     <meta property="og:type" content="website">
@@ -70,3 +70,4 @@
     <script src="/frontend/site.js?v=<?= escape($jsVersion) ?>" defer></script>
 </body>
 </html>
+
