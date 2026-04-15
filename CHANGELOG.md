@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [fix] Doplněna rewrite pravidla pro `/admin` a `/admin-lite`, aby krátké URL směřovaly na příslušné entrypointy `admin.php` a `admin-lite.php` (commit: `this-commit`)
 - [perf] Výpočet volných dnů rezervací nejdřív pracuje jen s dny, kde existuje dostupnostní okno, takže načítání termínů na webu neprochází zbytečně celé období den po dni (commit: `this-commit`)
 - [fix] Rezervační frontend posílá u AJAX požadavků explicitně same-origin session cookies, aby se po odemčení webu správně načítaly volné dny a časy z API (commit: `this-commit`)
 - [refactor] Sjednocen bootstrap a vytváření databázového připojení přes `PPStudio\Database\DatabaseFactory`; endpointy už nenačítají DB konfiguraci ručně a přímé `new mysqli(...)` zůstává jen v infrastrukturní connection třídě (commit: `this-commit`)
