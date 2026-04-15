@@ -11,6 +11,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [feat] Přidán opakovatelný CLI integrační scénář `scripts/run-reservation-integration.php` pro ověření rezervačního flow (volné sloty, validace slotu, kolize i rezervace mimo dostupnost) nad reálnou DB s automatickým cleanupem testovacích dat (commit: `this-commit`)
+- [test] Integrační scénář rezervací rozšířen o paralelní kolizní test se dvěma současnými pokusy o stejný termín, který ověřuje lock logiku (`ok` + `slot_unavailable`) (commit: `this-commit`)
+- [refactor] Rezervační dostupnost byla rozdělena z `includes/availability.php` do OOP repozitářů a služeb v `src/`, původní funkce zůstávají jako kompatibilní wrappery (commit: `this-commit`)
 - [fix] Doplněna rewrite pravidla pro `/admin` a `/admin-lite`, aby krátké URL směřovaly na příslušné entrypointy `admin.php` a `admin-lite.php` (commit: `this-commit`)
 - [perf] Výpočet volných dnů rezervací nejdřív pracuje jen s dny, kde existuje dostupnostní okno, takže načítání termínů na webu neprochází zbytečně celé období den po dni (commit: `this-commit`)
 - [fix] Rezervační frontend posílá u AJAX požadavků explicitně same-origin session cookies, aby se po odemčení webu správně načítaly volné dny a časy z API (commit: `this-commit`)

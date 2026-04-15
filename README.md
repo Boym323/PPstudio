@@ -25,6 +25,8 @@ Detailnější dokumentace:
    - importovat schéma `database/schema.sql`
 3. Po nasazení doporučeno spustit maintenance:
    - `php database/run_db_maintenance.php`
+4. Pro integrační ověření rezervací (sloty, validace, kolize, paralelní lock):
+   - `php scripts/run-reservation-integration.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 
@@ -76,6 +78,11 @@ Databázové připojení se v endpointech získává jednotně přes
 `PPStudio\Database\DatabaseFactory`, která načítá výchozí konfiguraci projektu a
 předává ji do `PPStudio\Database\DatabaseConnection`. Přímé `new mysqli(...)`
 patří jen do této infrastrukturní connection třídy.
+
+Postupně převáděná business logika se dělí na repozitáře v `src/Repository/`
+pro čisté databázové dotazy a služby v `src/Service/` pro výpočty, validace a
+orchestrace. Původní procedurální funkce v `includes/` mohou dočasně zůstat jako
+kompatibilní wrappery nad novými třídami.
 
 Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
 v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.

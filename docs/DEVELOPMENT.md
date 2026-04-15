@@ -100,4 +100,5 @@ Před předáním změny zkontroluj:
 - zda změna nevyžaduje úpravu `.env.example`,
 - zda změna nevyžaduje SQL migraci,
 - zda zůstaly zachované stávající URL a kompatibilita,
+- u změn rezervační logiky (dostupnost, validace slotů, kolize, lock) spusť `php scripts/run-reservation-integration.php`,
 - zda byly spuštěné dostupné kontroly nebo je jasně uvedené, proč spuštěné nebyly.
