@@ -9,6 +9,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - Typy: `feat`, `fix`, `refactor`, `style`, `docs`, `chore`, `perf`, `security`.
 - Nejnovější záznamy zapisuj nahoru.
 
+## 2026-04-15
+
+- [docs] Přidána projektová vývojová pravidla v `docs/DEVELOPMENT.md`, krátké pokyny pro asistenty v `AGENTS.md` a odkazy z `README.md` kvůli konzistentní práci s dokumentací, changelogem a postupným OOP/OOM přechodem (commit: `this-commit`)
+
 ## 2026-04-07
 
 - [feat] Přidána klientská samoobsluha pro přesun termínu přes podepsaný odkaz (`/reservation-reschedule.php`) včetně kalendáře a výběru času (commit: `this-commit`)

@@ -15,6 +15,7 @@ Detailnější dokumentace:
 
 - Konfigurace: `docs/CONFIGURATION.md`
 - Admin manuál: `docs/ADMIN_MANUAL.md`
+- Vývojová pravidla: `docs/DEVELOPMENT.md`
 
 ## Rychlé nasazení / lokální spuštění
 
@@ -70,6 +71,9 @@ Nový kód patří do `src/` pod namespace `PPStudio\`. Projekt má připravený
 
 Dokud Composer není na prostředí dostupný, funguje fallback autoloader
 `includes/bootstrap.php`.
+
+Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
+v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.
 
 ## Bezpečnost
 
