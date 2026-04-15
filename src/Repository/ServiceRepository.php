@@ -48,4 +48,32 @@ final class ServiceRepository
 
         return $service ?: null;
     }
+
+    public function findActiveWithCategories(): array
+    {
+        $query = $this->connection->query(
+            "SELECT s.id, s.nazev, s.stitek, c.nazev AS kategorie, c.poradi AS kategorie_poradi, s.popis, s.cena, s.doba_trvani
+             FROM sluzby s
+             LEFT JOIN kategorie c ON c.id = s.kategorie_id
+             WHERE s.aktivni = 1
+               AND c.aktivni = 1
+             ORDER BY COALESCE(c.poradi, 9999) ASC,
+                      COALESCE(NULLIF(c.nazev, ''), 'Ostatní služby') ASC,
+                      s.nazev ASC"
+        );
+
+        if (! $query instanceof \mysqli_result) {
+            return [];
+        }
+
+        $services = [];
+
+        while ($row = $query->fetch_assoc()) {
+            $services[] = $row;
+        }
+
+        $query->free();
+
+        return $services;
+    }
 }
