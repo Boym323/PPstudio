@@ -10,116 +10,18 @@ require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/mailer.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
+$controller = \PPStudio\Http\Controller\ReservationActionController::create($emailConfig);
+$state = $controller->customerCancel($_REQUEST, $_SERVER);
 
+$pageTitle = defaultSiteName() . ' | Zrušení rezervace';
 $reservationId = (int) ($_REQUEST['id'] ?? 0);
 $action = trim((string) ($_REQUEST['action'] ?? ''));
 $expiresAt = (int) ($_REQUEST['exp'] ?? 0);
 $nonce = trim((string) ($_REQUEST['nonce'] ?? ''));
 $signature = trim((string) ($_REQUEST['sig'] ?? ''));
-$isPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
-$linkIsValid = $action === 'cancel'
-    && isValidReservationActionSignature($emailConfig, $reservationId, $action, $expiresAt, $nonce, $signature);
-
-$pageTitle = defaultSiteName() . ' | Zrušení rezervace';
-$message = '';
-$messageType = 'info';
-$showConfirmForm = false;
-
-if (! $linkIsValid) {
-    http_response_code(403);
-    $message = 'Odkaz je neplatný nebo expiroval.';
-    $messageType = 'error';
-    securityEventLog('reservation_customer_cancel_invalid_link', 'reservation_cancel', 'warning', [
-        'reservation_id' => $reservationId,
-    ]);
-} else {
-    $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
-
-    if (! $connection instanceof mysqli) {
-        http_response_code(500);
-        $message = 'Databáze není dostupná.';
-        $messageType = 'error';
-    } else {
-        $siteSettings = loadSiteSettings($connection);
-        $reservation = loadReservationDetails($connection, $reservationId);
-
-        if ($reservation === null) {
-            http_response_code(404);
-            $message = 'Rezervace nebyla nalezena.';
-            $messageType = 'error';
-        } else {
-            $statusBefore = (string) ($reservation['stav'] ?? '');
-            $customerActionAllowed = canUseReservationCustomerAction($emailConfig, $reservation);
-
-            if (! $customerActionAllowed) {
-                http_response_code(403);
-                $message = 'Rezervaci lze zrušit nejpozději 24 hodin před začátkem procedury.';
-                $messageType = 'error';
-                securityEventLog('reservation_customer_cancel_cutoff_reached', 'reservation_cancel', 'warning', [
-                    'reservation_id' => $reservationId,
-                    'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
-                ]);
-            } elseif (! $isPost) {
-                if ($statusBefore === 'zrusena') {
-                    $message = 'Tato rezervace už je zrušena.';
-                } else {
-                    $message = 'Opravdu chcete zrušit tuto rezervaci?';
-                    $showConfirmForm = true;
-                }
-            } else {
-                if (! consumeReservationActionNonce($reservationId, 'cancel', $expiresAt, $nonce)) {
-                    http_response_code(403);
-                    $message = 'Odkaz už byl použit nebo expiroval.';
-                    $messageType = 'error';
-                } elseif ($statusBefore === 'zrusena') {
-                    $message = 'Rezervace už byla dříve zrušena.';
-                } elseif ($statusBefore === 'dokoncena') {
-                    $message = 'Rezervace je již dokončená a nelze ji zrušit tímto odkazem.';
-                    $messageType = 'error';
-                } else {
-                    $cancelReason = 'Zrušeno zákazníkem přes odkaz v potvrzovacím e-mailu';
-                    $cancelledBy = 'customer_link';
-                    $cancelledByUser = 'customer';
-                    $update = $connection->prepare(
-                        'UPDATE rezervace
-                         SET stav = "zrusena",
-                             duvod_zruseni = ?,
-                             zruseno_kym = ?,
-                             zruseno_uzivatel = ?,
-                             zruseno_at = NOW()
-                         WHERE id = ?
-                         LIMIT 1'
-                    );
-                    if (! $update) {
-                        http_response_code(500);
-                        $message = 'Rezervaci se nepodařilo zrušit.';
-                        $messageType = 'error';
-                    } else {
-                        $update->bind_param('sssi', $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
-                        if (! $update->execute()) {
-                            http_response_code(500);
-                            $message = 'Rezervaci se nepodařilo zrušit.';
-                            $messageType = 'error';
-                        } else {
-                            $reservationAfter = loadReservationDetails($connection, $reservationId);
-                            if ($reservationAfter !== null) {
-                                sendReservationCancelledEmail($emailConfig, $siteSettings, $reservationAfter);
-                            }
-                            $message = 'Rezervace byla úspěšně zrušena. Potvrzení jsme poslali i na váš e-mail.';
-                            $messageType = 'success';
-                            securityEventLog('reservation_customer_cancelled', 'reservation_cancel', 'warning', [
-                                'reservation_id' => $reservationId,
-                            ]);
-                        }
-                        $update->close();
-                    }
-                }
-            }
-        }
-
-        $connection->close();
-    }
-}
+$message = (string) ($state['message'] ?? '');
+$messageType = (string) ($state['message_type'] ?? 'info');
+$showConfirmForm = (bool) ($state['show_confirm_form'] ?? false);
 ?>
 <!DOCTYPE html>
 <html lang="cs">

@@ -67,6 +67,111 @@ final class ReservationRepository
         return $reservationId;
     }
 
+    public function findDetailsById(int $reservationId): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
+                    r.cena_v_dobe_rezervace, r.reminder_sent_at, s.nazev, s.doba_trvani
+             FROM rezervace r
+             INNER JOIN sluzby s ON s.id = r.sluzba
+             WHERE r.id = ?
+             LIMIT 1'
+        );
+
+        if (! $statement) {
+            return null;
+        }
+
+        $statement->bind_param('i', $reservationId);
+        $statement->execute();
+        $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $reminderSentAt, $serviceName, $serviceDuration);
+        $reservation = null;
+
+        if ($statement->fetch()) {
+            $reservation = [
+                'id' => $id,
+                'service_id' => (int) $serviceId,
+                'jmeno' => $name,
+                'email' => $email,
+                'telefon' => $phone,
+                'poznamka_klienta' => $clientNote,
+                'poznamka_admina' => $adminNote,
+                'datum_cas' => $dateTime,
+                'stav' => $status,
+                'service_price' => $servicePrice !== null ? (float) $servicePrice : null,
+                'reminder_sent_at' => $reminderSentAt,
+                'service_name' => $serviceName,
+                'service_duration' => $serviceDuration,
+            ];
+        }
+
+        $statement->close();
+
+        return $reservation;
+    }
+
+    public function updateStatus(int $reservationId, string $status): bool
+    {
+        $statement = $this->connection->prepare('UPDATE rezervace SET stav = ? WHERE id = ?');
+
+        if (! $statement) {
+            return false;
+        }
+
+        $statement->bind_param('si', $status, $reservationId);
+        $updated = $statement->execute();
+        $statement->close();
+
+        return $updated;
+    }
+
+    public function cancelByCustomerLink(int $reservationId): bool
+    {
+        $cancelReason = 'Zrušeno zákazníkem přes odkaz v potvrzovacím e-mailu';
+        $cancelledBy = 'customer_link';
+        $cancelledByUser = 'customer';
+        $statement = $this->connection->prepare(
+            'UPDATE rezervace
+             SET stav = "zrusena",
+                 duvod_zruseni = ?,
+                 zruseno_kym = ?,
+                 zruseno_uzivatel = ?,
+                 zruseno_at = NOW()
+             WHERE id = ?
+             LIMIT 1'
+        );
+
+        if (! $statement) {
+            return false;
+        }
+
+        $statement->bind_param('sssi', $cancelReason, $cancelledBy, $cancelledByUser, $reservationId);
+        $updated = $statement->execute();
+        $statement->close();
+
+        return $updated;
+    }
+
+    public function updateDateTime(int $reservationId, string $dateTime): bool
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE rezervace
+             SET datum_cas = ?
+             WHERE id = ?
+             LIMIT 1'
+        );
+
+        if (! $statement) {
+            return false;
+        }
+
+        $statement->bind_param('si', $dateTime, $reservationId);
+        $updated = $statement->execute();
+        $statement->close();
+
+        return $updated;
+    }
+
     private function fetchBookedBetween(string $start, string $end, bool $forUpdate, bool $throwOnPrepareFailure): array
     {
         $sql = 'SELECT r.datum_cas, s.doba_trvani

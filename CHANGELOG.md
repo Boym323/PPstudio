@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [refactor] Veřejné rezervační akční endpointy `reservation-action.php`, `reservation-cancel.php` a `reservation-reschedule.php` byly ztenčeny; ověření podepsaných odkazů, lookup rezervace, změny stavu/termínu a notifikace nově orchestru běží přes `ReservationActionController` a `ReservationActionService` při zachování původních URL i parametrů (commit: `this-commit`)
+- [refactor] Technické odesílání e-mailů a podepisování rezervačních akčních odkazů bylo odděleno do služeb `Mailer` a `ReservationLinkSigner`; rezervační e-mailové šablony nově skládá `ReservationNotificationService` při zachování kompatibilních wrapperů v `includes/mailer.php` (commit: `this-commit`)
 - [refactor] Veřejné API endpointy `api/availability.php` a `api/services.php` byly ztenčeny na vstupní skripty a aplikační logika se přesunula do OOP controllerů v `src/Http/Controller/` (commit: `this-commit`)
 - [refactor] Odesílání rezervačních e-mailů je zapouzdřeno v nové OOP službě `ReservationNotificationService`, takže `ReservationSubmitService` už nevolá globální mailer funkce přímo (commit: `this-commit`)
 - [refactor] `reservation-submit.php` ztenčen na bootstrap a předání řízení do `ReservationController`; request validace a orchestrace uložení s e-maily jsou nově v OOP vrstvě pod `src/` při zachování veřejné URL i parametrů formuláře (commit: `this-commit`)

@@ -11,156 +11,21 @@ require __DIR__ . '/includes/mailer.php';
 require __DIR__ . '/includes/availability.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
+$controller = \PPStudio\Http\Controller\ReservationActionController::create($emailConfig);
+$state = $controller->customerReschedule($_REQUEST, $_POST, $_SERVER);
 
+$pageTitle = defaultSiteName() . ' | Přesun termínu';
 $reservationId = (int) ($_REQUEST['id'] ?? 0);
 $action = trim((string) ($_REQUEST['action'] ?? ''));
 $expiresAt = (int) ($_REQUEST['exp'] ?? 0);
 $nonce = trim((string) ($_REQUEST['nonce'] ?? ''));
 $signature = trim((string) ($_REQUEST['sig'] ?? ''));
-$isPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
-$isAjaxRequest = $isPost
-    && (
-        strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'fetch'
-        || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false
-    );
-$linkIsValid = $action === 'reschedule'
-    && isValidReservationActionSignature($emailConfig, $reservationId, $action, $expiresAt, $nonce, $signature);
-
-$pageTitle = defaultSiteName() . ' | Přesun termínu';
-$message = '';
-$messageType = 'info';
-$showForm = false;
-$reservation = null;
-$siteSettings = [];
-
-if (! $linkIsValid) {
-    http_response_code(403);
-    $message = 'Odkaz je neplatný nebo expiroval.';
-    $messageType = 'error';
-    securityEventLog('reservation_customer_reschedule_invalid_link', 'reservation_reschedule', 'warning', [
-        'reservation_id' => $reservationId,
-    ]);
-} else {
-    $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
-
-    if (! $connection instanceof mysqli) {
-        http_response_code(500);
-        $message = 'Databáze není dostupná.';
-        $messageType = 'error';
-    } else {
-        $siteSettings = loadSiteSettings($connection);
-        $reservation = loadReservationDetails($connection, $reservationId);
-
-        if ($reservation === null) {
-            http_response_code(404);
-            $message = 'Rezervace nebyla nalezena.';
-            $messageType = 'error';
-        } else {
-            $statusBefore = (string) ($reservation['stav'] ?? '');
-            $customerActionAllowed = canUseReservationCustomerAction($emailConfig, $reservation);
-
-            if (! $customerActionAllowed) {
-                http_response_code(403);
-                $message = 'Termín lze přesunout nejpozději 24 hodin před začátkem procedury.';
-                $messageType = 'error';
-                securityEventLog('reservation_customer_reschedule_cutoff_reached', 'reservation_reschedule', 'warning', [
-                    'reservation_id' => $reservationId,
-                    'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
-                ]);
-            } elseif (! $isPost) {
-                if ($statusBefore === 'zrusena') {
-                    $message = 'Tato rezervace už je zrušena.';
-                } elseif ($statusBefore === 'dokoncena') {
-                    $message = 'Tato rezervace je již dokončená a nelze ji přesouvat.';
-                    $messageType = 'error';
-                } else {
-                    $message = 'Vyberte nový termín rezervace.';
-                    $showForm = true;
-                }
-            } else {
-                if ($statusBefore === 'zrusena' || $statusBefore === 'dokoncena') {
-                    $message = 'Tuto rezervaci už nelze přesunout.';
-                    $messageType = 'error';
-                } else {
-                    $newDate = trim((string) ($_POST['rezervacni_datum'] ?? ''));
-                    $newTime = trim((string) ($_POST['rezervacni_cas'] ?? ''));
-
-                    if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $newDate) || ! preg_match('/^\d{2}:\d{2}$/', $newTime)) {
-                        $message = 'Vyberte prosím platný den a čas.';
-                        $messageType = 'error';
-                        $showForm = true;
-                    } else {
-                        $newDateTime = $newDate . ' ' . $newTime . ':00';
-                        $oldDateTime = (string) ($reservation['datum_cas'] ?? '');
-                        $newTimestamp = strtotime($newDateTime);
-                        $oldTimestamp = strtotime($oldDateTime);
-
-                        if (! $newTimestamp || ! $oldTimestamp) {
-                            $message = 'Termín se nepodařilo zpracovat.';
-                            $messageType = 'error';
-                            $showForm = true;
-                        } elseif (date('Y-m-d H:i', $newTimestamp) === date('Y-m-d H:i', $oldTimestamp)) {
-                            $message = 'Zvolte prosím jiný termín než původní.';
-                            $messageType = 'error';
-                            $showForm = true;
-                        } elseif (! isValidReservationSlot($connection, (int) ($reservation['service_id'] ?? 0), $newDateTime)) {
-                            $message = 'Zvolený termín už není dostupný. Vyberte prosím jiný.';
-                            $messageType = 'error';
-                            $showForm = true;
-                        } else {
-                            if (! consumeReservationActionNonce($reservationId, 'reschedule', $expiresAt, $nonce)) {
-                                http_response_code(403);
-                                $message = 'Odkaz už byl použit nebo expiroval.';
-                                $messageType = 'error';
-                                $showForm = false;
-                            } else {
-                                $update = $connection->prepare(
-                                    'UPDATE rezervace
-                                     SET datum_cas = ?
-                                     WHERE id = ?
-                                     LIMIT 1'
-                                );
-
-                                if (! $update) {
-                                    http_response_code(500);
-                                    $message = 'Termín se nepodařilo změnit.';
-                                    $messageType = 'error';
-                                    $showForm = true;
-                                } else {
-                                    $update->bind_param('si', $newDateTime, $reservationId);
-                                    if (! $update->execute()) {
-                                        http_response_code(500);
-                                        $message = 'Termín se nepodařilo změnit.';
-                                        $messageType = 'error';
-                                        $showForm = true;
-                                    } else {
-                                        $reservationAfter = loadReservationDetails($connection, $reservationId);
-                                        if ($reservationAfter !== null) {
-                                            sendReservationConfirmedEmail($emailConfig, $siteSettings, $reservationAfter, [
-                                                'previous_datetime' => $oldDateTime,
-                                            ]);
-                                            $reservation = $reservationAfter;
-                                        }
-                                        $message = 'Termín byl úspěšně změněn. Potvrzení jsme poslali i na váš e-mail.';
-                                        $messageType = 'success';
-                                        securityEventLog('reservation_customer_rescheduled', 'reservation_reschedule', 'info', [
-                                            'reservation_id' => $reservationId,
-                                            'old_datetime' => $oldDateTime,
-                                            'new_datetime' => $newDateTime,
-                                        ]);
-                                    }
-                                    $update->close();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $connection->close();
-    }
-}
+$isAjaxRequest = (bool) ($state['is_ajax_request'] ?? false);
+$message = (string) ($state['message'] ?? '');
+$messageType = (string) ($state['message_type'] ?? 'info');
+$showForm = (bool) ($state['show_form'] ?? false);
+$reservation = is_array($state['reservation'] ?? null) ? $state['reservation'] : null;
+$siteSettings = is_array($state['site_settings'] ?? null) ? $state['site_settings'] : [];
 
 $siteName = setting($siteSettings, 'site_name', defaultSiteName());
 $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
@@ -177,16 +42,7 @@ if ($reservation !== null && isset($reservation['datum_cas'])) {
 
 if ($isAjaxRequest) {
     header('Content-Type: application/json; charset=UTF-8');
-    echo json_encode([
-        'success' => $messageType === 'success',
-        'status' => $messageType,
-        'message' => $message,
-        'show_form' => $showForm,
-        'reservation' => [
-            'service' => $serviceLabel,
-            'slot' => $currentDateTime !== '' ? $currentDateTime : '—',
-        ],
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    echo json_encode($controller->rescheduleJsonPayload($state), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 ?>

@@ -1,97 +1,20 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer-6.10.0/src/Exception.php';
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer-6.10.0/src/PHPMailer.php';
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer-6.10.0/src/SMTP.php';
-
-use PHPMailer\PHPMailer\Exception;
+use PPStudio\Security\ReservationLinkSigner;
+use PPStudio\Service\Mailer;
+use PPStudio\Service\ReservationNotificationService;
+use PPStudio\Repository\ReservationRepository;
 use PHPMailer\PHPMailer\PHPMailer;
 
 function sendReservationReceivedEmail(array $emailConfig, array $siteSettings, array $reservation): bool
 {
-    if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
-        return false;
-    }
-
-    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
-    $subject = $siteName . ': přijetí rezervace';
-    $customerName = (string) ($reservation['jmeno'] ?? '');
-    $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
-    $dateTime = formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
-
-    $textBody = "Dobrý den {$customerName},\n\n"
-        . "děkujeme za rezervaci ve studiu {$siteName}.\n"
-        . "Procedura: {$serviceName}\n"
-        . "Termín: {$dateTime}\n\n"
-        . "Jakmile rezervaci potvrdíme, pošleme vám další e-mail.\n\n"
-        . "{$siteName}";
-
-    $htmlBody = '<p>Dobrý den ' . escape($customerName) . ',</p>'
-        . '<p>děkujeme za rezervaci ve studiu <strong>' . escape($siteName) . '</strong>.</p>'
-        . '<p><strong>Procedura:</strong> ' . escape($serviceName) . '<br>'
-        . '<strong>Termín:</strong> ' . escape($dateTime) . '</p>'
-        . '<p>Jakmile rezervaci potvrdíme, pošleme vám další e-mail.</p>'
-        . '<p>' . escape($siteName) . '</p>';
-
-    return sendPhpMailerMessage((string) $reservation['email'], $subject, $htmlBody, $textBody, $emailConfig);
+    return (new ReservationNotificationService($emailConfig))->sendReceivedEmail($siteSettings, $reservation);
 }
 
 function sendReservationAdminNotification(array $emailConfig, array $siteSettings, array $reservation): bool
 {
-    if (! ($emailConfig['enabled'] ?? false)) {
-        return false;
-    }
-
-    $siteName = setting($siteSettings, 'site_name', defaultSiteName());
-    $recipients = getNotificationRecipients($emailConfig, $siteSettings);
-
-    if ($recipients === []) {
-        return false;
-    }
-
-    $subject = $siteName . ': nová rezervace';
-    $confirmUrl = buildReservationActionUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0), 'confirm');
-    $cancelUrl = buildReservationActionUrl($emailConfig, $siteSettings, (int) ($reservation['id'] ?? 0), 'cancel');
-    $textBody = "Nová rezervace ve studiu {$siteName}\n\n"
-        . "Klientka: " . (string) ($reservation['jmeno'] ?? '') . "\n"
-        . "E-mail: " . (string) ($reservation['email'] ?? '') . "\n"
-        . "Telefon: " . (string) ($reservation['telefon'] ?? '') . "\n"
-        . "Procedura: " . (string) ($reservation['service_name'] ?? '') . "\n"
-        . "Termín: " . formatCzechDateTime((string) ($reservation['datum_cas'] ?? '')) . "\n"
-        . "Zdroj: " . (string) ($reservation['zdroj'] ?? 'web') . "\n"
-        . "Poznámka: " . (string) ($reservation['poznamka_klienta'] ?? '') . "\n\n"
-        . "Akci potvrzení nebo zrušení proveďte přes tlačítka v HTML verzi e-mailu.";
-
-    $htmlBody = nl2br(escape($textBody));
-
-    if ($confirmUrl !== '' || $cancelUrl !== '') {
-        $actions = '<div style="margin-top:20px;padding-top:16px;border-top:1px solid #e4d6c5;">';
-        if ($confirmUrl !== '') {
-            $actions .= '<div style="margin-bottom:18px;">'
-                . '<a href="'
-                . escape($confirmUrl)
-                . '" style="display:inline-block;padding:11px 18px;background:#7a5a43;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;box-shadow:0 6px 16px rgba(122,90,67,0.18);">Potvrdit rezervaci</a>'
-                . '</div>';
-        }
-        if ($cancelUrl !== '') {
-            $actions .= '<div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e5d9ca;">'
-                . '<p style="margin:0 0 10px 0;font-size:12px;color:#7b6959;">Pozor: následující akce rezervaci okamžitě zruší.</p>'
-                . '<a href="'
-                . escape($cancelUrl)
-                . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit rezervaci</a>'
-                . '</div>';
-        }
-        $actions .= '</div>';
-        $htmlBody .= $actions;
-    }
-
-    $sent = true;
-    foreach ($recipients as $recipient) {
-        $sent = sendPhpMailerMessage($recipient, $subject, $htmlBody, $textBody, $emailConfig) && $sent;
-    }
-
-    return $sent;
+    return (new ReservationNotificationService($emailConfig))->sendAdminNotification($siteSettings, $reservation);
 }
 
 function sendReservationConfirmedEmail(
@@ -101,6 +24,8 @@ function sendReservationConfirmedEmail(
     array $context = []
 ): bool
 {
+    return (new ReservationNotificationService($emailConfig))->sendConfirmedEmail($siteSettings, $reservation, $context);
+
     if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
         return false;
     }
@@ -193,6 +118,8 @@ function sendReservationConfirmedEmail(
 
 function reservationCustomerActionCutoffSeconds(array $emailConfig): int
 {
+    return (new ReservationLinkSigner($emailConfig))->customerActionCutoffSeconds();
+
     $cutoff = (int) ($emailConfig['customer_action_cutoff_seconds'] ?? 86400);
 
     return max(0, $cutoff);
@@ -200,6 +127,8 @@ function reservationCustomerActionCutoffSeconds(array $emailConfig): int
 
 function reservationCustomerActionDeadline(array $emailConfig, array $reservation): int
 {
+    return (new ReservationLinkSigner($emailConfig))->customerActionDeadline($reservation);
+
     $reservationTs = strtotime((string) ($reservation['datum_cas'] ?? ''));
     if (! $reservationTs) {
         return 0;
@@ -210,6 +139,8 @@ function reservationCustomerActionDeadline(array $emailConfig, array $reservatio
 
 function canUseReservationCustomerAction(array $emailConfig, array $reservation): bool
 {
+    return (new ReservationLinkSigner($emailConfig))->canUseCustomerAction($reservation);
+
     $deadline = reservationCustomerActionDeadline($emailConfig, $reservation);
     if ($deadline <= 0) {
         return false;
@@ -220,6 +151,8 @@ function canUseReservationCustomerAction(array $emailConfig, array $reservation)
 
 function buildReservationCustomerActionUrl(array $emailConfig, array $siteSettings, array $reservation, string $action, string $path): string
 {
+    return (new ReservationLinkSigner($emailConfig))->buildCustomerActionUrl($siteSettings, $reservation, $action, $path);
+
     $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
     $secret = (string) ($emailConfig['action_secret'] ?? '');
     $reservationId = (int) ($reservation['id'] ?? 0);
@@ -257,6 +190,8 @@ function buildReservationCustomerRescheduleUrl(array $emailConfig, array $siteSe
 
 function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, array $reservation): bool
 {
+    return (new ReservationNotificationService($emailConfig))->sendCancelledEmail($siteSettings, $reservation);
+
     if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
         return false;
     }
@@ -295,6 +230,8 @@ function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, 
 
 function sendReservationReminderEmail(array $emailConfig, array $siteSettings, array $reservation): bool
 {
+    return (new ReservationNotificationService($emailConfig))->sendReminderEmail($siteSettings, $reservation);
+
     if (! ($emailConfig['enabled'] ?? false) || ($reservation['email'] ?? '') === '') {
         return false;
     }
@@ -447,6 +384,8 @@ function sendVoucherEmail(
 
 function buildReservationIcal(array $siteSettings, array $reservation): string
 {
+    return (new ReservationNotificationService([]))->buildReservationIcal($siteSettings, $reservation);
+
     $siteName = setting($siteSettings, 'site_name', defaultSiteName());
     $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
     $start = new DateTimeImmutable((string) ($reservation['datum_cas'] ?? 'now'));
@@ -544,6 +483,8 @@ function buildSubscriptionCalendarUrl(array $emailConfig, array $siteSettings): 
 
 function buildReservationActionUrl(array $emailConfig, array $siteSettings, int $reservationId, string $action): string
 {
+    return (new ReservationLinkSigner($emailConfig))->buildAdminActionUrl($siteSettings, $reservationId, $action);
+
     $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
     $secret = (string) ($emailConfig['action_secret'] ?? '');
     $ttl = (int) ($emailConfig['action_ttl_seconds'] ?? 172800);
@@ -573,6 +514,14 @@ function isValidReservationActionSignature(
     string $signature
 ): bool
 {
+    return (new ReservationLinkSigner($emailConfig))->isValidActionSignature(
+        $reservationId,
+        $action,
+        $expiresAt,
+        $nonce,
+        $signature
+    );
+
     $secret = (string) ($emailConfig['action_secret'] ?? '');
 
     if ($secret === '' || $reservationId <= 0 || $signature === '' || $expiresAt <= 0 || $nonce === '') {
@@ -594,6 +543,8 @@ function isValidReservationActionSignature(
 
 function reservationActionNonceStoragePath(): string
 {
+    return (new ReservationLinkSigner([]))->nonceStoragePath();
+
     if (function_exists('ppstudioSecurityStorageDir')) {
         return ppstudioSecurityStorageDir() . '/reservation-action-nonces.json';
     }
@@ -608,6 +559,8 @@ function reservationActionNonceStoragePath(): string
 
 function consumeReservationActionNonce(int $reservationId, string $action, int $expiresAt, string $nonce): bool
 {
+    return (new ReservationLinkSigner([]))->consumeNonce($reservationId, $action, $expiresAt, $nonce);
+
     if ($reservationId <= 0 || $action === '' || $expiresAt <= 0 || $nonce === '') {
         return false;
     }
@@ -664,6 +617,8 @@ function consumeReservationActionNonce(int $reservationId, string $action, int $
 
 function getNotificationRecipients(array $emailConfig, array $siteSettings): array
 {
+    return (new ReservationNotificationService($emailConfig))->notificationRecipients($siteSettings);
+
     $raw = setting($siteSettings, 'notification_emails', '');
     $parts = preg_split('/[,;\s]+/', $raw) ?: [];
     $emails = [];
@@ -680,6 +635,8 @@ function getNotificationRecipients(array $emailConfig, array $siteSettings): arr
 
 function escapeIcalText(string $value): string
 {
+    return (new ReservationNotificationService([]))->escapeIcalText($value);
+
     return str_replace(
         ["\\", ";", ",", "\r\n", "\n"],
         ["\\\\", "\;", "\,", "\\n", "\\n"],
@@ -695,6 +652,8 @@ function sendPhpMailerMessage(
     array $emailConfig,
     ?array $attachment = null
 ): bool {
+    return (new Mailer($emailConfig))->send($to, $subject, $htmlBody, $textBody, $attachment);
+
     try {
         $mail = buildConfiguredMailer($emailConfig);
         $mail->addAddress($to);
@@ -719,6 +678,8 @@ function sendPhpMailerMessage(
 
 function buildConfiguredMailer(array $emailConfig): PHPMailer
 {
+    return (new Mailer($emailConfig))->buildConfiguredMailer();
+
     $mail = new PHPMailer(true);
     $mail->CharSet = 'UTF-8';
     $mail->isHTML(true);
@@ -752,43 +713,5 @@ function buildConfiguredMailer(array $emailConfig): PHPMailer
 
 function loadReservationDetails(mysqli $connection, int $reservationId): ?array
 {
-    $statement = $connection->prepare(
-        'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
-                r.cena_v_dobe_rezervace, r.reminder_sent_at, s.nazev, s.doba_trvani
-         FROM rezervace r
-         INNER JOIN sluzby s ON s.id = r.sluzba
-         WHERE r.id = ?
-         LIMIT 1'
-    );
-
-    if (! $statement) {
-        return null;
-    }
-
-    $statement->bind_param('i', $reservationId);
-    $statement->execute();
-    $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $reminderSentAt, $serviceName, $serviceDuration);
-    $reservation = null;
-
-    if ($statement->fetch()) {
-        $reservation = [
-            'id' => $id,
-            'service_id' => (int) $serviceId,
-            'jmeno' => $name,
-            'email' => $email,
-            'telefon' => $phone,
-            'poznamka_klienta' => $clientNote,
-            'poznamka_admina' => $adminNote,
-            'datum_cas' => $dateTime,
-            'stav' => $status,
-            'service_price' => $servicePrice !== null ? (float) $servicePrice : null,
-            'reminder_sent_at' => $reminderSentAt,
-            'service_name' => $serviceName,
-            'service_duration' => $serviceDuration,
-        ];
-    }
-
-    $statement->close();
-
-    return $reservation;
+    return (new ReservationRepository($connection))->findDetailsById($reservationId);
 }
