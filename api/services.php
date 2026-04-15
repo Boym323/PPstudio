@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/../includes/bootstrap.php';
 require __DIR__ . '/../config/app.php';
 require __DIR__ . '/../includes/functions.php';
 require __DIR__ . '/../includes/security.php';
@@ -13,20 +14,15 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 requirePublicSiteAccessOrJsonError();
 
-$connection = @new mysqli(
-    $dbConfig['host'],
-    $dbConfig['username'],
-    $dbConfig['password'],
-    $dbConfig['database']
-);
+$connection = null;
 
-if ($connection->connect_errno) {
+try {
+    $connection = \PPStudio\Database\DatabaseConnection::fromArray($dbConfig)->connect();
+} catch (Throwable) {
     http_response_code(500);
     echo json_encode(['error' => 'Databaze neni dostupna.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$connection->set_charset($dbConfig['charset']);
 
 $items = [];
 $query = $connection->query(
