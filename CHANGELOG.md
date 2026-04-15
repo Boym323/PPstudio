@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [refactor] Odesílání rezervačních e-mailů je zapouzdřeno v nové OOP službě `ReservationNotificationService`, takže `ReservationSubmitService` už nevolá globální mailer funkce přímo (commit: `this-commit`)
+- [refactor] `reservation-submit.php` ztenčen na bootstrap a předání řízení do `ReservationController`; request validace a orchestrace uložení s e-maily jsou nově v OOP vrstvě pod `src/` při zachování veřejné URL i parametrů formuláře (commit: `this-commit`)
 - [feat] Přidán opakovatelný CLI integrační scénář `scripts/run-reservation-integration.php` pro ověření rezervačního flow (volné sloty, validace slotu, kolize i rezervace mimo dostupnost) nad reálnou DB s automatickým cleanupem testovacích dat (commit: `this-commit`)
 - [test] Integrační scénář rezervací rozšířen o paralelní kolizní test se dvěma současnými pokusy o stejný termín, který ověřuje lock logiku (`ok` + `slot_unavailable`) (commit: `this-commit`)
 - [refactor] Rezervační dostupnost byla rozdělena z `includes/availability.php` do OOP repozitářů a služeb v `src/`, původní funkce zůstávají jako kompatibilní wrappery (commit: `this-commit`)
