@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Admin mutace rezervací (update, smazání a ruční vložení) nově orchestru běží přes sdílenou OOP službu `AdminReservationMutationService`; procedurální admin POST include i AJAX endpoint zůstaly jen jako tenké adaptéry bez duplicitní SQL/notifikační logiky (commit: `this-commit`)
 - [refactor] Rezervační list v adminu nově načítá data přes OOP službu `AdminReservationService`; procedurální loader zůstal jen jako tenký adaptér pro existující šablonu (commit: `this-commit`)
 - [refactor] Dashboard byl přesunut do nové OOP služby `AdminDashboardService`; procedurální include teď slouží jen jako tenký adaptér pro existující admin šablonu (commit: `this-commit`)
 - [perf] Dashboard rezervací už spočítá hlavní provozní statistiky jedním agregačním dotazem místo několika samostatných průchodů přes `rezervace` (commit: `this-commit`)
