@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Admin POST mutace služeb a kategorií nově běží přes OOP službu `AdminServiceMutationService`; procedurální include `includes/admin/actions/post/services.php` zůstal jen jako tenký adaptér pro zachování existujícího admin flow (commit: `this-commit`)
 - [refactor] Admin mutace dostupnosti nově běží přes OOP službu `AdminAvailabilityMutationService`; procedurální POST include zůstal jen jako tenký adaptér pro planner, mazání oken a správu story backgroundu (commit: `this-commit`)
 - [refactor] Admin mutace rezervací (update, smazání a ruční vložení) nově orchestru běží přes sdílenou OOP službu `AdminReservationMutationService`; procedurální admin POST include i AJAX endpoint zůstaly jen jako tenké adaptéry bez duplicitní SQL/notifikační logiky (commit: `this-commit`)
 - [refactor] Rezervační list v adminu nově načítá data přes OOP službu `AdminReservationService`; procedurální loader zůstal jen jako tenký adaptér pro existující šablonu (commit: `this-commit`)
