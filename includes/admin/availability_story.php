@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use PPStudio\Service\AdminAvailabilityStoryService;
+
 function ppstudioCzechMonthName(int $month): string
 {
     $months = [
@@ -23,141 +25,12 @@ function ppstudioCzechMonthName(int $month): string
 
 function ppstudioAvailabilityStoryMonthLabel(DateTimeImmutable $from, DateTimeImmutable $to): string
 {
-    $fromMonth = (int) $from->format('n');
-    $toMonth = (int) $to->format('n');
-    $fromYear = (int) $from->format('Y');
-    $toYear = (int) $to->format('Y');
-
-    if ($fromMonth === $toMonth && $fromYear === $toYear) {
-        return mb_convert_case(ppstudioCzechMonthName($fromMonth), MB_CASE_TITLE, 'UTF-8');
-    }
-
-    $fromLabel = mb_convert_case(ppstudioCzechMonthName($fromMonth), MB_CASE_TITLE, 'UTF-8');
-    $toLabel = mb_convert_case(ppstudioCzechMonthName($toMonth), MB_CASE_TITLE, 'UTF-8');
-
-    if ($fromYear !== $toYear) {
-        return $fromLabel . ' ' . $fromYear . ' / ' . $toLabel . ' ' . $toYear;
-    }
-
-    return $fromLabel . ' / ' . $toLabel;
+    return AdminAvailabilityStoryService::buildMonthLabel($from, $to);
 }
 
 function ppstudioCollectFreeSlotsForStory(mysqli $connection, DateTimeImmutable $from, DateTimeImmutable $to): array
 {
-    $rangeStart = $from->setTime(0, 0, 0);
-    $rangeEnd = $to->setTime(23, 59, 59);
-    $rangeStartSql = $rangeStart->format('Y-m-d H:i:s');
-    $rangeEndSql = $rangeEnd->format('Y-m-d H:i:s');
-    $now = new DateTimeImmutable('now');
-    $slotSizeSeconds = 30 * 60;
-
-    $available = [];
-    $booked = [];
-
-    $windowStatement = $connection->prepare(
-        'SELECT start_at, end_at
-         FROM dostupnost
-         WHERE start_at <= ?
-           AND end_at >= ?
-           AND end_at > start_at
-         ORDER BY start_at ASC'
-    );
-
-    if ($windowStatement) {
-        $windowStatement->bind_param('ss', $rangeEndSql, $rangeStartSql);
-        $windowStatement->execute();
-        $windowStatement->bind_result($windowStartAt, $windowEndAt);
-
-        while ($windowStatement->fetch()) {
-            if (! is_string($windowStartAt) || ! is_string($windowEndAt) || $windowStartAt === '' || $windowEndAt === '') {
-                continue;
-            }
-
-            $startTs = strtotime($windowStartAt);
-            $endTs = strtotime($windowEndAt);
-            if ($startTs === false || $endTs === false || $endTs <= $startTs) {
-                continue;
-            }
-
-            $startTs = max($startTs, $rangeStart->getTimestamp(), $now->getTimestamp());
-            $endTs = min($endTs, $rangeEnd->getTimestamp());
-            if ($endTs <= $startTs) {
-                continue;
-            }
-
-            $cursorTs = (int) (ceil($startTs / $slotSizeSeconds) * $slotSizeSeconds);
-            while ($cursorTs < $endTs) {
-                $dateKey = date('Y-m-d', $cursorTs);
-                $timeValue = date('H:i', $cursorTs);
-                $available[$dateKey][$timeValue] = true;
-                $cursorTs += $slotSizeSeconds;
-            }
-        }
-
-        $windowStatement->close();
-    }
-
-    $bookingStatement = $connection->prepare(
-        'SELECT r.datum_cas, s.doba_trvani
-         FROM rezervace r
-         INNER JOIN sluzby s ON s.id = r.sluzba
-         WHERE r.datum_cas >= ?
-           AND r.datum_cas <= ?
-           AND r.stav IN ("nova", "potvrzena", "dokoncena")
-         ORDER BY r.datum_cas ASC'
-    );
-
-    if ($bookingStatement) {
-        $bookingStatement->bind_param('ss', $rangeStartSql, $rangeEndSql);
-        $bookingStatement->execute();
-        $bookingStatement->bind_result($bookingStartAt, $bookingDuration);
-
-        while ($bookingStatement->fetch()) {
-            if (! is_string($bookingStartAt) || $bookingStartAt === '') {
-                continue;
-            }
-
-            $bookingStartTs = strtotime($bookingStartAt);
-            if ($bookingStartTs === false) {
-                continue;
-            }
-
-            $durationSeconds = max(15, (int) $bookingDuration) * 60;
-            $bookingEndTs = $bookingStartTs + $durationSeconds;
-            $bookingStartTs = max($bookingStartTs, $rangeStart->getTimestamp(), $now->getTimestamp());
-            $bookingEndTs = min($bookingEndTs, $rangeEnd->getTimestamp());
-
-            if ($bookingEndTs <= $bookingStartTs) {
-                continue;
-            }
-
-            $cursorTs = (int) (floor($bookingStartTs / $slotSizeSeconds) * $slotSizeSeconds);
-            while ($cursorTs < $bookingEndTs) {
-                $dateKey = date('Y-m-d', $cursorTs);
-                $timeValue = date('H:i', $cursorTs);
-                $booked[$dateKey][$timeValue] = true;
-                $cursorTs += $slotSizeSeconds;
-            }
-        }
-
-        $bookingStatement->close();
-    }
-
-    $result = [];
-    foreach ($available as $dateKey => $times) {
-        $freeTimes = array_diff_key($times, $booked[$dateKey] ?? []);
-        if ($freeTimes === []) {
-            continue;
-        }
-
-        $timeValues = array_keys($freeTimes);
-        sort($timeValues);
-        $result[$dateKey] = $timeValues;
-    }
-
-    ksort($result);
-
-    return $result;
+    return (new AdminAvailabilityStoryService($connection))->collectFreeSlots($from, $to);
 }
 
 function ppstudioStoryFindFont(bool $bold = false): ?string

@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Availability story/export v adminu nově připravují OOP vrstvy `AdminAvailabilityStoryService` a `AdminAvailabilityStoryController`; admin šablona i `admin-availability-story.php` už jen používají sdílený view-model a rendering payload při zachování existujícího preview/download flow (commit: `this-commit`)
 - [refactor] Admin read/AJAX flow modulu dostupnosti byl přesunut do OOP tříd `AdminAvailabilityReadService` a `AdminAvailabilityApiController`; původní loadery i endpointy teď fungují jako tenké adaptéry se zachovanými URL a payloady (commit: `this-commit`)
 - [refactor] `includes/availability.php` už jen deleguje na novou OOP skládací vrstvu `AvailabilityModule`, která sdílí repozitáře a služby pro dostupnost/rezervace při zachování původních wrapper funkcí a call-site kompatibility (commit: `this-commit`)
 - [refactor] Admin šablona modulu služeb už neskládá cenovou historii, aktivní podsekci ani odvozená data procedur lokálně; view-model přípravu převzala OOP služba `AdminServiceCatalogService` (commit: `this-commit`)

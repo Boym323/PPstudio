@@ -1,27 +1,4 @@
                 <section class="admin-single" id="dostupnost">
-                    <?php
-                        $storyDefaultFrom = (new DateTimeImmutable('today'))->format('Y-m-d');
-                        $storyDefaultTo = (new DateTimeImmutable('last day of this month'))->format('Y-m-d');
-                        $storyDefaultMonth = ppstudioAvailabilityStoryMonthLabel(
-                            new DateTimeImmutable($storyDefaultFrom),
-                            new DateTimeImmutable($storyDefaultTo)
-                        );
-                        $storyBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
-                        $storyBackgroundUrl = '';
-                        if ($storyBackground !== '' && str_starts_with($storyBackground, 'uploads/')) {
-                            $storyBackgroundUrl = '/' . ltrim($storyBackground, '/');
-                        }
-                        $storyDefaultServices = [];
-                        foreach ($serviceCategoryRows as $categoryRow) {
-                            if ((int) ($categoryRow['aktivni'] ?? 0) !== 1) {
-                                continue;
-                            }
-                            $storyDefaultServices[] = trim((string) ($categoryRow['nazev'] ?? ''));
-                            if (count($storyDefaultServices) >= 4) {
-                                break;
-                            }
-                        }
-                    ?>
                     <div class="admin-card">
                         <p class="eyebrow">Dostupnost</p>
                         <h2>Plánování volných termínů</h2>
