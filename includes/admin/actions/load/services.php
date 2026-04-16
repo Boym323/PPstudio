@@ -1,84 +1,59 @@
 <?php
 
-$serviceCategoryQuery = $connection->query(
-    "SELECT c.id, c.nazev, c.poradi, c.aktivni, COUNT(s.id) AS services_count, SUM(CASE WHEN s.aktivni = 1 THEN 1 ELSE 0 END) AS active_services_count
-     FROM kategorie c
-     LEFT JOIN sluzby s ON s.kategorie_id = c.id
-     GROUP BY c.id, c.nazev, c.poradi, c.aktivni
-     ORDER BY COALESCE(c.poradi, 9999) ASC, c.nazev ASC"
+use PPStudio\Repository\ServiceRepository;
+use PPStudio\Service\AdminServiceCatalogService;
+
+$serviceCatalogService = new AdminServiceCatalogService(new ServiceRepository($connection));
+$serviceCatalogData = $serviceCatalogService->loadData($serviceFilters, $serviceStatusFilterOptions);
+
+if (is_array($serviceCatalogData['service_filters'] ?? null)) {
+    $serviceFilters = $serviceCatalogData['service_filters'];
+}
+
+if (is_array($serviceCatalogData['service_category_rows'] ?? null)) {
+    $serviceCategoryRows = $serviceCatalogData['service_category_rows'];
+}
+
+if (is_array($serviceCatalogData['service_category_filter_options'] ?? null)) {
+    $serviceCategoryFilterOptions = $serviceCatalogData['service_category_filter_options'];
+}
+
+if (is_array($serviceCatalogData['service_rows'] ?? null)) {
+    $serviceRows = $serviceCatalogData['service_rows'];
+}
+
+if (is_array($serviceCatalogData['service_price_history_rows'] ?? null)) {
+    $servicePriceHistoryRows = $serviceCatalogData['service_price_history_rows'];
+}
+
+$serviceSectionViewData = $serviceCatalogService->buildSectionViewData(
+    $serviceRows,
+    $servicePriceHistoryRows,
+    $serviceFilters,
+    $categoryForm ?? [],
+    $_GET
 );
-if ($serviceCategoryQuery instanceof mysqli_result) {
-    while ($row = $serviceCategoryQuery->fetch_assoc()) {
-        $serviceCategoryRows[] = $row;
-    }
-    $serviceCategoryQuery->free();
+
+if (is_array($serviceSectionViewData['service_base_params'] ?? null)) {
+    $serviceBaseParams = $serviceSectionViewData['service_base_params'];
 }
 
-$serviceCategoryFilterOptions = ['all' => 'Všechny kategorie'];
-foreach ($serviceCategoryRows as $categoryRow) {
-    $categoryId = (string) ($categoryRow['id'] ?? '');
-    if ($categoryId === '') {
-        continue;
-    }
-    $categoryLabel = (string) ($categoryRow['nazev'] ?? '');
-    if ((int) ($categoryRow['aktivni'] ?? 1) !== 1) {
-        $categoryLabel .= ' (neaktivní)';
-    }
-    $serviceCategoryFilterOptions[$categoryId] = $categoryLabel;
+if (is_array($serviceSectionViewData['service_rows_prepared'] ?? null)) {
+    $serviceRowsPrepared = $serviceSectionViewData['service_rows_prepared'];
 }
 
-if (! in_array($serviceFilters['status'] ?? 'all', array_keys($serviceStatusFilterOptions), true)) {
-    $serviceFilters['status'] = 'all';
+if (is_array($serviceSectionViewData['service_price_changes'] ?? null)) {
+    $servicePriceChanges = $serviceSectionViewData['service_price_changes'];
 }
 
-if (! in_array($serviceFilters['category'] ?? 'all', array_keys($serviceCategoryFilterOptions), true)) {
-    $serviceFilters['category'] = 'all';
+if (is_int($serviceSectionViewData['service_price_changes_total'] ?? null)) {
+    $servicePriceChangesTotal = $serviceSectionViewData['service_price_changes_total'];
 }
 
-$serviceWhere = ['1=1'];
-if (($serviceFilters['status'] ?? 'all') === 'active') {
-    $serviceWhere[] = 's.aktivni = 1';
-} elseif (($serviceFilters['status'] ?? 'all') === 'inactive') {
-    $serviceWhere[] = 's.aktivni = 0';
+if (is_array($serviceSectionViewData['service_price_changes_preview'] ?? null)) {
+    $servicePriceChangesPreview = $serviceSectionViewData['service_price_changes_preview'];
 }
 
-if (($serviceFilters['category'] ?? 'all') !== 'all') {
-    $serviceWhere[] = 's.kategorie_id = ' . (int) $serviceFilters['category'];
-}
-
-if (($serviceFilters['q'] ?? '') !== '') {
-    $serviceNeedle = $connection->real_escape_string($serviceFilters['q']);
-    $serviceWhere[] = "(s.nazev LIKE '%{$serviceNeedle}%'
-        OR s.popis LIKE '%{$serviceNeedle}%'
-        OR c.nazev LIKE '%{$serviceNeedle}%')";
-}
-
-$serviceQuery = $connection->query(
-    "SELECT s.id, s.nazev, s.kategorie_id, s.stitek, s.aktivni AS service_active, c.nazev AS kategorie, c.poradi AS kategorie_poradi, c.aktivni AS category_active, s.popis, s.cena, s.doba_trvani
-     FROM sluzby s
-     LEFT JOIN kategorie c ON c.id = s.kategorie_id
-     WHERE " . implode(' AND ', $serviceWhere) . "
-     ORDER BY COALESCE(c.poradi, 9999) ASC,
-              COALESCE(NULLIF(c.nazev, ''), 'Ostatní služby') ASC,
-              s.nazev ASC"
-);
-if ($serviceQuery instanceof mysqli_result) {
-    while ($row = $serviceQuery->fetch_assoc()) {
-        $serviceRows[] = $row;
-    }
-    $serviceQuery->free();
-}
-
-$servicePriceHistoryQuery = $connection->query(
-    "SELECT h.id, h.sluzba_id, h.cena, h.platna_od, h.platna_do, s.nazev AS sluzba_nazev
-     FROM historie_cen_sluzeb h
-     INNER JOIN sluzby s ON s.id = h.sluzba_id
-     ORDER BY h.platna_od DESC, h.id DESC
-     LIMIT 200"
-);
-if ($servicePriceHistoryQuery instanceof mysqli_result) {
-    while ($row = $servicePriceHistoryQuery->fetch_assoc()) {
-        $servicePriceHistoryRows[] = $row;
-    }
-    $servicePriceHistoryQuery->free();
+if (is_string($serviceSectionViewData['active_services_section'] ?? null) && $serviceSectionViewData['active_services_section'] !== '') {
+    $activeServicesSection = $serviceSectionViewData['active_services_section'];
 }

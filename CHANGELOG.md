@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Admin šablona modulu služeb už neskládá cenovou historii, aktivní podsekci ani odvozená data procedur lokálně; view-model přípravu převzala OOP služba `AdminServiceCatalogService` (commit: `this-commit`)
+- [refactor] Admin čtecí část modulu služeb nově běží přes OOP vrstvu `AdminServiceCatalogService` a rozšířený `ServiceRepository`; procedurální loadery formulářů a seznamů zůstaly jen jako tenké adaptéry pro admin a admin-lite (commit: `this-commit`)
 - [refactor] Veřejná stránka `Služby` nově čerpá aktivní procedury z OOP vrstvy přes `PublicServiceCatalogService` a `ServiceRepository` místo statických hardcoded karet (commit: `this-commit`)
 - [refactor] Admin POST mutace služeb a kategorií nově běží přes OOP službu `AdminServiceMutationService`; procedurální include `includes/admin/actions/post/services.php` zůstal jen jako tenký adaptér pro zachování existujícího admin flow (commit: `this-commit`)
 - [refactor] Admin mutace dostupnosti nově běží přes OOP službu `AdminAvailabilityMutationService`; procedurální POST include zůstal jen jako tenký adaptér pro planner, mazání oken a správu story backgroundu (commit: `this-commit`)
