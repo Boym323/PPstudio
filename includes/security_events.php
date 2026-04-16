@@ -17,6 +17,22 @@ function ppstudioSecurityEventLogger(): SecurityEventLogger
     return $logger;
 }
 
+function securityEventsFallbackPath(): string
+{
+    return ppstudioSecurityEventLogger()->fallbackPath();
+}
+
+function securityEventLogFallback(
+    string $eventType,
+    string $eventSource,
+    string $severity,
+    string $ipAddress,
+    string $userAgent,
+    array $context = []
+): void {
+    ppstudioSecurityEventLogger()->logFallback($eventType, $eventSource, $severity, $ipAddress, $userAgent, $context);
+}
+
 function securityEventLog(
     string $eventType,
     string $eventSource,

@@ -16,6 +16,16 @@ function ppstudioAvailabilityService(mysqli $connection): AvailabilityService
     return new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
 }
 
+function ppstudioReservationService(mysqli $connection): ReservationService
+{
+    $serviceRepository = new ServiceRepository($connection);
+    $availabilityRepository = new AvailabilityRepository($connection);
+    $reservationRepository = new ReservationRepository($connection);
+    $availabilityService = new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
+
+    return new ReservationService($connection, $serviceRepository, $availabilityRepository, $reservationRepository, $availabilityService);
+}
+
 function getServiceById(mysqli $connection, int $serviceId): ?array
 {
     return ppstudioAvailabilityService($connection)->getServiceById($serviceId);
@@ -57,18 +67,7 @@ function createReservationWithLock(
     string $dateTime,
     string $status = 'nova'
 ): array {
-    $serviceRepository = new ServiceRepository($connection);
-    $availabilityRepository = new AvailabilityRepository($connection);
-    $reservationRepository = new ReservationRepository($connection);
-    $availabilityService = new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
-
-    return (new ReservationService(
-        $connection,
-        $serviceRepository,
-        $availabilityRepository,
-        $reservationRepository,
-        $availabilityService
-    ))->createReservationWithLock(
+    return ppstudioReservationService($connection)->createReservationWithLock(
         $name,
         $email,
         $phone,
