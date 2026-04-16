@@ -1,113 +1,57 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_availability_grid'])) {
-    $rangeStart = trim((string) ($_POST['planner_start'] ?? ''));
-    $rangeEnd = trim((string) ($_POST['planner_end'] ?? ''));
-    $windowsJson = (string) ($_POST['planner_windows'] ?? '[]');
-    $windows = json_decode($windowsJson, true);
+use PPStudio\Service\AdminAvailabilityMutationService;
 
-    if ($rangeStart === '' || $rangeEnd === '' || ! is_array($windows)) {
-        $error = 'Kalendář dostupnosti se nepodařilo uložit.';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    return;
+}
+
+$availabilityMutationService = new AdminAvailabilityMutationService(
+    $connection,
+    $siteSettings,
+    dirname(__DIR__, 4)
+);
+
+if (isset($_POST['save_availability_grid'])) {
+    $saveGridResult = $availabilityMutationService->saveAvailabilityGrid($_POST);
+    if (($saveGridResult['success'] ?? false) === true) {
+        $message = (string) ($saveGridResult['message'] ?? 'Dostupnost v kalendáři byla uložena.');
     } else {
-        $deleteStatement = $connection->prepare(
-            'DELETE FROM dostupnost
-             WHERE start_at >= ?
-               AND start_at < ?'
-        );
-
-        if ($deleteStatement) {
-            $deleteRangeStart = $rangeStart . ' 00:00:00';
-            $deleteRangeEnd = date('Y-m-d H:i:s', strtotime($rangeEnd . ' +1 day'));
-            $deleteStatement->bind_param('ss', $deleteRangeStart, $deleteRangeEnd);
-            $deleteStatement->execute();
-            $deleteStatement->close();
-        }
-
-        $insertStatement = $connection->prepare(
-            'INSERT INTO dostupnost (start_at, end_at, poznamka)
-             VALUES (?, ?, ?)'
-        );
-
-        if ($insertStatement) {
-            foreach ($windows as $window) {
-                $startAt = (string) ($window['start_at'] ?? '');
-                $endAt = (string) ($window['end_at'] ?? '');
-                $note = 'Kalendář dostupnosti';
-
-                if ($startAt !== '' && $endAt !== '' && $startAt < $endAt) {
-                    $insertStatement->bind_param('sss', $startAt, $endAt, $note);
-                    $insertStatement->execute();
-                }
-            }
-
-            $insertStatement->close();
-        }
-
-        $message = 'Dostupnost v kalendáři byla uložena.';
+        $error = (string) ($saveGridResult['error'] ?? 'Kalendář dostupnosti se nepodařilo uložit.');
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_window'])) {
-    $windowId = (int) ($_POST['window_id'] ?? 0);
-    if ($windowId > 0) {
-        $statement = $connection->prepare('DELETE FROM dostupnost WHERE id = ? LIMIT 1');
-        if ($statement) {
-            $statement->bind_param('i', $windowId);
-            if ($statement->execute()) {
-                $message = 'Volné okno bylo odstraněno.';
-            } else {
-                $error = 'Okno se nepodařilo odstranit.';
-            }
-            $statement->close();
-        }
+if (isset($_POST['delete_window'])) {
+    $deleteWindowResult = $availabilityMutationService->deleteWindow($_POST);
+    if (($deleteWindowResult['success'] ?? false) === true) {
+        $message = (string) ($deleteWindowResult['message'] ?? 'Volné okno bylo odstraněno.');
+    } else {
+        $error = (string) ($deleteWindowResult['error'] ?? 'Okno se nepodařilo odstranit.');
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_availability_story_background'])) {
-    $backgroundError = null;
-    $backgroundPath = null;
+if (isset($_POST['save_availability_story_background'])) {
+    $saveBackgroundResult = $availabilityMutationService->saveStoryBackground($_FILES);
+    if (is_array($saveBackgroundResult['data']['site_settings'] ?? null)) {
+        $siteSettings = $saveBackgroundResult['data']['site_settings'];
+    }
 
-    if (! isset($_FILES['story_background']) || ! is_array($_FILES['story_background'])) {
-        $error = 'Vyberte prosím obrázek pozadí.';
+    if (($saveBackgroundResult['success'] ?? false) === true) {
+        $message = (string) ($saveBackgroundResult['message'] ?? 'Pozadí pro Instagram story bylo uloženo.');
     } else {
-        $backgroundPath = storeUploadedImage($_FILES['story_background'], dirname(__DIR__, 4) . '/uploads', $backgroundError);
-
-        if ($backgroundPath === null) {
-            $error = $backgroundError !== null && $backgroundError !== ''
-                ? 'Pozadí pro story se nepodařilo uložit. ' . $backgroundError
-                : 'Pozadí pro story se nepodařilo uložit.';
-        } else {
-            $previousBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
-            if ($previousBackground !== '' && str_starts_with($previousBackground, 'uploads/')) {
-                $previousPath = dirname(__DIR__, 4) . '/' . ltrim($previousBackground, '/');
-                if (is_file($previousPath)) {
-                    @unlink($previousPath);
-                }
-            }
-
-            if (saveSiteSetting($connection, 'availability_story_background', $backgroundPath)) {
-                $siteSettings['availability_story_background'] = $backgroundPath;
-                $message = 'Pozadí pro Instagram story bylo uloženo.';
-            } else {
-                $error = 'Pozadí pro story se nepodařilo uložit do nastavení.';
-            }
-        }
+        $error = (string) ($saveBackgroundResult['error'] ?? 'Pozadí pro story se nepodařilo uložit.');
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_availability_story_background'])) {
-    $previousBackground = trim((string) ($siteSettings['availability_story_background'] ?? ''));
+if (isset($_POST['delete_availability_story_background'])) {
+    $deleteBackgroundResult = $availabilityMutationService->deleteStoryBackground();
+    if (is_array($deleteBackgroundResult['data']['site_settings'] ?? null)) {
+        $siteSettings = $deleteBackgroundResult['data']['site_settings'];
+    }
 
-    if (saveSiteSetting($connection, 'availability_story_background', '')) {
-        $siteSettings['availability_story_background'] = '';
-        if ($previousBackground !== '' && str_starts_with($previousBackground, 'uploads/')) {
-            $previousPath = dirname(__DIR__, 4) . '/' . ltrim($previousBackground, '/');
-            if (is_file($previousPath)) {
-                @unlink($previousPath);
-            }
-        }
-        $message = 'Pozadí pro Instagram story bylo odstraněno.';
+    if (($deleteBackgroundResult['success'] ?? false) === true) {
+        $message = (string) ($deleteBackgroundResult['message'] ?? 'Pozadí pro Instagram story bylo odstraněno.');
     } else {
-        $error = 'Pozadí pro story se nepodařilo odstranit.';
+        $error = (string) ($deleteBackgroundResult['error'] ?? 'Pozadí pro story se nepodařilo odstranit.');
     }
 }
