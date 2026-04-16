@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [ux] Hlavní webová navigace používá čisté URL bez `.php` (`/`, `/sluzby`, `/cenik`, `/o-mne`, `/recenze`, `/rezervace`, `/prostory`) a `.htaccess` je mapuje na stávající entrypointy pro zachování kompatibility (commit: `this-commit`)
 - [refactor] Admin navigace a formulářové akce byly sjednoceny na absolutní `/admin.php`, `/admin-lite.php` a `/index.php`, aby se odstranily křehké relativní odkazy v adminu i akčních stránkách (commit: `this-commit`)
 - [refactor] Zpřesněny všechny statické odkazy na absolutní `/assets/...` a přidán kompatibilní redirect z `/frontend/...` na nový strom (commit: `this-commit`)
 - [refactor] Veřejné assety byly přesunuty z `frontend/` do `assets/` a odkazy v šablonách i manifestu byly sjednoceny pod `/assets/...` (commit: `this-commit`)
