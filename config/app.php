@@ -112,7 +112,7 @@ if (! function_exists('defaultSiteSettings')) {
             'contact_name' => '',
             'contact_phone' => '',
             'contact_email' => '',
-            'contact_instagram_url' => '',
+            'contact_instagram_url' => defaultContactInstagramUrl(),
             'contact_ico' => '',
             'contact_opening_hours' => '',
             'google_reviews_url' => '',
@@ -130,5 +130,12 @@ if (! function_exists('defaultSiteName')) {
     function defaultSiteName(): string
     {
         return trim((string) ppstudioEnv('PPSTUDIO_SITE_NAME', 'PP Studio'));
+    }
+}
+
+if (! function_exists('defaultContactInstagramUrl')) {
+    function defaultContactInstagramUrl(): string
+    {
+        return trim((string) ppstudioEnv('PPSTUDIO_CONTACT_INSTAGRAM_URL', ''));
     }
 }

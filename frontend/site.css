@@ -1981,6 +1981,66 @@
             text-align: center;
         }
 
+        .pricing-fallback,
+        .reservation-fallback {
+            display: grid;
+            gap: .95rem;
+            align-items: start;
+            border: 1px solid #e0cfb7;
+            background: linear-gradient(180deg, #fffdf9 0%, #f8efe4 100%);
+            border-radius: 16px;
+            padding: 1.2rem 1.25rem;
+            box-shadow: 0 4px 16px rgba(122, 90, 67, 0.08);
+            margin-top: 1rem;
+        }
+
+        .pricing-fallback[hidden],
+        .reservation-fallback[hidden] {
+            display: none !important;
+        }
+
+        .pricing-fallback-icon,
+        .reservation-fallback-icon {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 999px;
+            background: #6b4d38;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .pricing-fallback-copy h3,
+        .reservation-fallback-copy h3 {
+            margin: 0;
+            color: #3f3228;
+            font-size: 1.2rem;
+        }
+
+        .pricing-fallback-copy p,
+        .reservation-fallback-copy p {
+            margin: 0;
+            color: #6e5f52;
+            line-height: 1.5;
+        }
+
+        .pricing-fallback-actions,
+        .reservation-fallback-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .7rem;
+        }
+
+        .pricing-fallback-actions .cta-button,
+        .reservation-fallback-actions .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+        }
+
         @media (max-width: 700px) {
             .pricing-guide {
                 grid-template-columns: 1fr;

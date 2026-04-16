@@ -250,6 +250,8 @@
   const pricingList = document.getElementById('pricing-list');
   const pricingCategoryNav = document.getElementById('pricing-category-nav');
   if (pricingList) {
+    const pricingFallback = pricingList.querySelector('[data-pricing-fallback]');
+
     const formatDuration = (minutes) => {
       const parsed = Number(minutes || 0);
       return parsed > 0 ? `${parsed} min` : 'dle služby';
@@ -307,6 +309,9 @@
       .then((payload) => {
         const services = Array.isArray(payload.services) ? payload.services : [];
         pricingList.querySelectorAll('.pricing-group, .pricing-empty').forEach((row) => row.remove());
+        if (pricingFallback) {
+          pricingFallback.hidden = true;
+        }
         if (pricingCategoryNav) {
           pricingCategoryNav.innerHTML = '';
         }
@@ -399,6 +404,11 @@
       })
       .catch(() => {
         pricingList.querySelectorAll('.pricing-group, .pricing-empty').forEach((row) => row.remove());
+        if (pricingFallback) {
+          pricingFallback.hidden = false;
+          pricingFallback.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
         const failure = document.createElement('div');
         failure.className = 'pricing-empty';
         failure.textContent = 'Ceník se nepodařilo načíst.';
@@ -412,6 +422,8 @@
     const requestedServiceId = new URLSearchParams(window.location.search).get('sluzba');
     const feedbackRoot = document.querySelector('[data-reservation-feedback]');
     const successCard = document.querySelector('[data-reservation-success]');
+    const reservationFallback = document.querySelector('[data-reservation-fallback]');
+    const contactInfo = document.getElementById('contact-info');
     const successMessage = successCard ? successCard.querySelector('[data-success-message]') : null;
     const successService = successCard ? successCard.querySelector('[data-success-service]') : null;
     const successSlot = successCard ? successCard.querySelector('[data-success-slot]') : null;
@@ -488,6 +500,21 @@
       select.disabled = items.length === 0;
     };
 
+    const showReservationFallback = (message) => {
+      renderFeedback('error', message);
+      if (reservationFallback) {
+        reservationFallback.hidden = false;
+        reservationFallback.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      if (contactInfo) {
+        contactInfo.hidden = true;
+      }
+      form.hidden = true;
+      if (successCard) {
+        successCard.hidden = true;
+      }
+    };
+
     const fetchJson = async (url) => {
       const res = await fetch(url, {
         credentials: 'same-origin',
@@ -542,6 +569,12 @@
       form.reset();
       showStep(1);
       renderFeedback('', '');
+      if (reservationFallback) {
+        reservationFallback.hidden = true;
+      }
+      if (contactInfo) {
+        contactInfo.hidden = false;
+      }
       if (successCard) successCard.hidden = true;
       form.hidden = false;
       servicesById = new Map();
@@ -806,6 +839,8 @@
         if (timeSlots) {
           timeSlots.innerHTML = '<div class="reservation-calendar-empty">Časy se nepodařilo načíst.</div>';
         }
+        showReservationFallback('Online rezervace je dočasně nedostupná. Zavolejte mi nebo napište přes e-mail či Instagram DM.');
+        return;
       }
       updateSummary();
     };
@@ -834,6 +869,8 @@
       } catch (e) {
         setOptions(daySelect, [], 'Dny se nepodařilo načíst');
         updateCalendarDays([]);
+        showReservationFallback('Online rezervace je dočasně nedostupná. Zavolejte mi nebo napište přes e-mail či Instagram DM.');
+        return;
       }
       updateSummary();
     };
@@ -857,12 +894,16 @@
 
           serviceSelect.value = selectedServiceId;
           await loadDays(selectedServiceId, false);
+          if (reservationFallback && !reservationFallback.hidden) {
+            return;
+          }
           if (requestedServiceId) {
             form.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }
       } catch (e) {
         setOptions(serviceSelect, [], 'Služby se nepodařilo načíst');
+        showReservationFallback('Online rezervace je dočasně nedostupná. Zavolejte mi nebo napište přes e-mail či Instagram DM.');
       }
       updateSummary();
     };

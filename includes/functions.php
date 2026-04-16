@@ -211,6 +211,57 @@ function trustedSettingHtml(array $settings, string $key): string
     return is_string($value) ? trim($value) : '';
 }
 
+function contactPhoneHref(string $phone): string
+{
+    $normalized = trim($phone);
+    if ($normalized === '') {
+        return '';
+    }
+
+    $normalized = preg_replace('/(?!^\+)[^\d]/', '', $normalized);
+    $normalized = preg_replace('/^\+?(\d+)/', '+$1', $normalized);
+
+    return 'tel:' . $normalized;
+}
+
+function contactEmailHref(string $email): string
+{
+    $normalized = trim($email);
+    if ($normalized === '') {
+        return '';
+    }
+
+    return 'mailto:' . $normalized;
+}
+
+function contactInstagramHandle(string $instagramUrl): string
+{
+    $url = trim($instagramUrl);
+    if ($url === '') {
+        return '';
+    }
+
+    $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+    if ($path === '') {
+        return '';
+    }
+
+    $handle = trim(explode('/', $path)[0]);
+    $handle = ltrim($handle, '@');
+
+    return $handle;
+}
+
+function contactInstagramDmHref(string $instagramUrl): string
+{
+    $handle = contactInstagramHandle($instagramUrl);
+    if ($handle === '') {
+        return '';
+    }
+
+    return 'https://ig.me/m/' . rawurlencode($handle);
+}
+
 function webcalToHttps(string $url): string
 {
     if (str_starts_with($url, 'webcal://')) {

@@ -81,6 +81,7 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 
 - `PPSTUDIO_SITE_NAME` fallback pro `site_name`
 - `PPSTUDIO_SITE_URL` fallback pro `site_url`
+- `PPSTUDIO_CONTACT_INSTAGRAM_URL` fallback pro `contact_instagram_url`
 
 ## 3) Kde se načítá konfigurace
 

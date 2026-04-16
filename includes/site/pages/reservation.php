@@ -1,3 +1,16 @@
+<?php
+$contactName = setting($siteSettings, 'contact_name', 'Pavlína Pomykalová');
+$contactPhone = setting($siteSettings, 'contact_phone', '+420 732 856 036');
+$contactEmail = setting($siteSettings, 'contact_email', 'pavlina@pomykal.cz');
+$contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', '');
+$contactIco = setting($siteSettings, 'contact_ico', '234 275 66');
+$contactOpeningHours = setting($siteSettings, 'contact_opening_hours', 'Po-Pá: Dle objednávek');
+$contactAddress = setting($siteSettings, 'contact_address', '');
+$contactPhoneHref = contactPhoneHref($contactPhone);
+$contactEmailHref = contactEmailHref($contactEmail);
+$contactInstagramHandle = contactInstagramHandle($contactInstagramUrl);
+$contactInstagramDmUrl = contactInstagramDmHref($contactInstagramUrl);
+?>
 <section class="contact-section" id="contact" style="padding-top:8.5rem;">
     <div class="contact-container">
         <h1 class="contact-title">Rezervace a kontakt</h1>
@@ -18,6 +31,27 @@
                     <span>Vyberte nejbližší variantu a do poznámky napište, s čím potřebujete poradit.</span>
                 </div>
             </div>
+            <section class="reservation-fallback" data-reservation-fallback hidden>
+                <div class="reservation-fallback-icon" aria-hidden="true">!</div>
+                <div class="reservation-fallback-copy">
+                    <h3>Online rezervace je dočasně nedostupná</h3>
+                    <p>Rezervační formulář se teď nenačetl správně. Zavolejte mi, napište e-mail nebo zprávu na Instagram a domluvíme termín jinak.</p>
+                </div>
+                <div class="reservation-fallback-actions">
+                    <?php if ($contactPhoneHref !== ''): ?>
+                        <a class="cta-button cta-button-primary" href="<?= escape($contactPhoneHref) ?>">Zavolat</a>
+                    <?php endif; ?>
+                    <?php if ($contactEmailHref !== ''): ?>
+                        <a class="cta-button cta-button-ghost" href="<?= escape($contactEmailHref) ?>">Napsat e-mail</a>
+                    <?php endif; ?>
+                    <?php if ($contactInstagramUrl !== ''): ?>
+                        <a class="cta-button cta-button-ghost" href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                            <span>Instagram</span>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </section>
             <div class="reservation-feedback" data-reservation-feedback><?= $reservationAlertHtml ?></div>
             <form class="reservation-form" method="post" action="/reservation-submit.php" data-reservation-form>
                 <input type="hidden" name="_csrf" value="<?= escape($csrfToken) ?>">
@@ -171,39 +205,23 @@
                 </details>
             </div>
         </div>
-
         <?php
-        $contactName = setting($siteSettings, 'contact_name', 'Pavlína Pomykalová');
-        $contactPhone = setting($siteSettings, 'contact_phone', '+420 732 856 036');
-        $contactEmail = setting($siteSettings, 'contact_email', 'pavlina@pomykal.cz');
-        $contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', '');
-        $contactIco = setting($siteSettings, 'contact_ico', '234 275 66');
-        $contactOpeningHours = setting($siteSettings, 'contact_opening_hours', 'Po-Pá: Dle objednávek');
-        $contactAddress = setting($siteSettings, 'contact_address', '');
-
         $emailUser = $contactEmail;
         $emailDomain = '';
         if (str_contains($contactEmail, '@')) {
             [$emailUser, $emailDomain] = explode('@', $contactEmail, 2);
-        }
-        $instagramHandle = '';
-        if ($contactInstagramUrl !== '') {
-            $instagramPath = trim((string) parse_url($contactInstagramUrl, PHP_URL_PATH), '/');
-            if ($instagramPath !== '') {
-                $instagramHandle = '@' . trim(explode('/', $instagramPath)[0]);
-            }
         }
         ?>
         <div class="contact-grid" id="contact-info">
             <div>
                 <div class="contact-box">
                     <strong><?= escape($contactName) ?></strong><br>
-                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <?= escape($contactPhone) ?><br>
+                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <a href="<?= escape($contactPhoneHref) ?>"><?= escape($contactPhone) ?></a><br>
                     <i class="fas fa-envelope" style="color:#7a5a43; margin-right:6px;"></i>
-                    <span class="email" data-user="<?= escape($emailUser) ?>" data-domain="<?= escape($emailDomain) ?>"><?= escape($emailUser) ?> [zavináč] <?= escape($emailDomain) ?></span><br>
+                    <a class="email" href="<?= escape($contactEmailHref) ?>" data-user="<?= escape($emailUser) ?>" data-domain="<?= escape($emailDomain) ?>"><?= escape($emailUser) ?> [zavináč] <?= escape($emailDomain) ?></a><br>
                     <?php if ($contactInstagramUrl !== ''): ?>
                         <i class="fab fa-instagram" style="color:#7a5a43; margin-right:6px;"></i>
-                        <a href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= escape($instagramHandle !== '' ? $instagramHandle : $contactInstagramUrl) ?></a><br>
+                        <a href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= escape($contactInstagramHandle !== '' ? '@' . $contactInstagramHandle : $contactInstagramUrl) ?></a><br>
                     <?php endif; ?>
                     <?php if ($contactIco !== ''): ?>
                         <span style="font-size:0.98em; color:#7a6a5b;"><strong>IČO:</strong> <?= escape($contactIco) ?></span>

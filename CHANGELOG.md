@@ -9,6 +9,15 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - Typy: `feat`, `fix`, `refactor`, `style`, `docs`, `chore`, `perf`, `security`.
 - Nejnovější záznamy zapisuj nahoru.
 
+## 2026-04-16
+
+- [ux] Veřejný ceník a rezervační formulář nově při výpadku API ukazují hezčí fallback s kontaktními CTA na telefon, e-mail a Instagram DM místo strohého chybového stavu (commit: `this-commit`)
+- [ux] Fallback pro ceník a rezervace doplněn o přímý odkaz na Instagram profil vedle DM varianty (commit: `this-commit`)
+- [fix] Instagram kontakt má nově ENV fallback `PPSTUDIO_CONTACT_INSTAGRAM_URL`, takže zůstane dostupný i při úplném výpadku DB nastavení (commit: `this-commit`)
+- [ux] Při fallbacku rezervací se schovává běžný kontaktní box, aby se Instagram a další kontakty na stránce neduplovaly (commit: `this-commit`)
+- [ux] Fallback pro ceník a rezervace byl zjednodušen na jeden Instagram odkaz místo profilu plus DM (commit: `this-commit`)
+- [ux] Instagram fallback CTA je nově označený ikonou místo zavináče, aby byl záměr hned čitelný (commit: `this-commit`)
+
 ## 2026-04-15
 
 - [test] Přidán CLI smoke test `scripts/run-reservation-public-flow-tests.php`, který automatizuje runtime kontroly public reservation flow pro site lock, CSRF, antispam a controller response bez zásahu do produkčního storage (commit: `this-commit`)
