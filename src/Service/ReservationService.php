@@ -87,6 +87,7 @@ final class ReservationService
                 $clientNote,
                 $serviceId,
                 $service->price,
+                $service->normalizedDurationMinutes(),
                 $normalizedDateTime,
                 $status
             );
@@ -100,6 +101,77 @@ final class ReservationService
                 'date_time' => $normalizedDateTime,
                 'service' => $service->toLegacyArray(),
                 'service_price' => $service->price,
+            ];
+        } catch (Throwable) {
+            $this->connection->rollback();
+
+            return ['status' => 'error'];
+        }
+    }
+
+    public function rescheduleReservationWithLock(int $reservationId, string $dateTime): array
+    {
+        $normalizedDateTime = self::normalizeSqlDateTime($dateTime);
+        if ($normalizedDateTime === null) {
+            return ['status' => 'invalid_datetime'];
+        }
+
+        $reservationStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $normalizedDateTime);
+        if (! $reservationStart instanceof DateTimeImmutable) {
+            return ['status' => 'invalid_datetime'];
+        }
+
+        $bounds = AvailabilityService::sqlDayBounds($reservationStart->format('Y-m-d'));
+        if ($bounds === null) {
+            return ['status' => 'invalid_datetime'];
+        }
+
+        $this->connection->begin_transaction();
+
+        try {
+            $reservation = $this->reservationRepository->findDetailsByIdForUpdate($reservationId);
+            if (! is_array($reservation)) {
+                $this->connection->rollback();
+
+                return ['status' => 'not_found'];
+            }
+
+            $durationMinutes = max(15, (int) ($reservation['reservation_duration'] ?? $reservation['service_duration'] ?? 0));
+            $reservationSlot = ReservationSlot::fromStartAndDuration($reservationStart, $durationMinutes);
+
+            $windows = $this->availabilityService->normalizeAvailabilityWindows(
+                $this->availabilityRepository->lockWindowsBetween($bounds['start'], $bounds['end']),
+                false
+            );
+
+            if (! AvailabilityService::reservationFitsAvailabilityWindows($reservationSlot->start, $reservationSlot->end, $windows)) {
+                $this->connection->rollback();
+
+                return ['status' => 'slot_unavailable'];
+            }
+
+            $bookedIntervals = $this->availabilityService->normalizeBookedIntervals(
+                $this->reservationRepository->lockBookedBetweenExcludingId($bounds['start'], $bounds['end'], $reservationId)
+            );
+
+            if (AvailabilityService::slotOverlaps($reservationSlot, $bookedIntervals)) {
+                $this->connection->rollback();
+
+                return ['status' => 'slot_unavailable'];
+            }
+
+            if (! $this->reservationRepository->updateDateTimeAndResetReminder($reservationId, $normalizedDateTime)) {
+                $this->connection->rollback();
+
+                return ['status' => 'error'];
+            }
+
+            $this->connection->commit();
+
+            return [
+                'status' => 'ok',
+                'reservation_id' => $reservationId,
+                'date_time' => $normalizedDateTime,
             ];
         } catch (Throwable) {
             $this->connection->rollback();

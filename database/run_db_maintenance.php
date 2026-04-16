@@ -103,6 +103,7 @@ $indexChecks = [
            AND table_name = 'dostupnost'
            AND index_name IN (
              'idx_dostupnost_start_end',
+             'idx_dostupnost_end_start',
              'idx_dostupnost_start_at'
            )
          ORDER BY index_name"

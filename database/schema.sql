@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS rezervace (
     poznamka_admina TEXT NULL,
     sluzba INT UNSIGNED NOT NULL,
     cena_v_dobe_rezervace DECIMAL(10,2) NULL,
+    doba_trvani_v_dobe_rezervace SMALLINT UNSIGNED NOT NULL,
     datum_cas DATETIME NOT NULL,
     stav ENUM('nova', 'potvrzena', 'dokoncena', 'zrusena') NOT NULL DEFAULT 'nova',
     duvod_zruseni VARCHAR(255) NULL,
@@ -81,6 +82,7 @@ CREATE TABLE IF NOT EXISTS dostupnost (
     poznamka VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_dostupnost_start_end (start_at, end_at),
+    KEY idx_dostupnost_end_start (end_at, start_at),
     CONSTRAINT chk_dostupnost_time_order CHECK (end_at > start_at)
 );
 

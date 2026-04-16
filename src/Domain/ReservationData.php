@@ -13,6 +13,7 @@ final class ReservationData
         public readonly string $clientNote,
         public readonly int $serviceId,
         public readonly ?float $servicePrice,
+        public readonly int $serviceDurationMinutes,
         public readonly string $dateTime,
         public readonly string $status
     ) {

@@ -27,9 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
             } elseif ($dateTimeChanged && in_array($previousStatus, ['zrusena', 'dokoncena'], true)) {
                 $error = 'Zrušenou nebo dokončenou rezervaci nelze přesunout.';
                 $statement = null;
-            } elseif ($dateTimeChanged && ! isValidReservationSlot($connection, $serviceId, $dateTimeForSave)) {
-                $error = 'Vybraný termín už není volný nebo neodpovídá dostupnosti.';
-                $statement = null;
             } elseif ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
                 $error = 'Při zrušení rezervace vyplňte důvod zrušení.';
                 $statement = null;
@@ -53,6 +50,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation'])
                 }
             } else {
                 $statement = $connection->prepare('UPDATE rezervace SET datum_cas = ?, stav = ?, poznamka_admina = ? WHERE id = ?');
+            }
+        }
+        if ($statement) {
+            if ($dateTimeChanged) {
+                $rescheduleResult = rescheduleReservationWithLock($connection, $reservationId, $dateTimeForSave);
+                if (($rescheduleResult['status'] ?? 'error') === 'slot_unavailable') {
+                    $error = 'Vybraný termín už není volný nebo neodpovídá dostupnosti.';
+                    $statement->close();
+                    $statement = null;
+                } elseif (($rescheduleResult['status'] ?? 'error') !== 'ok') {
+                    $error = 'Rezervaci se nepodařilo přesunout.';
+                    $statement->close();
+                    $statement = null;
+                } else {
+                    $dateTimeForSave = (string) ($rescheduleResult['date_time'] ?? $dateTimeForSave);
+                }
             }
         }
         if ($statement) {

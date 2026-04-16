@@ -2,41 +2,46 @@
 
 $todayBounds = sqlDayBounds(date('Y-m-d'));
 $tomorrowBounds = sqlDayBounds((new DateTimeImmutable('tomorrow'))->format('Y-m-d'));
-$todayRangeSql = $todayBounds !== null
-    ? "datum_cas >= '{$todayBounds['start']}' AND datum_cas < '{$todayBounds['end']}'"
-    : '1=0';
+
+$availabilityWindowsQuery = $connection->query(
+    'SELECT COUNT(*) AS total
+     FROM dostupnost
+     WHERE end_at >= NOW()'
+);
+if ($availabilityWindowsQuery instanceof mysqli_result) {
+    $row = $availabilityWindowsQuery->fetch_assoc();
+    $dashboardStats['availability_windows'] = (int) ($row['total'] ?? 0);
+    $availabilityWindowsQuery->free();
+}
+
+$servicesTotalQuery = $connection->query(
+    'SELECT COUNT(*) AS total
+     FROM sluzby
+     WHERE aktivni = 1'
+);
+if ($servicesTotalQuery instanceof mysqli_result) {
+    $row = $servicesTotalQuery->fetch_assoc();
+    $dashboardStats['services_total'] = (int) ($row['total'] ?? 0);
+    $servicesTotalQuery->free();
+}
 
 $statsQuery = $connection->query(
     'SELECT
-        (SELECT COUNT(*) FROM rezervace WHERE stav = "nova") AS new_reservations,
-        (SELECT COUNT(*) FROM rezervace WHERE datum_cas >= NOW() AND stav IN ("nova", "potvrzena")) AS upcoming_reservations,
-        (SELECT COUNT(*) FROM dostupnost WHERE end_at >= NOW()) AS availability_windows,
-        (SELECT COUNT(*) FROM sluzby WHERE aktivni = 1) AS services_total,
-        (SELECT COUNT(*) FROM rezervace WHERE ' . $todayRangeSql . ' AND stav IN ("nova", "potvrzena", "dokoncena")) AS today_reservations,
-        (SELECT COUNT(*) FROM rezervace WHERE datum_cas >= NOW() AND stav = "nova") AS pending_reservations,
-        (
-            SELECT COALESCE(ROUND(AVG(COALESCE(r.cena_v_dobe_rezervace, s.cena))), 0)
-            FROM rezervace r
-            INNER JOIN sluzby s ON s.id = r.sluzba
-            WHERE r.datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-              AND r.stav IN ("nova", "potvrzena", "dokoncena")
-        ) AS avg_ticket_30d,
-        (
-            SELECT COUNT(*)
-            FROM rezervace
-            WHERE datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-              AND stav IN ("nova", "potvrzena", "dokoncena")
-        ) AS active_reservations_30d,
-        (
-            SELECT COUNT(*)
-            FROM rezervace
-            WHERE datum_cas >= DATE_SUB(NOW(), INTERVAL 60 DAY)
-              AND datum_cas < DATE_SUB(NOW(), INTERVAL 30 DAY)
-              AND stav IN ("nova", "potvrzena", "dokoncena")
-        ) AS active_reservations_prev_30d'
+        SUM(r.stav = "nova") AS new_reservations,
+        SUM(r.datum_cas >= NOW() AND r.stav IN ("nova", "potvrzena")) AS upcoming_reservations,
+        SUM(' . ($todayBounds !== null
+            ? "r.datum_cas >= '{$todayBounds['start']}' AND r.datum_cas < '{$todayBounds['end']}'"
+            : '0') . ' AND r.stav IN ("nova", "potvrzena", "dokoncena")) AS today_reservations,
+        SUM(r.datum_cas >= NOW() AND r.stav = "nova") AS pending_reservations,
+        SUM(r.datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            AND r.stav IN ("nova", "potvrzena", "dokoncena")) AS active_reservations_30d,
+        SUM(r.datum_cas >= DATE_SUB(NOW(), INTERVAL 60 DAY)
+            AND r.datum_cas < DATE_SUB(NOW(), INTERVAL 30 DAY)
+            AND r.stav IN ("nova", "potvrzena", "dokoncena")) AS active_reservations_prev_30d
+     FROM rezervace r'
 );
 if ($statsQuery instanceof mysqli_result) {
-    $dashboardStats = $statsQuery->fetch_assoc() ?: $dashboardStats;
+    $dashboardStats = array_merge($dashboardStats, $statsQuery->fetch_assoc() ?: []);
     $statsQuery->free();
 }
 
@@ -162,55 +167,76 @@ if ($securityEventsTableExists) {
     }
 }
 
-$topServicesQuery = $connection->query(
-    'SELECT s.nazev, COUNT(*) AS reservations_count
-     FROM rezervace r
-     INNER JOIN sluzby s ON s.id = r.sluzba
-     WHERE r.datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-       AND r.stav IN ("nova", "potvrzena", "dokoncena")
-     GROUP BY s.id, s.nazev
-     ORDER BY reservations_count DESC, s.nazev ASC
-     LIMIT 5'
-);
-if ($topServicesQuery instanceof mysqli_result) {
-    while ($row = $topServicesQuery->fetch_assoc()) {
-        $dashboardTopServices[] = $row;
-    }
-    $topServicesQuery->free();
-}
-
-$topCategoriesQuery = $connection->query(
-    'SELECT COALESCE(NULLIF(c.nazev, ""), "Ostatní služby") AS category_name, COUNT(*) AS reservations_count
+$thirtyDayQuery = $connection->query(
+    'SELECT r.stav, r.cena_v_dobe_rezervace, s.cena, s.nazev AS service_name,
+            COALESCE(NULLIF(c.nazev, ""), "Ostatní služby") AS category_name
      FROM rezervace r
      INNER JOIN sluzby s ON s.id = r.sluzba
      LEFT JOIN kategorie c ON c.id = s.kategorie_id
      WHERE r.datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
        AND r.stav IN ("nova", "potvrzena", "dokoncena")
-     GROUP BY c.id, category_name
-     ORDER BY reservations_count DESC, category_name ASC
-     LIMIT 5'
+     ORDER BY r.datum_cas DESC'
 );
-if ($topCategoriesQuery instanceof mysqli_result) {
-    while ($row = $topCategoriesQuery->fetch_assoc()) {
-        $dashboardTopCategories[] = $row;
-    }
-    $topCategoriesQuery->free();
-}
+if ($thirtyDayQuery instanceof mysqli_result) {
+    $serviceCounts = [];
+    $categoryCounts = [];
+    $ticketSum = 0.0;
+    $ticketCount = 0;
 
-$statusBreakdownQuery = $connection->query(
-    'SELECT stav, COUNT(*) AS total
-     FROM rezervace
-     WHERE datum_cas >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-     GROUP BY stav'
-);
-if ($statusBreakdownQuery instanceof mysqli_result) {
-    while ($row = $statusBreakdownQuery->fetch_assoc()) {
+    while ($row = $thirtyDayQuery->fetch_assoc()) {
         $status = (string) ($row['stav'] ?? '');
         if ($status !== '' && array_key_exists($status, $dashboardStatusBreakdown)) {
-            $dashboardStatusBreakdown[$status] = (int) ($row['total'] ?? 0);
+            $dashboardStatusBreakdown[$status]++;
         }
+
+        $serviceName = trim((string) ($row['service_name'] ?? ''));
+        if ($serviceName === '') {
+            $serviceName = 'Procedura';
+        }
+        $categoryName = trim((string) ($row['category_name'] ?? ''));
+        if ($categoryName === '') {
+            $categoryName = 'Ostatní služby';
+        }
+
+        $serviceCounts[$serviceName] = ($serviceCounts[$serviceName] ?? 0) + 1;
+        $categoryCounts[$categoryName] = ($categoryCounts[$categoryName] ?? 0) + 1;
+
+        $ticketSum += (float) ($row['cena_v_dobe_rezervace'] ?? $row['cena'] ?? 0);
+        $ticketCount++;
     }
-    $statusBreakdownQuery->free();
+
+    $thirtyDayQuery->free();
+
+    $dashboardStats['active_reservations_30d'] = $ticketCount;
+    $dashboardStats['avg_ticket_30d'] = $ticketCount > 0 ? (int) round($ticketSum / $ticketCount) : 0;
+
+    foreach ($serviceCounts as $serviceName => $reservationsCount) {
+        $dashboardTopServices[] = [
+            'nazev' => $serviceName,
+            'reservations_count' => $reservationsCount,
+        ];
+    }
+
+    usort(
+        $dashboardTopServices,
+        static fn (array $left, array $right): int => ($right['reservations_count'] <=> $left['reservations_count'])
+            ?: strcasecmp((string) ($left['nazev'] ?? ''), (string) ($right['nazev'] ?? ''))
+    );
+    $dashboardTopServices = array_slice($dashboardTopServices, 0, 5);
+
+    foreach ($categoryCounts as $categoryName => $reservationsCount) {
+        $dashboardTopCategories[] = [
+            'category_name' => $categoryName,
+            'reservations_count' => $reservationsCount,
+        ];
+    }
+
+    usort(
+        $dashboardTopCategories,
+        static fn (array $left, array $right): int => ($right['reservations_count'] <=> $left['reservations_count'])
+            ?: strcasecmp((string) ($left['category_name'] ?? ''), (string) ($right['category_name'] ?? ''))
+    );
+    $dashboardTopCategories = array_slice($dashboardTopCategories, 0, 5);
 }
 
 $slotSizeSeconds = 30 * 60;

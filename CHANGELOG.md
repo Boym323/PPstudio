@@ -11,6 +11,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [perf] Dashboard rezervací už spočítá hlavní provozní statistiky jedním agregačním dotazem místo několika samostatných průchodů přes `rezervace` (commit: `this-commit`)
+- [chore] Maintenance runner nově explicitně ověřuje i `idx_dostupnost_end_start`, aby výpis indexů odpovídal aktuálnímu schématu dostupnosti (commit: `this-commit`)
+- [perf] Rezervace nově ukládají délku procedury přímo do `rezervace`, výpočet volných dnů se načítá dávkově bez N+1 dotazů a public/admin reschedule používají jednotný transakční lock flow s resetem `reminder_sent_at` po změně termínu (commit: `this-commit`)
 - [chore] Z repozitáře byly odstraněny nepoužívané zbytky po starém frontendu a lokálním buildu (`frontend/`, `assets/dist/`, `node_modules/`, prázdné `src/Asset/` a neodkazovaný root obrázek), aby strom projektu lépe odpovídal aktivně používaným `assets/` souborům (commit: `this-commit`)
 - [ux] Denní a rychlé editace v planneru dostupnosti už nenabízejí minulé dny, takže výběr i rychlé chipy ukazují jen použitelné budoucí termíny (commit: `this-commit`)
 - [ux] Tlačítko uložení planneru dostupnosti bylo zmenšeno a zklidněno na kratší `Uložit změny`, aby méně dominovalo nad ostatním obsahem (commit: `this-commit`)

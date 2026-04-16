@@ -32,6 +32,7 @@ final class ReservationRepository
         string $clientNote,
         int $serviceId,
         ?float $servicePrice,
+        int $serviceDurationMinutes,
         string $dateTime,
         string $status
     ): int {
@@ -43,6 +44,7 @@ final class ReservationRepository
             $clientNote,
             $serviceId,
             $servicePrice,
+            $serviceDurationMinutes,
             $dateTime,
             $status
         ));
@@ -51,8 +53,8 @@ final class ReservationRepository
     public function insertData(ReservationData $reservation): int
     {
         $statement = $this->connection->prepare(
-            'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, datum_cas, stav)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO rezervace (jmeno, email, telefon, zdroj, poznamka_klienta, sluzba, cena_v_dobe_rezervace, doba_trvani_v_dobe_rezervace, datum_cas, stav)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
 
         if (! $statement) {
@@ -66,11 +68,12 @@ final class ReservationRepository
         $clientNote = $reservation->clientNote;
         $serviceId = $reservation->serviceId;
         $servicePrice = $reservation->servicePrice;
+        $serviceDurationMinutes = max(15, $reservation->serviceDurationMinutes);
         $dateTime = $reservation->dateTime;
         $status = $reservation->status;
 
         $statement->bind_param(
-            'sssssidss',
+            'sssssidiss',
             $name,
             $email,
             $phone,
@@ -78,6 +81,7 @@ final class ReservationRepository
             $clientNote,
             $serviceId,
             $servicePrice,
+            $serviceDurationMinutes,
             $dateTime,
             $status
         );
@@ -95,13 +99,31 @@ final class ReservationRepository
 
     public function findDetailsById(int $reservationId): ?array
     {
+        return $this->fetchDetailsById($reservationId, false);
+    }
+
+    public function findDetailsByIdForUpdate(int $reservationId): ?array
+    {
+        return $this->fetchDetailsById($reservationId, true);
+    }
+
+    private function fetchDetailsById(int $reservationId, bool $forUpdate): ?array
+    {
+        $sql = 'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
+                       r.cena_v_dobe_rezervace, r.reminder_sent_at,
+                       COALESCE(r.doba_trvani_v_dobe_rezervace, s.doba_trvani) AS doba_trvani_v_dobe_rezervace,
+                       s.nazev, s.doba_trvani
+                FROM rezervace r
+                INNER JOIN sluzby s ON s.id = r.sluzba
+                WHERE r.id = ?
+                LIMIT 1';
+
+        if ($forUpdate) {
+            $sql .= ' FOR UPDATE';
+        }
+
         $statement = $this->connection->prepare(
-            'SELECT r.id, r.sluzba, r.jmeno, r.email, r.telefon, r.poznamka_klienta, r.poznamka_admina, r.datum_cas, r.stav,
-                    r.cena_v_dobe_rezervace, r.reminder_sent_at, s.nazev, s.doba_trvani
-             FROM rezervace r
-             INNER JOIN sluzby s ON s.id = r.sluzba
-             WHERE r.id = ?
-             LIMIT 1'
+            $sql
         );
 
         if (! $statement) {
@@ -110,7 +132,7 @@ final class ReservationRepository
 
         $statement->bind_param('i', $reservationId);
         $statement->execute();
-        $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $reminderSentAt, $serviceName, $serviceDuration);
+        $statement->bind_result($id, $serviceId, $name, $email, $phone, $clientNote, $adminNote, $dateTime, $status, $servicePrice, $reminderSentAt, $reservationDuration, $serviceName, $serviceDuration);
         $reservation = null;
 
         if ($statement->fetch()) {
@@ -126,6 +148,7 @@ final class ReservationRepository
                 'stav' => $status,
                 'service_price' => $servicePrice !== null ? (float) $servicePrice : null,
                 'reminder_sent_at' => $reminderSentAt,
+                'reservation_duration' => max(15, (int) ($reservationDuration ?? $serviceDuration ?? 0)),
                 'service_name' => $serviceName,
                 'service_duration' => $serviceDuration,
             ];
@@ -182,7 +205,8 @@ final class ReservationRepository
     {
         $statement = $this->connection->prepare(
             'UPDATE rezervace
-             SET datum_cas = ?
+             SET datum_cas = ?,
+                 reminder_sent_at = NULL
              WHERE id = ?
              LIMIT 1'
         );
@@ -198,14 +222,40 @@ final class ReservationRepository
         return $updated;
     }
 
-    private function fetchBookedBetween(string $start, string $end, bool $forUpdate, bool $throwOnPrepareFailure): array
+    public function updateDateTimeAndResetReminder(int $reservationId, string $dateTime): bool
     {
-        $sql = 'SELECT r.datum_cas, s.doba_trvani
+        return $this->updateDateTime($reservationId, $dateTime);
+    }
+
+    public function findBookedBetweenExcludingId(string $start, string $end, int $excludedReservationId): array
+    {
+        return $this->fetchBookedBetween($start, $end, false, false, $excludedReservationId);
+    }
+
+    public function lockBookedBetweenExcludingId(string $start, string $end, int $excludedReservationId): array
+    {
+        return $this->fetchBookedBetween($start, $end, true, true, $excludedReservationId);
+    }
+
+    private function fetchBookedBetween(
+        string $start,
+        string $end,
+        bool $forUpdate,
+        bool $throwOnPrepareFailure,
+        ?int $excludedReservationId = null
+    ): array
+    {
+        $sql = 'SELECT r.datum_cas, COALESCE(r.doba_trvani_v_dobe_rezervace, 0) AS duration_minutes
                 FROM rezervace r
-                INNER JOIN sluzby s ON s.id = r.sluzba
                 WHERE r.datum_cas >= ?
                   AND r.datum_cas < ?
-                  AND r.stav IN ("nova", "potvrzena", "dokoncena")
+                  AND r.stav IN ("nova", "potvrzena", "dokoncena")';
+
+        if ($excludedReservationId !== null) {
+            $sql .= ' AND r.id <> ?';
+        }
+
+        $sql .= '
                 ORDER BY r.datum_cas ASC';
 
         if ($forUpdate) {
@@ -221,7 +271,11 @@ final class ReservationRepository
             return [];
         }
 
-        $statement->bind_param('ss', $start, $end);
+        if ($excludedReservationId !== null) {
+            $statement->bind_param('ssi', $start, $end, $excludedReservationId);
+        } else {
+            $statement->bind_param('ss', $start, $end);
+        }
         $statement->execute();
         $statement->bind_result($startAt, $durationMinutes);
         $booked = [];

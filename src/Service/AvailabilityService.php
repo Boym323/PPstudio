@@ -87,31 +87,12 @@ final class AvailabilityService
             return [];
         }
 
-        $duration = $service->normalizedDurationMinutes();
-        $windows = $this->getAvailabilityWindowObjects($date);
-        $bookedSlots = $this->getBookedSlots($date);
-        $slots = [];
-
-        foreach ($windows as $window) {
-            $cursor = $window->start;
-            $latestStart = $window->end->modify('-' . $duration . ' minutes');
-
-            while ($cursor <= $latestStart) {
-                $slot = ReservationSlot::fromStartAndDuration($cursor, $duration);
-
-                if (! self::slotOverlaps($slot, $bookedSlots)) {
-                    $value = $cursor->format('H:i');
-                    $slots[$value] = [
-                        'value' => $value,
-                        'label' => $cursor->format('H:i'),
-                    ];
-                }
-
-                $cursor = $cursor->modify('+30 minutes');
-            }
-        }
-
-        return array_values($slots);
+        return $this->buildAvailableTimesForDate(
+            $service,
+            $date,
+            $this->getAvailabilityWindowObjects($date),
+            $this->getBookedSlots($date)
+        );
     }
 
     public function getAvailableDays(int $serviceId, int $daysAhead = 60): array
@@ -151,8 +132,17 @@ final class AvailabilityService
             return [];
         }
 
+        $service = $this->serviceRepository->findActiveItemById($serviceId);
+        if (! $service instanceof ServiceItem) {
+            return [];
+        }
+
+        $bookedSlots = $this->normalizeBookedIntervals(
+            $this->reservationRepository->findBookedBetween($boundsStart, $boundsEnd)
+        );
+
         foreach ($dates as $date) {
-            $times = $this->getAvailableTimesForDate($serviceId, $date);
+            $times = $this->buildAvailableTimesForDate($service, $date, $windows, $bookedSlots);
 
             if ($times !== []) {
                 $days[] = [
@@ -285,6 +275,55 @@ final class AvailabilityService
         }
 
         return $dateObject->format('d.m.Y');
+    }
+
+    /**
+     * @param AvailabilityWindow[] $windows
+     * @param ReservationSlot[] $bookedSlots
+     */
+    private function buildAvailableTimesForDate(ServiceItem $service, string $date, array $windows, array $bookedSlots): array
+    {
+        $dayBounds = self::sqlDayBounds($date);
+        if ($dayBounds === null) {
+            return [];
+        }
+
+        $dayStart = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dayBounds['start']);
+        $dayEnd = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dayBounds['end']);
+        if (! $dayStart instanceof DateTimeImmutable || ! $dayEnd instanceof DateTimeImmutable) {
+            return [];
+        }
+
+        $duration = $service->normalizedDurationMinutes();
+        $slots = [];
+
+        foreach ($windows as $window) {
+            $windowStart = $window->start > $dayStart ? $window->start : $dayStart;
+            $windowEnd = $window->end < $dayEnd ? $window->end : $dayEnd;
+
+            if ($windowEnd <= $windowStart) {
+                continue;
+            }
+
+            $cursor = $windowStart;
+            $latestStart = $windowEnd->modify('-' . $duration . ' minutes');
+
+            while ($cursor <= $latestStart) {
+                $slot = ReservationSlot::fromStartAndDuration($cursor, $duration);
+
+                if (! self::slotOverlaps($slot, $bookedSlots)) {
+                    $value = $cursor->format('H:i');
+                    $slots[$value] = [
+                        'value' => $value,
+                        'label' => $value,
+                    ];
+                }
+
+                $cursor = $cursor->modify('+30 minutes');
+            }
+        }
+
+        return array_values($slots);
     }
 
     private static function availabilityWindowFromMixed(mixed $window): ?AvailabilityWindow

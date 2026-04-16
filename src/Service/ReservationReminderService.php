@@ -25,8 +25,6 @@ final class ReservationReminderService
      */
     public function run(array $siteSettings, bool $dryRun = false): array
     {
-        $this->ensureLogTable();
-
         $leadSeconds = max(3600, (int) ($this->emailConfig['reservation_reminder_lead_seconds'] ?? 93600));
         $windowSeconds = max(900, (int) ($this->emailConfig['reservation_reminder_window_seconds'] ?? 3600));
         $runToken = $this->createRunToken();
@@ -164,37 +162,6 @@ final class ReservationReminderService
 
         $statement = $this->connection->prepare($sql);
         $statement->execute([$reservationId]);
-    }
-
-    private function ensureLogTable(): void
-    {
-        $sql = 'CREATE TABLE IF NOT EXISTS reservation_reminder_logs (
-                    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                    run_token VARCHAR(64) NOT NULL,
-                    event_type VARCHAR(100) NOT NULL,
-                    severity ENUM(\'info\', \'warning\', \'error\') NOT NULL DEFAULT \'info\',
-                    reservation_id INT UNSIGNED NULL,
-                    context_json TEXT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    KEY idx_reminder_logs_run_token_created (run_token, created_at),
-                    KEY idx_reminder_logs_event_created (event_type, created_at),
-                    KEY idx_reminder_logs_reservation_created (reservation_id, created_at),
-                    CONSTRAINT fk_reminder_logs_reservation
-                        FOREIGN KEY (reservation_id) REFERENCES rezervace(id)
-                        ON UPDATE CASCADE
-                        ON DELETE SET NULL
-                )';
-
-        try {
-            if ($this->connection instanceof mysqli) {
-                $this->connection->query($sql);
-                return;
-            }
-
-            $this->connection->exec($sql);
-        } catch (Throwable) {
-            // Pokud DB uzivatel nema prava na DDL, runner pokracuje bez DB audit logu.
-        }
     }
 
     private function logSummary(

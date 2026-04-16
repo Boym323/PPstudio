@@ -4,6 +4,7 @@ ALTER TABLE rezervace
     ADD COLUMN IF NOT EXISTS poznamka_klienta TEXT NULL AFTER telefon,
     ADD COLUMN IF NOT EXISTS poznamka_admina TEXT NULL AFTER poznamka_klienta,
     ADD COLUMN IF NOT EXISTS cena_v_dobe_rezervace DECIMAL(10,2) NULL AFTER sluzba,
+    ADD COLUMN IF NOT EXISTS doba_trvani_v_dobe_rezervace SMALLINT UNSIGNED NULL AFTER cena_v_dobe_rezervace,
     ADD COLUMN IF NOT EXISTS stav ENUM('nova', 'potvrzena', 'dokoncena', 'zrusena') NOT NULL DEFAULT 'nova' AFTER datum_cas,
     ADD COLUMN IF NOT EXISTS duvod_zruseni VARCHAR(255) NULL AFTER stav,
     ADD COLUMN IF NOT EXISTS zruseno_kym VARCHAR(40) NULL AFTER duvod_zruseni,
@@ -17,6 +18,14 @@ CREATE INDEX IF NOT EXISTS idx_rezervace_stav_datum_cas ON rezervace (stav, datu
 CREATE INDEX IF NOT EXISTS idx_rezervace_datum_cas_stav ON rezervace (datum_cas, stav);
 CREATE INDEX IF NOT EXISTS idx_rezervace_sluzba_datum_cas_stav ON rezervace (sluzba, datum_cas, stav);
 CREATE INDEX IF NOT EXISTS idx_rezervace_reminder_queue ON rezervace (reminder_sent_at, stav, datum_cas);
+
+UPDATE rezervace r
+INNER JOIN sluzby s ON s.id = r.sluzba
+SET r.doba_trvani_v_dobe_rezervace = GREATEST(15, COALESCE(s.doba_trvani, 0))
+WHERE r.doba_trvani_v_dobe_rezervace IS NULL;
+
+ALTER TABLE rezervace
+    MODIFY COLUMN doba_trvani_v_dobe_rezervace SMALLINT UNSIGNED NOT NULL;
 
 CREATE TABLE IF NOT EXISTS kategorie (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -86,6 +95,7 @@ ALTER TABLE dostupnost
     ADD COLUMN IF NOT EXISTS poznamka VARCHAR(255) NULL AFTER end_at;
 
 CREATE INDEX IF NOT EXISTS idx_dostupnost_start_end ON dostupnost (start_at, end_at);
+CREATE INDEX IF NOT EXISTS idx_dostupnost_end_start ON dostupnost (end_at, start_at);
 
 CREATE TABLE IF NOT EXISTS security_events (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

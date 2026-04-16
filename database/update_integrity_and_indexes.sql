@@ -4,6 +4,7 @@ CREATE INDEX IF NOT EXISTS idx_rezervace_sluzba_datum_cas_stav ON rezervace (slu
 CREATE INDEX IF NOT EXISTS idx_rezervace_reminder_queue ON rezervace (reminder_sent_at, stav, datum_cas);
 
 CREATE INDEX IF NOT EXISTS idx_dostupnost_start_end ON dostupnost (start_at, end_at);
+CREATE INDEX IF NOT EXISTS idx_dostupnost_end_start ON dostupnost (end_at, start_at);
 
 ALTER TABLE historie_cen_sluzeb
     ADD COLUMN IF NOT EXISTS otevrena_flag TINYINT

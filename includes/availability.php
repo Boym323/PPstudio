@@ -79,6 +79,11 @@ function createReservationWithLock(
     );
 }
 
+function rescheduleReservationWithLock(mysqli $connection, int $reservationId, string $dateTime): array
+{
+    return ppstudioReservationService($connection)->rescheduleReservationWithLock($reservationId, $dateTime);
+}
+
 function getAvailableDays(mysqli $connection, int $serviceId, int $daysAhead = 60): array
 {
     return ppstudioAvailabilityService($connection)->getAvailableDays($serviceId, $daysAhead);

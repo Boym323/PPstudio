@@ -165,16 +165,6 @@ if ($dateTimeChanged && in_array($previousStatus, ['zrusena', 'dokoncena'], true
     exit;
 }
 
-if ($dateTimeChanged && ! isValidReservationSlot($connection, $serviceId, $dateTimeForSave)) {
-    $connection->close();
-    http_response_code(422);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Vybraný termín už není volný nebo neodpovídá dostupnosti.',
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
-}
-
 if ($status === 'zrusena' && $previousStatus !== 'zrusena' && $cancelReason === '') {
     $connection->close();
     http_response_code(422);
@@ -217,6 +207,32 @@ if (! $statement) {
         'error' => 'Rezervaci se nepodařilo upravit.',
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
+}
+
+if ($dateTimeChanged) {
+    $rescheduleResult = rescheduleReservationWithLock($connection, $reservationId, $dateTimeForSave);
+    if (($rescheduleResult['status'] ?? 'error') === 'slot_unavailable') {
+        $statement->close();
+        $connection->close();
+        http_response_code(422);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Vybraný termín už není volný nebo neodpovídá dostupnosti.',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    if (($rescheduleResult['status'] ?? 'error') !== 'ok') {
+        $statement->close();
+        $connection->close();
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Rezervaci se nepodařilo přesunout.',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    $dateTimeForSave = (string) ($rescheduleResult['date_time'] ?? $dateTimeForSave);
 }
 
 if ($status === 'zrusena') {

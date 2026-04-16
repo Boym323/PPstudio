@@ -249,19 +249,20 @@ final class ReservationActionService
             return $this->rescheduleResult('Zvolte prosím jiný termín než původní.', 'error', true, $reservation, $siteSettings);
         }
 
-        if (! $this->availabilityService($connection)->isValidReservationSlot((int) ($reservation['service_id'] ?? 0), $newDateTime)) {
-            $connection->close();
-
-            return $this->rescheduleResult('Zvolený termín už není dostupný. Vyberte prosím jiný.', 'error', true, $reservation, $siteSettings);
-        }
-
         if (! $this->linkSigner->consumeNonce($link['id'], 'reschedule', $link['exp'], $link['nonce'])) {
             $connection->close();
 
             return $this->rescheduleResult('Odkaz už byl použit nebo expiroval.', 'error', false, $reservation, $siteSettings, 403);
         }
 
-        if (! $repository->updateDateTime($link['id'], $newDateTime)) {
+        $rescheduleResult = $this->reservationService($connection)->rescheduleReservationWithLock($link['id'], $newDateTime);
+        if (($rescheduleResult['status'] ?? 'error') === 'slot_unavailable') {
+            $connection->close();
+
+            return $this->rescheduleResult('Zvolený termín už není dostupný. Vyberte prosím jiný.', 'error', true, $reservation, $siteSettings);
+        }
+
+        if (($rescheduleResult['status'] ?? 'error') !== 'ok') {
             $connection->close();
 
             return $this->rescheduleResult('Termín se nepodařilo změnit.', 'error', true, $reservation, $siteSettings, 500);
@@ -318,12 +319,18 @@ final class ReservationActionService
         ];
     }
 
-    private function availabilityService(mysqli $connection): AvailabilityService
+    private function reservationService(mysqli $connection): ReservationService
     {
-        return new AvailabilityService(
-            new ServiceRepository($connection),
-            new AvailabilityRepository($connection),
-            new ReservationRepository($connection)
+        $serviceRepository = new ServiceRepository($connection);
+        $availabilityRepository = new AvailabilityRepository($connection);
+        $reservationRepository = new ReservationRepository($connection);
+
+        return new ReservationService(
+            $connection,
+            $serviceRepository,
+            $availabilityRepository,
+            $reservationRepository,
+            new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository)
         );
     }
 
