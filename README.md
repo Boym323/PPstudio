@@ -27,6 +27,8 @@ Detailnější dokumentace:
    - `php database/run_db_maintenance.php`
 4. Pro integrační ověření rezervací (sloty, validace, kolize, paralelní lock):
    - `php scripts/run-reservation-integration.php`
+5. Pro public flow smoke testy rezervačního formuláře, CSRF, antispamu a site locku:
+   - `php scripts/run-reservation-public-flow-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 

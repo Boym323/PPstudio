@@ -4,6 +4,10 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller;
 
 use PPStudio\Http\Request\ReservationSubmitRequest;
+use PPStudio\Security\CsrfService;
+use PPStudio\Security\PublicSiteLockService;
+use PPStudio\Security\ReservationAntispamService;
+use PPStudio\Security\RequestSecurityService;
 use PPStudio\Service\ReservationSubmitService;
 
 final class ReservationController
@@ -23,15 +27,24 @@ final class ReservationController
         'locked' => 'Web je dočasně uzamčen heslem.',
     ];
 
-    public function __construct(private ReservationSubmitService $submitService)
-    {
+    public function __construct(
+        private ReservationSubmitService $submitService,
+        private PublicSiteLockService $publicSiteLockService,
+        private CsrfService $csrfService,
+        private ReservationAntispamService $reservationAntispamService,
+        private RequestSecurityService $requestSecurityService
+    ) {
     }
 
+    /**
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $post
+     */
     public function submit(array $server, array $post): never
     {
         $isAjaxRequest = $this->isAjaxRequest($server);
 
-        if (ppstudioPublicLockEnabled() && ! ppstudioPublicLockHasAccess()) {
+        if ($this->publicSiteLockService->isLockedForCurrentVisitor()) {
             if ($isAjaxRequest) {
                 $this->respond('locked', false, 423, [], true);
             }
@@ -51,11 +64,26 @@ final class ReservationController
             exit;
         }
 
-        if (! isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! $this->csrfService->isValid((string) ($post['_csrf'] ?? ''))) {
             $this->respond('csrf', false, 419, [], $isAjaxRequest);
         }
 
-        $this->validateAntispam($post, $isAjaxRequest);
+        $clientIpAddress = $this->requestSecurityService->clientIpAddress($server);
+        $userAgent = $this->requestSecurityService->userAgent($server);
+        $antispamResult = $this->reservationAntispamService->validateSubmission(
+            $post,
+            $clientIpAddress,
+            $userAgent
+        );
+        if (! ($antispamResult['allowed'] ?? false)) {
+            $this->respond(
+                (string) ($antispamResult['status'] ?? 'spam'),
+                false,
+                (int) ($antispamResult['http_code'] ?? 422),
+                [],
+                $isAjaxRequest
+            );
+        }
 
         $request = ReservationSubmitRequest::fromPost($post);
         $validationStatus = $request->validationStatus();
@@ -73,42 +101,9 @@ final class ReservationController
         );
     }
 
-    private function validateAntispam(array $post, bool $isAjaxRequest): void
-    {
-        $honeypot = trim((string) ($post['website'] ?? ''));
-        $reservationToken = trim((string) ($post['reservation_token'] ?? ''));
-        $clientIp = getClientIpAddress();
-
-        $rateLimitResult = reservationAntispamRateLimitCheck($clientIp, 8, 600);
-        if (! ($rateLimitResult['allowed'] ?? true)) {
-            reservationAntispamLog('rate_limited', ['retry_after' => (int) ($rateLimitResult['retry_after'] ?? 0)]);
-            $this->respond('rate_limit', false, 429, [], $isAjaxRequest);
-        }
-
-        if ($honeypot !== '') {
-            reservationAntispamLog('honeypot_filled');
-            $this->respond('spam', false, 422, [], $isAjaxRequest);
-        }
-
-        $issuedAt = reservationAntispamConsumeToken($reservationToken);
-
-        if ($issuedAt === null) {
-            reservationAntispamLog('missing_or_invalid_token');
-            $this->respond('spam', false, 422, [], $isAjaxRequest);
-        }
-
-        $elapsed = time() - $issuedAt;
-        if ($elapsed < 3) {
-            reservationAntispamLog('submitted_too_fast', ['elapsed' => $elapsed]);
-            $this->respond('too_fast', false, 422, [], $isAjaxRequest);
-        }
-
-        if ($elapsed > 2 * 60 * 60) {
-            reservationAntispamLog('token_expired', ['elapsed' => $elapsed]);
-            $this->respond('spam', false, 422, [], $isAjaxRequest);
-        }
-    }
-
+    /**
+     * @param array<string, mixed> $extra
+     */
     private function respond(string $status, bool $success, int $httpCode, array $extra, bool $isAjaxRequest): never
     {
         if (! $isAjaxRequest) {
@@ -123,13 +118,16 @@ final class ReservationController
             'success' => $success,
             'status' => $status,
             'message' => self::STATUS_MESSAGES[$status] ?? 'Nepodařilo se zpracovat požadavek.',
-            'new_token' => reservationAntispamIssueToken(),
+            'new_token' => $this->reservationAntispamService->issueToken(),
         ], $extra);
 
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $server
+     */
     private function isAjaxRequest(array $server): bool
     {
         return strtolower((string) ($server['HTTP_X_REQUESTED_WITH'] ?? '')) === 'fetch'

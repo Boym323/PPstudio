@@ -12,9 +12,24 @@ final class RequestSecurityService
     ) {
     }
 
-    public function clientIpAddress(): string
+    /**
+     * @param array<string, mixed>|null $server
+     */
+    public function clientIpAddress(?array $server = null): string
     {
-        return trim((string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        $server ??= $_SERVER;
+
+        return trim((string) ($server['REMOTE_ADDR'] ?? 'unknown'));
+    }
+
+    /**
+     * @param array<string, mixed>|null $server
+     */
+    public function userAgent(?array $server = null): string
+    {
+        $server ??= $_SERVER;
+
+        return trim((string) ($server['HTTP_USER_AGENT'] ?? ''));
     }
 
     public function storageDir(): string

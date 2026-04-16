@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-15
 
+- [test] Přidán CLI smoke test `scripts/run-reservation-public-flow-tests.php`, který automatizuje runtime kontroly public reservation flow pro site lock, CSRF, antispam a controller response bez zásahu do produkčního storage (commit: `this-commit`)
+- [refactor] Public reservation flow už nevolá site lock, CSRF a antispam helpery přímo z `ReservationController`; nová OOP vrstva `PublicSiteLockService` a `ReservationAntispamService` převzala public lock, reservation tokeny, rate-limit i antispam logiku a `includes/site_lock.php` / `includes/antispam.php` zůstávají jen jako kompatibilní wrappery (commit: `this-commit`)
 - [refactor] Po OOP refaktoru byly odstraněny nepoužívané compatibility wrappery, mrtvé bloky po `return` v mailer helperu a staré přechodové volání v `ReservationSubmitService`; projekt má čistší importy a kratší helper chain bez změny business logiky (commit: `this-commit`)
 - [fix] Opraven pád admin záložky rezervací při načítání bez aktivního filtru inicializací výchozí SQL podmínky v loaderu rezervací (commit: `this-commit`)
 - [refactor] Do OOP rezervační vrstvy byly doplněny lehké doménové objekty `ServiceItem`, `AvailabilityWindow`, `ReservationSlot` a `ReservationData`; interní výpočty dostupnosti a zápis rezervace už méně spoléhají na nepojmenovaná asociativní pole při zachování kompatibilních výstupů (commit: `this-commit`)

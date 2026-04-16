@@ -4,7 +4,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
 use PPStudio\Security\CsrfService;
+use PPStudio\Security\PublicSiteLockService;
+use PPStudio\Security\ReservationAntispamService;
 use PPStudio\Security\RequestSecurityService;
+use PPStudio\Security\SecurityEventLogger;
 use PPStudio\Security\SessionService;
 
 function ppstudioSessionService(): SessionService
@@ -35,6 +38,47 @@ function ppstudioRequestSecurityService(): RequestSecurityService
 
     if (! $service instanceof RequestSecurityService) {
         $service = new RequestSecurityService(ppstudioSessionService());
+    }
+
+    return $service;
+}
+
+function ppstudioSecurityEventLoggerService(): SecurityEventLogger
+{
+    static $service = null;
+
+    if (! $service instanceof SecurityEventLogger) {
+        $service = new SecurityEventLogger(ppstudioRequestSecurityService());
+    }
+
+    return $service;
+}
+
+function ppstudioReservationAntispamService(): ReservationAntispamService
+{
+    static $service = null;
+
+    if (! $service instanceof ReservationAntispamService) {
+        $service = new ReservationAntispamService(
+            ppstudioSessionService(),
+            ppstudioRequestSecurityService(),
+            ppstudioSecurityEventLoggerService()
+        );
+    }
+
+    return $service;
+}
+
+function ppstudioPublicSiteLockService(): PublicSiteLockService
+{
+    static $service = null;
+
+    if (! $service instanceof PublicSiteLockService) {
+        $service = new PublicSiteLockService(
+            ppstudioSessionService(),
+            ppstudioCsrfService(),
+            ppstudioRequestSecurityService()
+        );
     }
 
     return $service;

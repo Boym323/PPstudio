@@ -8,13 +8,7 @@ use PPStudio\Security\SecurityEventLogger;
 
 function ppstudioSecurityEventLogger(): SecurityEventLogger
 {
-    static $logger = null;
-
-    if (! $logger instanceof SecurityEventLogger) {
-        $logger = new SecurityEventLogger(ppstudioRequestSecurityService());
-    }
-
-    return $logger;
+    return ppstudioSecurityEventLoggerService();
 }
 
 function securityEventsFallbackPath(): string
