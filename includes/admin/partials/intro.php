@@ -11,3 +11,5 @@
                 <?php if ($error !== ''): ?>
                     <div class="alert alert-error"><?= escape($error) ?></div>
                 <?php endif; ?>
+
+                <div class="admin-toast" data-admin-toast hidden aria-live="polite" aria-atomic="true"></div>

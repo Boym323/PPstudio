@@ -11,6 +11,12 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [chore] Z repozitáře byly odstraněny nepoužívané zbytky po starém frontendu a lokálním buildu (`frontend/`, `assets/dist/`, `node_modules/`, prázdné `src/Asset/` a neodkazovaný root obrázek), aby strom projektu lépe odpovídal aktivně používaným `assets/` souborům (commit: `this-commit`)
+- [ux] Denní a rychlé editace v planneru dostupnosti už nenabízejí minulé dny, takže výběr i rychlé chipy ukazují jen použitelné budoucí termíny (commit: `this-commit`)
+- [ux] Tlačítko uložení planneru dostupnosti bylo zmenšeno a zklidněno na kratší `Uložit změny`, aby méně dominovalo nad ostatním obsahem (commit: `this-commit`)
+- [ux] Sjednoceny texty planneru dostupnosti do kratších hlášek pro save/delete, chybové stavy a prázdný seznam oken (commit: `this-commit`)
+- [ux] Plánovač dostupnosti v adminu má nově viditelný souhrn změn (`aktivní/přidáno/odebráno/blokováno`), tlačítka `Zpět` a `Obnovit týden`, stav neuložených změn, varování při opuštění stránky, klávesovou zkratku `Ctrl/Cmd+S`, AJAX uložení bez reloadu s fallbackem na klasický POST, AJAX mazání jednotlivých oken bez obnovení stránky a globální toast notifikace v adminu (commit: `this-commit`)
+- [chore] Z live DB byly odstraněny integrační testovací zbytky v `kategorie`, `sluzby`, `rezervace` a `dostupnost` identifikované podle markerů `IT Category it_*`, `IT Service it_*` a `integration:*` (commit: `this-commit`)
 - [ux] Hlavní webová navigace používá čisté URL bez `.php` (`/`, `/sluzby`, `/cenik`, `/o-mne`, `/recenze`, `/rezervace`, `/prostory`) a `.htaccess` je mapuje na stávající entrypointy pro zachování kompatibility (commit: `this-commit`)
 - [refactor] Admin navigace a formulářové akce byly sjednoceny na absolutní `/admin.php`, `/admin-lite.php` a `/index.php`, aby se odstranily křehké relativní odkazy v adminu i akčních stránkách (commit: `this-commit`)
 - [refactor] Zpřesněny všechny statické odkazy na absolutní `/assets/...` a přidán kompatibilní redirect z `/frontend/...` na nový strom (commit: `this-commit`)

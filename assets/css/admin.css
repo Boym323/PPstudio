@@ -601,6 +601,49 @@ p {
     color: var(--danger-text);
 }
 
+.admin-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 60;
+    min-width: min(340px, calc(100vw - 2rem));
+    max-width: 420px;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(178, 144, 113, 0.35);
+    background: rgba(255, 252, 248, 0.97);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    transform: translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.admin-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.admin-toast.is-success {
+    border-color: rgba(169, 195, 154, 0.55);
+    background: rgba(242, 247, 238, 0.98);
+}
+
+.admin-toast.is-error {
+    border-color: rgba(219, 167, 156, 0.72);
+    background: rgba(251, 241, 238, 0.99);
+}
+
+@media (max-width: 720px) {
+    .admin-toast {
+        left: 1rem;
+        right: 1rem;
+        min-width: 0;
+        max-width: none;
+    }
+}
+
 .admin-card,
 .admin-note,
 .admin-table-wrap,
@@ -2604,7 +2647,7 @@ body.is-sorting-categories {
 
 .availability-change-summary {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.6rem;
     border: 1px solid rgba(219, 203, 189, 0.8);
     border-radius: var(--radius-md);
@@ -2612,9 +2655,32 @@ body.is-sorting-categories {
     background: rgba(255, 251, 246, 0.84);
 }
 
+.availability-change-summary.is-dirty {
+    border-color: rgba(174, 126, 86, 0.7);
+    box-shadow: 0 0 0 1px rgba(174, 126, 86, 0.16);
+}
+
 .availability-change-summary .table-actions {
     grid-column: 1 / -1;
     margin-top: 0.2rem;
+}
+
+.availability-dirty-state {
+    grid-column: 1 / -1;
+    margin: 0.1rem 0 0 0;
+}
+
+.availability-change-summary [data-planner-save-feedback] {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.availability-change-summary [data-planner-save-feedback].is-success {
+    color: #24633f;
+}
+
+.availability-change-summary [data-planner-save-feedback].is-error {
+    color: #9b2d2d;
 }
 
 .summary-item {
@@ -2638,6 +2704,7 @@ body.is-sorting-categories {
 
 .availability-save-actions {
     margin-top: 0.45rem;
+    justify-content: flex-end;
 }
 
 .availability-save-actions-sticky {
@@ -2646,6 +2713,18 @@ body.is-sorting-categories {
     z-index: 5;
     padding-top: 0.55rem;
     background: linear-gradient(180deg, rgba(255, 251, 246, 0.25), rgba(255, 251, 246, 0.94) 40%, rgba(255, 251, 246, 1) 100%);
+}
+
+.availability-save-button {
+    min-height: 2.5rem;
+    padding-inline: 0.95rem;
+    font-size: 0.9rem;
+    box-shadow: none;
+}
+
+.availability-save-button:hover,
+.availability-save-button:focus-visible {
+    box-shadow: none;
 }
 
 .availability-list-wrap {
@@ -3114,7 +3193,7 @@ body.is-sorting-categories {
     }
 
     .availability-change-summary {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .availability-story-grid {

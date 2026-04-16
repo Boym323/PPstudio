@@ -5,10 +5,16 @@ $plannerStartDate = (new DateTimeImmutable('monday this week'))->modify(
 );
 $plannerEndDate = $plannerStartDate->modify('+' . ($plannerDayRange - 1) . ' days');
 $plannerWeekLabel = formatCzechDate($plannerStartDate->format('Y-m-d')) . ' - ' . formatCzechDate($plannerEndDate->format('Y-m-d'));
+$plannerToday = (new DateTimeImmutable('today'))->format('Y-m-d');
 
 for ($i = 0; $i < $plannerDayRange; $i++) {
     $plannerDays[] = $plannerStartDate->modify('+' . $i . ' days')->format('Y-m-d');
 }
+
+$plannerEditableDays = array_values(array_filter(
+    $plannerDays,
+    static fn (string $plannerDay): bool => $plannerDay >= $plannerToday
+));
 
 foreach ($plannerDays as $plannerDay) {
     $holidayName = getCzechHolidayName($plannerDay);

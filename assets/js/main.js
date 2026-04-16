@@ -58,15 +58,39 @@ function setupAvailabilityPlanner() {
     const planner = document.querySelector('[data-availability-planner]');
     const form = document.querySelector('[data-availability-planner-form]');
 
+    const plannerMessages = {
+        loadingSave: 'Ukládám dostupnost...',
+        saveSuccess: 'Dostupnost uložena.',
+        saveError: 'Dostupnost se nepodařilo uložit.',
+        deleteLoading: 'Odstraňuji okno...',
+        deleteSuccess: 'Okno odstraněno.',
+        deleteError: 'Okno se nepodařilo odstranit.',
+        conflict: 'Nejdřív uložte nebo zahoďte změny.',
+        saveAgain: 'Zkuste to prosím znovu.',
+        noWindows: 'Zatím nejsou zadána žádná volná okna.',
+    };
+
     if (!planner || !form) {
         return;
     }
 
     const undoButton = form.querySelector('[data-undo-change]');
     const resetButtons = Array.from(form.querySelectorAll('[data-reset-changes]'));
+    const summaryWrap = form.querySelector('[data-planner-change-summary]');
     const summaryTotal = form.querySelector('[data-summary-total]');
     const summaryAdded = form.querySelector('[data-summary-added]');
     const summaryRemoved = form.querySelector('[data-summary-removed]');
+    const summaryBlocked = form.querySelector('[data-summary-blocked]');
+    const dirtyStateNode = form.querySelector('[data-planner-dirty-state]');
+    const saveFeedbackNode = form.querySelector('[data-planner-save-feedback]');
+    const saveButton = form.querySelector('button[name="save_availability_grid"]');
+    const saveEndpoint = String(form.dataset.saveEndpoint || '').trim();
+    const listWrap = document.querySelector('[data-availability-list-wrap]');
+    const deleteEndpoint = String(listWrap?.dataset.deleteEndpoint || '').trim();
+    const listSummaryNode = document.querySelector('[data-availability-list-summary]');
+    const listBody = document.querySelector('[data-availability-list-body]');
+    const csrfToken = String(form.querySelector('input[name="_csrf"]')?.value || '');
+    const adminToast = document.querySelector('[data-admin-toast]');
 
     const hiddenWindows = form.querySelector('input[name="planner_windows"]');
     const cells = Array.from(planner.querySelectorAll('.planner-cell'));
@@ -106,9 +130,17 @@ function setupAvailabilityPlanner() {
     const now = new Date();
     let isDragging = false;
     let dragMode = 'add';
+    let isSubmitting = false;
+    let toastTimer = null;
 
     const slotKey = (date, time) => `${date}|${time}`;
     const isEditableCell = (cell) => !cell.classList.contains('is-past') && !cell.classList.contains('is-booked');
+    const currentEditableActiveSlots = () => new Set(
+        Array.from(activeSlots).filter((key) => {
+            const cell = cellsByKey.get(key);
+            return !!cell && isEditableCell(cell);
+        })
+    );
     const editableSlotKeys = () => {
         const keys = new Set();
         cells.forEach((cell) => {
@@ -167,6 +199,7 @@ function setupAvailabilityPlanner() {
         let total = 0;
         let added = 0;
         let removed = 0;
+        let blocked = 0;
 
         editableKeys.forEach((key) => {
             const isActive = activeSlots.has(key);
@@ -182,12 +215,29 @@ function setupAvailabilityPlanner() {
             }
         });
 
+        cells.forEach((cell) => {
+            if (cell.classList.contains('is-past') || cell.classList.contains('is-booked')) {
+                blocked += 1;
+            }
+        });
+
         if (summaryTotal) summaryTotal.textContent = String(total);
         if (summaryAdded) summaryAdded.textContent = String(added);
         if (summaryRemoved) summaryRemoved.textContent = String(removed);
+        if (summaryBlocked) summaryBlocked.textContent = String(blocked);
 
         const isDirty = added > 0 || removed > 0;
+        form.dataset.hasChanges = isDirty ? 'true' : 'false';
+        if (summaryWrap) {
+            summaryWrap.classList.toggle('is-dirty', isDirty);
+        }
+        if (dirtyStateNode) {
+            dirtyStateNode.textContent = isDirty
+                ? `Máte neuložené změny: +${added} / -${removed}. Uložte planner, aby se propsaly do databáze.`
+                : 'Bez neuložených změn.';
+        }
         if (undoButton) undoButton.disabled = undoStack.length === 0;
+        if (saveButton) saveButton.disabled = !isDirty;
         resetButtons.forEach((button) => {
             button.disabled = !isDirty;
         });
@@ -200,6 +250,135 @@ function setupAvailabilityPlanner() {
         if (dailyStatus) {
             dailyStatus.textContent = message;
         }
+    };
+
+    const setSaveFeedback = (message, type = 'info') => {
+        if (!saveFeedbackNode) {
+            return;
+        }
+        saveFeedbackNode.textContent = String(message || '');
+        saveFeedbackNode.classList.remove('is-success', 'is-error');
+        if (type === 'success') {
+            saveFeedbackNode.classList.add('is-success');
+        } else if (type === 'error') {
+            saveFeedbackNode.classList.add('is-error');
+        }
+    };
+
+    const showToast = (message, type = 'info') => {
+        if (!adminToast) {
+            return;
+        }
+
+        if (toastTimer) {
+            window.clearTimeout(toastTimer);
+            toastTimer = null;
+        }
+
+        adminToast.textContent = String(message || '');
+        adminToast.classList.remove('is-success', 'is-error', 'is-visible');
+        if (type === 'success') {
+            adminToast.classList.add('is-success');
+        } else if (type === 'error') {
+            adminToast.classList.add('is-error');
+        }
+
+        adminToast.hidden = false;
+        window.requestAnimationFrame(() => {
+            adminToast.classList.add('is-visible');
+        });
+
+        toastTimer = window.setTimeout(() => {
+            adminToast.classList.remove('is-visible');
+            toastTimer = window.setTimeout(() => {
+                adminToast.hidden = true;
+                adminToast.classList.remove('is-success', 'is-error');
+                adminToast.textContent = '';
+            }, 180);
+        }, 3600);
+    };
+
+    const escapeHtml = (value) => String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+    const renderAvailabilityRows = (rows) => {
+        if (!listBody) {
+            return;
+        }
+
+        const items = Array.isArray(rows) ? rows : [];
+        if (listSummaryNode) {
+            listSummaryNode.textContent = `Uložená okna dostupnosti (${items.length})`;
+        }
+
+        if (items.length === 0) {
+            listBody.innerHTML = `<tr><td colspan="4">${escapeHtml(plannerMessages.noWindows)}</td></tr>`;
+            return;
+        }
+
+        listBody.innerHTML = items.map((row) => {
+            const id = Number.parseInt(String(row?.id ?? '0'), 10) || 0;
+            const dateLabel = escapeHtml(String(row?.date_label ?? ''));
+            const timeLabel = escapeHtml(String(row?.time_label ?? ''));
+            const note = escapeHtml(String(row?.note ?? ''));
+            const csrfField = csrfToken !== ''
+                ? `<input type="hidden" name="_csrf" value="${escapeHtml(csrfToken)}">`
+                : '';
+
+            return `<tr>
+                <td data-label="Datum">${dateLabel}</td>
+                <td data-label="Časové okno">${timeLabel}</td>
+                <td data-label="Poznámka">${note}</td>
+                <td data-label="Akce">
+                    <form method="post">
+                        ${csrfField}
+                        <input type="hidden" name="window_id" value="${id}">
+                        <button class="button button-danger button-small" type="submit" name="delete_window" value="1">Smazat</button>
+                    </form>
+                </td>
+            </tr>`;
+        }).join('');
+    };
+
+    const removeWindowFromPlanner = (startAt, endAt) => {
+        if (!startAt || !endAt) {
+            return false;
+        }
+
+        let changed = false;
+        let cursor = new Date(String(startAt).replace(' ', 'T'));
+        const end = new Date(String(endAt).replace(' ', 'T'));
+        if (Number.isNaN(cursor.getTime()) || Number.isNaN(end.getTime())) {
+            return false;
+        }
+
+        while (cursor < end) {
+            const date = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+            const time = `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}`;
+            const key = slotKey(date, time);
+            const cell = cellsByKey.get(key);
+
+            if (cell && isEditableCell(cell) && activeSlots.has(key)) {
+                setCellState(cell, false);
+                initialEditableSlots.delete(key);
+                changed = true;
+            }
+
+            cursor = new Date(cursor.getTime() + 30 * 60 * 1000);
+        }
+
+        if (changed) {
+            undoStack.length = 0;
+            serializeWindows();
+            updateSummary();
+            renderDailySlots();
+        }
+
+        return changed;
     };
 
     const syncSelectedDay = (selectedDay) => {
@@ -671,13 +850,195 @@ function setupAvailabilityPlanner() {
     planner.addEventListener('pointerleave', finishDragging);
     document.addEventListener('pointerup', finishDragging);
 
+    window.addEventListener('beforeunload', (event) => {
+        const hasChanges = form.dataset.hasChanges === 'true';
+        if (!hasChanges || isSubmitting) {
+            return;
+        }
+        event.preventDefault();
+        event.returnValue = '';
+    });
+
+    form.addEventListener('submit', async (event) => {
+        const submitter = event.submitter;
+        const isPlannerSave = submitter instanceof HTMLButtonElement && submitter.name === 'save_availability_grid';
+        const canAjaxSave = isPlannerSave && saveEndpoint !== '' && typeof window.fetch === 'function';
+
+        if (!canAjaxSave) {
+            isSubmitting = true;
+            return;
+        }
+
+        event.preventDefault();
+        if (isSubmitting) {
+            return;
+        }
+
+        isSubmitting = true;
+        const originalLabel = submitter.textContent || '';
+        submitter.disabled = true;
+        submitter.textContent = 'Ukládám...';
+        setSaveFeedback(plannerMessages.loadingSave, 'info');
+
+        try {
+            const payload = new FormData(form);
+            payload.set('save_availability_grid', '1');
+
+            const response = await fetch(saveEndpoint, {
+                method: 'POST',
+                body: payload,
+                headers: {
+                    'X-Requested-With': 'fetch',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            });
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (_) {
+                data = null;
+            }
+
+            if (!response.ok || !data || data.success !== true) {
+                const message = String(data && data.message ? data.message : plannerMessages.saveError);
+                setSaveFeedback(message, 'error');
+                updateQuickStatus(message);
+                showToast(message, 'error');
+                return;
+            }
+
+            // After successful save, the current planner state becomes the new baseline.
+            initialEditableSlots = currentEditableActiveSlots();
+            undoStack.length = 0;
+            updateSummary();
+            renderAvailabilityRows(data.availability_rows);
+
+            const savedMessage = String(data.message || plannerMessages.saveSuccess);
+            setSaveFeedback(savedMessage, 'success');
+            updateQuickStatus(savedMessage);
+            showToast(savedMessage, 'success');
+        } catch (_) {
+            const fallbackMessage = `${plannerMessages.saveError} ${plannerMessages.saveAgain}`;
+            setSaveFeedback(fallbackMessage, 'error');
+            updateQuickStatus(fallbackMessage);
+            showToast(fallbackMessage, 'error');
+        } finally {
+            isSubmitting = false;
+            submitter.textContent = originalLabel;
+            updateSummary();
+        }
+    });
+
+    if (listBody) {
+        listBody.addEventListener('submit', async (event) => {
+            const target = event.target;
+            if (!target || !(target instanceof HTMLFormElement)) {
+                return;
+            }
+
+            const deleteButton = target.querySelector('button[name="delete_window"]');
+            const windowIdInput = target.querySelector('input[name="window_id"]');
+            if (!deleteButton || !windowIdInput || deleteEndpoint === '' || typeof window.fetch !== 'function') {
+                return;
+            }
+
+            if (form.dataset.hasChanges === 'true') {
+                event.preventDefault();
+                const conflictMessage = `${plannerMessages.conflict} Pak můžete mazat okna bez reloadu.`;
+                setSaveFeedback(conflictMessage, 'error');
+                updateQuickStatus(conflictMessage);
+                showToast(conflictMessage, 'error');
+                return;
+            }
+
+            event.preventDefault();
+            if (isSubmitting) {
+                return;
+            }
+
+            isSubmitting = true;
+            const originalLabel = deleteButton.textContent || '';
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Mažu...';
+            setSaveFeedback(plannerMessages.deleteLoading, 'info');
+
+            try {
+                const payload = new FormData(target);
+                payload.set('delete_window', '1');
+
+                const response = await fetch(deleteEndpoint, {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'X-Requested-With': 'fetch',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (_) {
+                    data = null;
+                }
+
+                if (!response.ok || !data || data.success !== true) {
+                    const message = String(data && data.message ? data.message : plannerMessages.deleteError);
+                    setSaveFeedback(message, 'error');
+                    updateQuickStatus(message);
+                    showToast(message, 'error');
+                    return;
+                }
+
+                renderAvailabilityRows(data.availability_rows);
+                const deletedWindow = data.deleted_window || {};
+                removeWindowFromPlanner(
+                    String(deletedWindow.start_at || ''),
+                    String(deletedWindow.end_at || '')
+                );
+
+                const successMessage = String(data.message || plannerMessages.deleteSuccess);
+                setSaveFeedback(successMessage, 'success');
+                updateQuickStatus(successMessage);
+                showToast(successMessage, 'success');
+            } catch (_) {
+                const fallbackMessage = `${plannerMessages.deleteError} ${plannerMessages.saveAgain}`;
+                setSaveFeedback(fallbackMessage, 'error');
+                updateQuickStatus(fallbackMessage);
+                showToast(fallbackMessage, 'error');
+            } finally {
+                isSubmitting = false;
+                deleteButton.textContent = originalLabel;
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && String(event.key || '').toLowerCase() === 's') {
+            if (form.dataset.hasChanges !== 'true' || !saveButton) {
+                return;
+            }
+            const target = event.target;
+            if (
+                target instanceof HTMLInputElement
+                || target instanceof HTMLTextAreaElement
+                || target instanceof HTMLSelectElement
+                || (target instanceof HTMLElement && target.isContentEditable)
+            ) {
+                return;
+            }
+            event.preventDefault();
+            form.requestSubmit(saveButton);
+        }
+    });
+
     initializeFromWindows();
     markBookedWindows();
     initialEditableSlots = new Set(
-        Array.from(activeSlots).filter((key) => {
-            const cell = cellsByKey.get(key);
-            return !!cell && isEditableCell(cell);
-        })
+        Array.from(currentEditableActiveSlots())
     );
     serializeWindows();
     updateSummary();
