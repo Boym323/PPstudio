@@ -20,7 +20,7 @@ $message = (string) ($state['message'] ?? 'Požadavek se nepodařilo zpracovat.'
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape(defaultSiteName()) ?> | Rezervace</title>
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
     <div class="page-shell">
@@ -30,8 +30,8 @@ $message = (string) ($state['message'] ?? 'Požadavek se nepodařilo zpracovat.'
                     <p class="eyebrow">Akce rezervace</p>
                     <h1><?= escape($message) ?></h1>
                     <div class="table-actions">
-                        <a class="button button-primary button-small" href="admin.php">Přejít do administrace</a>
-                        <a class="button button-secondary button-small" href="index.php">Otevřít web</a>
+                        <a class="button button-primary button-small" href="/admin.php">Přejít do administrace</a>
+                        <a class="button button-secondary button-small" href="/index.php">Otevřít web</a>
                     </div>
                 </div>
             </div>

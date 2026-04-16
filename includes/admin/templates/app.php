@@ -8,7 +8,7 @@
     $adminCssVersion = (string) (@filemtime(__DIR__ . '/../../../assets/css/admin.css') ?: time());
     $adminJsVersion = (string) (@filemtime(__DIR__ . '/../../../assets/js/main.js') ?: time());
     ?>
-    <link rel="stylesheet" href="assets/css/admin.css?v=<?= escape($adminCssVersion) ?>">
+    <link rel="stylesheet" href="/assets/css/admin.css?v=<?= escape($adminCssVersion) ?>">
 </head>
 <body>
     <div class="admin-page">
@@ -36,6 +36,6 @@
             </div>
         </main>
     </div>
-    <script src="assets/js/main.js?v=<?= escape($adminJsVersion) ?>"></script>
+    <script src="/assets/js/main.js?v=<?= escape($adminJsVersion) ?>"></script>
 </body>
 </html>

@@ -11,6 +11,7 @@ Options -Indexes
     RewriteRule ^(config|includes|database|vendor)/ - [F,L,NC]
     RewriteRule ^var/ - [F,L,NC]
     RewriteRule ^uploads/.*\.(php|phtml|phar)$ - [F,L,NC]
+    RewriteRule ^frontend/(.*)$ /assets/$1 [R=301,L,NC]
     RewriteRule ^admin/?$ admin.php [L,NC]
     RewriteRule ^admin-lite/?$ admin-lite.php [L,NC]
     RewriteRule ^voucher/view/?$ voucher-view.php [L,NC]

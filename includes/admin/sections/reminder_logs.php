@@ -6,7 +6,7 @@
                     </div>
 
                     <article class="admin-card">
-                        <form method="get" action="admin.php" class="admin-form admin-form-grid reservations-filter-form">
+                        <form method="get" action="/admin.php" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="reminder-log">
                             <label>
                                 Vyhledat
@@ -38,7 +38,7 @@
                             </label>
                             <div class="table-actions">
                                 <button class="button button-primary button-small" type="submit">Použít filtr</button>
-                                <a class="button button-secondary button-small" href="admin.php?tab=reminder-log#reminder-log">Reset</a>
+                                <a class="button button-secondary button-small" href="/admin.php?tab=reminder-log#reminder-log">Reset</a>
                             </div>
                         </form>
                         <p class="form-hint">
@@ -127,15 +127,15 @@
                             $reminderPrevPage = max(1, $reminderLogFilters['page'] - 1);
                             $reminderNextPage = min($reminderLogPagination['total_pages'], $reminderLogFilters['page'] + 1);
                             ?>
-                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderPrevPage])) ?>#reminder-log">Předchozí</a>
+                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderPrevPage])) ?>#reminder-log">Předchozí</a>
                             <?php for ($pageNumber = 1; $pageNumber <= $reminderLogPagination['total_pages']; $pageNumber++): ?>
                                 <?php if ($pageNumber === 1 || $pageNumber === $reminderLogPagination['total_pages'] || abs($pageNumber - $reminderLogFilters['page']) <= 1): ?>
-                                    <a class="button button-small <?= $pageNumber === $reminderLogFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $pageNumber])) ?>#reminder-log"><?= escape((string) $pageNumber) ?></a>
+                                    <a class="button button-small <?= $pageNumber === $reminderLogFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $pageNumber])) ?>#reminder-log"><?= escape((string) $pageNumber) ?></a>
                                 <?php elseif ($pageNumber === 2 || $pageNumber === $reminderLogPagination['total_pages'] - 1): ?>
                                     <span class="pagination-separator">…</span>
                                 <?php endif; ?>
                             <?php endfor; ?>
-                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] >= $reminderLogPagination['total_pages'] ? ' is-disabled' : '' ?>" href="admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderNextPage])) ?>#reminder-log">Další</a>
+                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] >= $reminderLogPagination['total_pages'] ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderNextPage])) ?>#reminder-log">Další</a>
                         </div>
                     <?php endif; ?>
                 </section>

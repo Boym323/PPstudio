@@ -52,7 +52,7 @@ if ($isAjaxRequest) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape($pageTitle) ?></title>
-    <link rel="stylesheet" href="frontend/site.css">
+    <link rel="stylesheet" href="/assets/css/site.css">
     <style>
         .reschedule-shell {
             max-width: 980px;

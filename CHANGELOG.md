@@ -11,6 +11,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Admin navigace a formulářové akce byly sjednoceny na absolutní `/admin.php`, `/admin-lite.php` a `/index.php`, aby se odstranily křehké relativní odkazy v adminu i akčních stránkách (commit: `this-commit`)
+- [refactor] Zpřesněny všechny statické odkazy na absolutní `/assets/...` a přidán kompatibilní redirect z `/frontend/...` na nový strom (commit: `this-commit`)
+- [refactor] Veřejné assety byly přesunuty z `frontend/` do `assets/` a odkazy v šablonách i manifestu byly sjednoceny pod `/assets/...` (commit: `this-commit`)
 - [ux] Veřejný ceník a rezervační formulář nově při výpadku API ukazují hezčí fallback s kontaktními CTA na telefon, e-mail a Instagram DM místo strohého chybového stavu (commit: `this-commit`)
 - [ux] Fallback pro ceník a rezervace doplněn o přímý odkaz na Instagram profil vedle DM varianty (commit: `this-commit`)
 - [fix] Instagram kontakt má nově ENV fallback `PPSTUDIO_CONTACT_INSTAGRAM_URL`, takže zůstane dostupný i při úplném výpadku DB nastavení (commit: `this-commit`)

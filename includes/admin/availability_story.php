@@ -164,7 +164,7 @@ function ppstudioStoryFindFont(bool $bold = false): ?string
 {
     $candidates = $bold
         ? [
-            __DIR__ . '/../../frontend/fonts/ppstudio-story-bold.ttf',
+            __DIR__ . '/../../assets/fonts/ppstudio-story-bold.ttf',
             '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
             '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',
             '/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf',
@@ -173,7 +173,7 @@ function ppstudioStoryFindFont(bool $bold = false): ?string
             '/Library/Fonts/Arial Bold.ttf',
         ]
         : [
-            __DIR__ . '/../../frontend/fonts/ppstudio-story-regular.ttf',
+            __DIR__ . '/../../assets/fonts/ppstudio-story-regular.ttf',
             '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
             '/usr/share/fonts/dejavu/DejaVuSans.ttf',
             '/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',

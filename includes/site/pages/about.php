@@ -10,7 +10,7 @@ $certificateItems = loadCertificateUploads(dirname(__DIR__, 3) . '/uploads', '/u
             <div class="team-member">
                 <div class="about-profile-head">
                     <div class="team-member-image-veru">
-                        <img src="/frontend/Paji.jpeg" alt="Pavlína Pomykalová">
+                        <img src="/assets/images/Paji.jpeg" alt="Pavlína Pomykalová">
                     </div>
                     <div class="about-profile-meta">
                         <h3>Pavlína Pomykalová</h3>

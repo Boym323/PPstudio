@@ -61,7 +61,7 @@ Doporučený cron (např. 1× za hodinu):
 - `includes/` PHP logika (web + admin)
 - `api/` API endpointy
 - `database/` SQL + maintenance runner
-- `frontend/` statické assety (CSS/JS/fonts/obrázky)
+- `assets/` statické assety (CSS/JS/fonts/obrázky/favikony)
 - `vendor/` přibalené knihovny (např. PHPMailer)
 - `var/` runtime úložiště (logy, security, backupy) – necommitovat
 - `uploads/` nahrané soubory – necommitovat

@@ -1,7 +1,7 @@
 <section class="hero" id="home">
     <div class="hero-content">
         <div class="hero-text hero-text-left">
-            <img src="/frontend/LOGO1.PNG" alt="PP Studio logo" class="hero-logo" loading="eager" decoding="async">
+            <img src="/assets/images/LOGO1.PNG" alt="PP Studio logo" class="hero-logo" loading="eager" decoding="async">
             <h1>PP <span>Studio</span></h1>
             <p>Vytvořila jsem pro vás prostor, kde se čas na chvíli zastaví. Dopřejte si profesionální péči, harmonickou atmosféru a odejděte odpočatá a sebevědomá.</p>
             <div class="hero-benefits">
@@ -16,7 +16,7 @@
             <p class="hero-cta-note">Rychlé online objednání, potvrzení termínu e-mailem.</p>
         </div>
         <div class="hero-image">
-            <img src="/frontend/Paji.jpeg" alt="PP Studio – portrét kosmetičky" fetchpriority="high" loading="eager" decoding="async">
+            <img src="/assets/images/Paji.jpeg" alt="PP Studio – portrét kosmetičky" fetchpriority="high" loading="eager" decoding="async">
         </div>
     </div>
 </section>

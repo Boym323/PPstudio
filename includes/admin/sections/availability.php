@@ -32,9 +32,9 @@
                                 <strong><?= escape($plannerWeekLabel) ?></strong>
                             </div>
                             <div class="table-actions availability-week-actions">
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
                             </div>
                         </div>
                         <form method="post" class="admin-form" data-availability-planner-form>

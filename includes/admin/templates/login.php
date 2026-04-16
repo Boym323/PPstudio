@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Přihlášení do administrace | <?= escape(defaultSiteName()) ?></title>
     <?php $adminCssVersion = (string) (@filemtime(__DIR__ . '/../../../assets/css/admin.css') ?: time()); ?>
-    <link rel="stylesheet" href="assets/css/admin.css?v=<?= escape($adminCssVersion) ?>">
+    <link rel="stylesheet" href="/assets/css/admin.css?v=<?= escape($adminCssVersion) ?>">
 </head>
 <body>
     <div class="page-shell">

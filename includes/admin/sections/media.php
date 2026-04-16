@@ -27,7 +27,7 @@
                                 <p class="eyebrow">Profilová fotka</p>
                                 <h2>Hlavní fotografie do sekce O mně</h2>
                                 <p class="form-hint">Zde nahrajte hlavní portrétní fotku. U profilové fotky se vždy ponechá jen poslední uložený obrázek.</p>
-                                <form method="post" action="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
+                                <form method="post" action="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
                                     <?= csrfInputField() ?>
                                     <input type="hidden" name="category" value="profile">
                                     <input type="hidden" name="sort_order" value="0">
@@ -76,7 +76,7 @@
                                 <p class="eyebrow">Galerie salonu</p>
                                 <h2>Přidat nový snímek do galerie</h2>
                                 <p class="form-hint">Galerie se zobrazuje na veřejném webu v části Prostory. Nadpis a podnadpis jsou volitelné, pořadí určuje výsledné řazení.</p>
-                                <form method="post" action="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
+                                <form method="post" action="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
                                     <?= csrfInputField() ?>
                                     <input type="hidden" name="category" value="gallery">
                                     <input type="hidden" name="media_section" value="gallery">
@@ -131,7 +131,7 @@
                                 <p class="eyebrow">Certifikáty</p>
                                 <h2>Nahrát nový certifikát</h2>
                                 <p class="form-hint">Certifikáty se zobrazují v sekci O mně. Po nahrání doporučuji hned vyplnit název, který se ukáže na webu.</p>
-                                <form method="post" action="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
+                                <form method="post" action="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=media#media" class="admin-form media-upload-form" enctype="multipart/form-data">
                                     <?= csrfInputField() ?>
                                     <input type="hidden" name="media_section" value="certificates">
                                     <label><span>Soubor certifikátu</span><input type="file" name="certificate_file" accept=".jpg,.jpeg,.png,.webp,.gif,.pdf" required></label>

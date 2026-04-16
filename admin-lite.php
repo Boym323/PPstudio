@@ -259,7 +259,7 @@ $adminTab = trim((string) ($_GET['tab'] ?? 'dashboard'));
 if (! in_array($adminTab, $allowedAdminTabs, true)) {
     $adminTab = 'dashboard';
 }
-$adminBasePath = 'admin-lite.php';
+$adminBasePath = '/admin-lite.php';
 $studioSettingFields = [
     'site_name' => 'Název studia',
     'site_url' => 'URL webu',

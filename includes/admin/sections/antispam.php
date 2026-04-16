@@ -6,7 +6,7 @@
                     </div>
 
                     <article class="admin-card">
-                        <form method="get" action="admin.php" class="admin-form admin-form-grid reservations-filter-form">
+                        <form method="get" action="/admin.php" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="antispam-log">
                             <label>
                                 Vyhledat
@@ -30,7 +30,7 @@
                             </label>
                             <div class="table-actions">
                                 <button class="button button-primary button-small" type="submit">Použít filtr</button>
-                                <a class="button button-secondary button-small" href="admin.php?tab=antispam-log#antispam-log">Reset</a>
+                                <a class="button button-secondary button-small" href="/admin.php?tab=antispam-log#antispam-log">Reset</a>
                             </div>
                         </form>
                         <p class="form-hint">
@@ -135,15 +135,15 @@
                             $antispamPrevPage = max(1, $antispamFilters['page'] - 1);
                             $antispamNextPage = min($antispamPagination['total_pages'], $antispamFilters['page'] + 1);
                             ?>
-                            <a class="button button-secondary button-small<?= $antispamFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamPrevPage])) ?>#antispam-log">Předchozí</a>
+                            <a class="button button-secondary button-small<?= $antispamFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamPrevPage])) ?>#antispam-log">Předchozí</a>
                             <?php for ($pageNumber = 1; $pageNumber <= $antispamPagination['total_pages']; $pageNumber++): ?>
                                 <?php if ($pageNumber === 1 || $pageNumber === $antispamPagination['total_pages'] || abs($pageNumber - $antispamFilters['page']) <= 1): ?>
-                                    <a class="button button-small <?= $pageNumber === $antispamFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $pageNumber])) ?>#antispam-log"><?= escape((string) $pageNumber) ?></a>
+                                    <a class="button button-small <?= $pageNumber === $antispamFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="/admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $pageNumber])) ?>#antispam-log"><?= escape((string) $pageNumber) ?></a>
                                 <?php elseif ($pageNumber === 2 || $pageNumber === $antispamPagination['total_pages'] - 1): ?>
                                     <span class="pagination-separator">…</span>
                                 <?php endif; ?>
                             <?php endfor; ?>
-                            <a class="button button-secondary button-small<?= $antispamFilters['page'] >= $antispamPagination['total_pages'] ? ' is-disabled' : '' ?>" href="admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamNextPage])) ?>#antispam-log">Další</a>
+                            <a class="button button-secondary button-small<?= $antispamFilters['page'] >= $antispamPagination['total_pages'] ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamNextPage])) ?>#antispam-log">Další</a>
                         </div>
                     <?php endif; ?>
                 </section>

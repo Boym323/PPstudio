@@ -104,7 +104,7 @@
                     <div class="admin-card full-span service-filters-card">
                         <p class="eyebrow">Přehled procedur</p>
                         <h2>Filtrovat a spravovat služby</h2>
-                        <form method="get" action="<?= escape($adminBasePath ?? 'admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
+                        <form method="get" action="<?= escape($adminBasePath ?? '/admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="sluzby-admin">
                             <label>
                                 <span>Vyhledat</span>
@@ -128,7 +128,7 @@
                             </label>
                             <div class="table-actions full-span">
                                 <button class="button button-primary button-small" type="submit">Použít filtr</button>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=sluzby-admin#sluzby-admin">Reset</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=sluzby-admin#sluzby-admin">Reset</a>
                             </div>
                         </form>
                         <p class="form-hint">Zobrazeno procedur: <strong><?= escape((string) count($serviceRows)) ?></strong>.</p>
@@ -169,7 +169,7 @@
                                             <td data-label="Akce" class="service-actions-cell">
                                                 <div class="table-actions">
                                                     <button class="button button-secondary button-small" type="button" data-service-detail-toggle data-open-label="Detail" data-close-label="Skrýt detail" aria-expanded="false">Detail</button>
-                                                    <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($serviceBaseParams + ['edit_service' => (string) $row['id']])) ?>#sluzby-admin">Upravit</a>
+                                                    <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?<?= escape(http_build_query($serviceBaseParams + ['edit_service' => (string) $row['id']])) ?>#sluzby-admin">Upravit</a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -192,7 +192,7 @@
 	                                                            <div><strong>Popis</strong><span><?= escape($serviceDescription !== '' ? $serviceDescription : 'Bez popisu') ?></span></div>
 	                                                        </div>
                                                         <div class="table-actions service-detail-actions">
-                                                            <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($serviceBaseParams + ['edit_service' => (string) $row['id']])) ?>#sluzby-admin">Upravit proceduru</a>
+                                                            <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?<?= escape(http_build_query($serviceBaseParams + ['edit_service' => (string) $row['id']])) ?>#sluzby-admin">Upravit proceduru</a>
                                                             <form method="post">
                                                                 <?= csrfInputField() ?>
                                                                 <input type="hidden" name="service_id" value="<?= escape((string) $row['id']) ?>">
@@ -347,7 +347,7 @@
                                             </td>
                                             <td data-label="Akce" class="service-actions-cell">
                                                 <div class="table-actions">
-                                                    <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=sluzby-admin&amp;edit_category=<?= escape((string) ($categoryRow['id'] ?? '')) ?>#kategorie-admin">Upravit</a>
+                                                    <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=sluzby-admin&amp;edit_category=<?= escape((string) ($categoryRow['id'] ?? '')) ?>#kategorie-admin">Upravit</a>
                                                     <form method="post">
                                                         <?= csrfInputField() ?>
                                                         <input type="hidden" name="category_id" value="<?= escape((string) ($categoryRow['id'] ?? '')) ?>">

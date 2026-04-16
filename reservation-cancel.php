@@ -29,7 +29,7 @@ $showConfirmForm = (bool) ($state['show_confirm_form'] ?? false);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape($pageTitle) ?></title>
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
     <div class="page-shell">
@@ -48,12 +48,12 @@ $showConfirmForm = (bool) ($state['show_confirm_form'] ?? false);
                             <input type="hidden" name="sig" value="<?= escape($signature) ?>">
                             <div class="table-actions">
                                 <button class="button button-danger button-small" type="submit">Ano, zrušit rezervaci</button>
-                                <a class="button button-secondary button-small" href="index.php#rezervace">Ne, ponechat rezervaci</a>
+                                <a class="button button-secondary button-small" href="/index.php#rezervace">Ne, ponechat rezervaci</a>
                             </div>
                         </form>
                     <?php else: ?>
                         <div class="table-actions" style="margin-top: 1rem;">
-                            <a class="button button-primary button-small" href="index.php#rezervace">Zpět na web</a>
+                            <a class="button button-primary button-small" href="/index.php#rezervace">Zpět na web</a>
                         </div>
                     <?php endif; ?>
                 </div>

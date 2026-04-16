@@ -10,19 +10,19 @@
                         <div class="settings-section-tabs" role="tablist" aria-label="Podsekce nastavení">
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'studio' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=nastaveni&amp;settings_section=studio#nastaveni"
+                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=studio#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'studio' ? 'true' : 'false' ?>"
                             >Studio a kontakt</a>
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'recenze' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=nastaveni&amp;settings_section=recenze#nastaveni"
+                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=recenze#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'recenze' ? 'true' : 'false' ?>"
                             >Recenze a sociální sítě</a>
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'email' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=nastaveni&amp;settings_section=email#nastaveni"
+                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=email#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'email' ? 'true' : 'false' ?>"
                             >E-mailové notifikace</a>

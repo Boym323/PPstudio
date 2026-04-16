@@ -337,7 +337,7 @@ if ($adminTab === 'emaily') {
 if (! in_array($adminTab, $allowedAdminTabs, true)) {
     $adminTab = 'dashboard';
 }
-$adminBasePath = 'admin.php';
+$adminBasePath = '/admin.php';
 $settingsSection = (string) ($_GET['settings_section'] ?? 'studio');
 if (! in_array($settingsSection, ['studio', 'recenze', 'email'], true)) {
     $settingsSection = 'studio';

@@ -13,7 +13,7 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <form method="get" action="<?= escape($adminBasePath ?? 'admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
+                        <form method="get" action="<?= escape($adminBasePath ?? '/admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="rezervace-list">
                             <label>
                                 <span>Hledat (jméno / e-mail / telefon)</span>
@@ -45,7 +45,7 @@
                             </label>
                             <div class="table-actions full-span">
                                 <button class="button button-primary button-small" type="submit">Použít filtr</button>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? 'admin.php') ?>?tab=rezervace-list#rezervace-list">Reset</a>
+                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=rezervace-list#rezervace-list">Reset</a>
                             </div>
                         </form>
                         <p class="form-hint">Nalezeno rezervací: <strong data-reservation-total><?= escape((string) $reservationPagination['total']) ?></strong>. Stránka <?= escape((string) $reservationFilters['page']) ?> z <?= escape((string) $reservationPagination['total_pages']) ?>.</p>
@@ -223,15 +223,15 @@
                                 $prevPage = max(1, $reservationFilters['page'] - 1);
                                 $nextPage = min($reservationPagination['total_pages'], $reservationFilters['page'] + 1);
                                 ?>
-                                <a class="button button-secondary button-small<?= $reservationFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $prevPage])) ?>#rezervace-list">Předchozí</a>
+                                <a class="button button-secondary button-small<?= $reservationFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="<?= escape($adminBasePath ?? '/admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $prevPage])) ?>#rezervace-list">Předchozí</a>
                                 <?php for ($pageNumber = 1; $pageNumber <= $reservationPagination['total_pages']; $pageNumber++): ?>
                                     <?php if ($pageNumber === 1 || $pageNumber === $reservationPagination['total_pages'] || abs($pageNumber - $reservationFilters['page']) <= 1): ?>
-                                        <a class="button button-small <?= $pageNumber === $reservationFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $pageNumber])) ?>#rezervace-list"><?= escape((string) $pageNumber) ?></a>
+                                        <a class="button button-small <?= $pageNumber === $reservationFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="<?= escape($adminBasePath ?? '/admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $pageNumber])) ?>#rezervace-list"><?= escape((string) $pageNumber) ?></a>
                                     <?php elseif ($pageNumber === 2 || $pageNumber === $reservationPagination['total_pages'] - 1): ?>
                                         <span class="pagination-separator">…</span>
                                     <?php endif; ?>
                                 <?php endfor; ?>
-                                <a class="button button-secondary button-small<?= $reservationFilters['page'] >= $reservationPagination['total_pages'] ? ' is-disabled' : '' ?>" href="<?= escape($adminBasePath ?? 'admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $nextPage])) ?>#rezervace-list">Další</a>
+                                <a class="button button-secondary button-small<?= $reservationFilters['page'] >= $reservationPagination['total_pages'] ? ' is-disabled' : '' ?>" href="<?= escape($adminBasePath ?? '/admin.php') ?>?<?= escape(http_build_query($baseParams + ['reservation_page' => (string) $nextPage])) ?>#rezervace-list">Další</a>
                             </div>
                         <?php endif; ?>
                     </div>
