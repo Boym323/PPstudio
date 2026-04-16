@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-16
 
+- [refactor] Admin read/AJAX flow modulu dostupnosti byl přesunut do OOP tříd `AdminAvailabilityReadService` a `AdminAvailabilityApiController`; původní loadery i endpointy teď fungují jako tenké adaptéry se zachovanými URL a payloady (commit: `this-commit`)
+- [refactor] `includes/availability.php` už jen deleguje na novou OOP skládací vrstvu `AvailabilityModule`, která sdílí repozitáře a služby pro dostupnost/rezervace při zachování původních wrapper funkcí a call-site kompatibility (commit: `this-commit`)
 - [refactor] Admin šablona modulu služeb už neskládá cenovou historii, aktivní podsekci ani odvozená data procedur lokálně; view-model přípravu převzala OOP služba `AdminServiceCatalogService` (commit: `this-commit`)
 - [refactor] Admin čtecí část modulu služeb nově běží přes OOP vrstvu `AdminServiceCatalogService` a rozšířený `ServiceRepository`; procedurální loadery formulářů a seznamů zůstaly jen jako tenké adaptéry pro admin a admin-lite (commit: `this-commit`)
 - [refactor] Veřejná stránka `Služby` nově čerpá aktivní procedury z OOP vrstvy přes `PublicServiceCatalogService` a `ServiceRepository` místo statických hardcoded karet (commit: `this-commit`)

@@ -1,29 +1,31 @@
 <?php
 declare(strict_types=1);
 
-use PPStudio\Repository\AvailabilityRepository;
-use PPStudio\Repository\ReservationRepository;
-use PPStudio\Repository\ServiceRepository;
+use PPStudio\Service\AvailabilityModule;
 use PPStudio\Service\AvailabilityService;
 use PPStudio\Service\ReservationService;
 
+function ppstudioAvailabilityModule(mysqli $connection): AvailabilityModule
+{
+    static $modules = [];
+
+    $connectionId = spl_object_id($connection);
+
+    if (! isset($modules[$connectionId])) {
+        $modules[$connectionId] = new AvailabilityModule($connection);
+    }
+
+    return $modules[$connectionId];
+}
+
 function ppstudioAvailabilityService(mysqli $connection): AvailabilityService
 {
-    $serviceRepository = new ServiceRepository($connection);
-    $availabilityRepository = new AvailabilityRepository($connection);
-    $reservationRepository = new ReservationRepository($connection);
-
-    return new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
+    return ppstudioAvailabilityModule($connection)->availabilityService();
 }
 
 function ppstudioReservationService(mysqli $connection): ReservationService
 {
-    $serviceRepository = new ServiceRepository($connection);
-    $availabilityRepository = new AvailabilityRepository($connection);
-    $reservationRepository = new ReservationRepository($connection);
-    $availabilityService = new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
-
-    return new ReservationService($connection, $serviceRepository, $availabilityRepository, $reservationRepository, $availabilityService);
+    return ppstudioAvailabilityModule($connection)->reservationService();
 }
 
 function getServiceById(mysqli $connection, int $serviceId): ?array
