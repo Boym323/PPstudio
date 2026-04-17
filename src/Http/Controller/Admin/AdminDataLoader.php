@@ -156,6 +156,11 @@ final class AdminDataLoader
         return $this->loadVouchers($state, $connection);
     }
 
+    public function loadPageState(AdminPageState $state, \mysqli $connection): AdminPageState
+    {
+        return $state->merge($this->load($state->toArray(), $connection));
+    }
+
     /**
      * @param array<string, mixed> $state
      * @return array<string, mixed>

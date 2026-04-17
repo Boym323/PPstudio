@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Legacy wrapper `includes/admin/actions/load_data.php` už neskládá admin data přes `get_defined_vars()` + `extract()`; nová dvojice `AdminPageState` a `AdminLegacyLoadDataStateFactory` předává do `AdminDataLoader` jeden explicitní stavový objekt pro bezpečnější inkrementální migraci admin load flow (commit: `this-commit`)
 - [refactor] Konfigurace se přesunula do OOP vrstvy `PPStudio\Config\{AppConfig,EnvLoader,SiteDefaultsProvider}`; `config/app.php` teď jen bootstrappuje `.env` deterministicky v pevném pořadí a zachovává BC helpery pro starší call-sitey i `SITE_SETTING_KEYS` (commit: `this-commit`)
 - [refactor] `includes/media.php` se ztenčilo na čisté BC wrappery a veškeré sestavování media/certificate/upload service graphu převzala nová OOP fasáda `PPStudio\Service\MediaFacade`; chování helperů i výstupy zůstaly stejné, ale legacy include už neduplikuje konstrukci služeb (commit: `this-commit`)
 - [refactor] `includes/bootstrap.php` je nově jen tenký entrypoint; fallback autoload a registraci legacy security helperů převzaly OOP třídy `PPStudio\Bootstrap\ProjectAutoloader` a `PPStudio\Bootstrap\LegacyBootstrap`, takže bootstrap logika už neleží inline v include souboru (commit: `this-commit`)
