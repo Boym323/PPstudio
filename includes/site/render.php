@@ -7,5 +7,5 @@ require_once __DIR__ . '/../functions.php';
 
 function renderSitePage(array $config): never
 {
-    (new \PPStudio\Http\View\SitePageRenderer())->render($config);
+    (new \PPStudio\Http\Controller\SitePageApplication())->handle($config);
 }

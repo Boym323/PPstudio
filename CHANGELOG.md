@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Veřejný site render má nově OOP application vrstvu `SitePageApplication` a stránka `Služby` získává data přes `SiteServicesPageContextBuilder`; `includes/site/render.php` zůstal jen jako BC wrapper a URL i výstup webu se nemění (commit: `this-commit`)
 - [refactor] `sitemap.php` je nově tenký entrypoint; načítání `site_url`, fallback na DB/host a XML render se přesunuly do `SitemapController`, `SitemapBuilder` a `SitemapRenderer` při zachování stejných URL, `lastmod` i `application/xml` výstupu (commit: `this-commit`)
 - [refactor] `reservations-feed.php` je nově tenký entrypoint a ICS feed orchestrace běží přes `ReservationsFeedApplication` + request/auth/data-loader/responder třídy v `src/`, při zachování token checku, HTTP kódů i text/calendar výstupu (commit: `this-commit`)
 - [refactor] Admin POST orchestrace nově běží nad explicitním `AdminPostActionRequest`; legacy `includes/admin/actions/post_actions.php` i full/lite admin už čtou `$_POST`/`$_FILES`/`$_SESSION`/`$_SERVER` jen na vstupu a availability větev se oddělila do samostatného OOP handleru bez změny názvů akcí (commit: `this-commit`)

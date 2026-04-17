@@ -1,11 +1,7 @@
 <?php
 
-use PPStudio\Service\PublicServiceCatalogService;
-
-$publicServiceCatalogService = PublicServiceCatalogService::create();
-$serviceCards = $publicServiceCatalogService instanceof PublicServiceCatalogService
-    ? $publicServiceCatalogService->loadCards()
-    : [];
+$servicesView = (new \PPStudio\Http\View\SiteServicesPageContextBuilder())->build();
+$serviceCards = $servicesView['serviceCards'];
 ?>
 <section class="services services-primary" id="services">
     <div class="container">
