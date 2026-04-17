@@ -12,15 +12,14 @@ final class AdminReservationApiController
     /**
      * @param array<string, mixed> $server
      * @param array<string, mixed> $post
-     * @param array<string, mixed> $session
      * @param array<string, mixed> $emailConfig
      */
-    public static function handleMutationRequest(array $server, array $post, array $session, array $emailConfig): never
+    public static function handleMutationRequest(array $server, array $post, array $emailConfig): never
     {
         \startSecureSession();
         self::sendJsonHeaders();
 
-        if (! self::isAuthenticated($session)) {
+        if (! self::isAuthenticated($_SESSION)) {
             self::respondWithoutConnection([
                 'success' => false,
                 'error' => 'Nejste přihlášeni do administrace.',
@@ -53,7 +52,7 @@ final class AdminReservationApiController
         $mutationService = (new AdminReservationModule($connection, $emailConfig, $siteSettings))->mutationService();
         $result = isset($post['delete_reservation'])
             ? $mutationService->deleteReservation($post)
-            : $mutationService->updateReservation($post, $session);
+            : $mutationService->updateReservation($post, $_SESSION);
 
         $httpCode = (int) ($result['http_code'] ?? (($result['success'] ?? false) ? 200 : 500));
         $payload = [

@@ -9,4 +9,4 @@ require __DIR__ . '/includes/settings.php';
 
 
 \PPStudio\Http\Controller\VoucherAdminDownloadApplication::create()
-    ->handle($_GET, $_SESSION);
+    ->handle($_GET);

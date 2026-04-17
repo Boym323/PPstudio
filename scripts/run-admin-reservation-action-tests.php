@@ -45,9 +45,6 @@ function childMain(): never
         session_id($sessionId);
     }
 
-    session_start();
-    $_SESSION['ppstudio_admin_authenticated'] = true;
-
     ob_start();
     register_shutdown_function(static function (): void {
         $body = ob_get_clean();
@@ -144,23 +141,55 @@ try {
     $_SESSION['ppstudio_admin_authenticated'] = true;
     session_write_close();
 
-    $response = captureChildResponse(
-        [
-            'REQUEST_METHOD' => 'POST',
-            'HTTP_HOST' => 'admin-tests.local',
-            'HTTP_ACCEPT' => 'application/json',
-        ],
+    $baseServer = [
+        'REQUEST_METHOD' => 'POST',
+        'HTTP_HOST' => 'admin-tests.local',
+        'HTTP_ACCEPT' => 'application/json',
+    ];
+    $baseEnv = [
+        'PPSTUDIO_SECURITY_STORAGE' => $storageDir,
+        'PPSTUDIO_ACTION_SECRET' => $actionSecret,
+        'HTTP_HOST' => 'admin-tests.local',
+        'HTTPS' => 'off',
+    ];
+
+    $unauthorizedResponse = captureChildResponse(
+        $baseServer,
         [
             '_csrf' => $csrfToken,
             'delete_reservation' => '1',
             'reservation_id' => $reservationId,
         ],
+        $baseEnv
+    );
+
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 401, (int) ($unauthorizedResponse['code'] ?? 0), 'api/admin/reservation-action ma bez session vratit HTTP 401.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Nejste přihlášeni do administrace.', (string) ($unauthorizedResponse['body'] ?? ''), 'api/admin/reservation-action ma vratit auth chybu.');
+
+    $csrfErrorResponse = captureChildResponse(
+        $baseServer,
         [
-            'PPSTUDIO_SECURITY_STORAGE' => $storageDir,
-            'PPSTUDIO_ACTION_SECRET' => $actionSecret,
+            '_csrf' => 'invalid-token',
+            'delete_reservation' => '1',
+            'reservation_id' => $reservationId,
+        ],
+        $baseEnv + [
             'PPSTUDIO_ADMIN_RESERVATION_ACTION_SESSION_ID' => $sessionId,
-            'HTTP_HOST' => 'admin-tests.local',
-            'HTTPS' => 'off',
+        ]
+    );
+
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 419, (int) ($csrfErrorResponse['code'] ?? 0), 'api/admin/reservation-action ma s neplatnym CSRF vratit HTTP 419.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Platnost formuláře vypršela. Obnovte stránku.', (string) ($csrfErrorResponse['body'] ?? ''), 'api/admin/reservation-action ma vratit CSRF chybu.');
+
+    $response = captureChildResponse(
+        $baseServer,
+        [
+            '_csrf' => $csrfToken,
+            'delete_reservation' => '1',
+            'reservation_id' => $reservationId,
+        ],
+        $baseEnv + [
+            'PPSTUDIO_ADMIN_RESERVATION_ACTION_SESSION_ID' => $sessionId,
         ]
     );
 

@@ -11,6 +11,13 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [test] Přidán souhrnný CLI runner `scripts/run-admin-usecase-regression-tests.php`, který spouští oba nové admin use-case regression testy pro rezervace i vouchery jedním příkazem a zastaví se na první chybě (commit: `this-commit`)
+- [test] Přidán CLI regression test `scripts/run-admin-voucher-usecase-tests.php`, který přímo nad voucher use-casy ověřuje batch generování, odmítnutí expirovaného/stornovaného poukazu, čerpání nad zůstatek a e-mailing při neaktivním poukazu nebo vypnutém maileru (commit: `this-commit`)
+- [test] Přidán CLI regression test `scripts/run-admin-reservation-usecase-tests.php`, který přímo nad reservation use-casy ověřuje potvrzení, zrušení, přeplánování, blokaci přesunu zrušené/dokončené rezervace a ruční vytvoření včetně kolize slotu (commit: `this-commit`)
+- [fix] `admin-voucher-dl.php` po OOP přesunu znovu vyhodnocuje admin session až po startu session služby, takže přihlášený admin u DL tisku poukazu nespadne chybně na 401 (commit: `this-commit`)
+- [test] CLI smoke test `scripts/run-admin-voucher-dl-tests.php` nově ověřuje i `401` bez session vedle úspěšného renderu DL poukazu, takže hlídá autentizační hranici admin tiskového endpointu (commit: `this-commit`)
+- [fix] `api/admin/reservation-action.php` po OOP přesunu znovu korektně čte admin session až po `startSecureSession()`, takže autentizované AJAX mutace rezervací nepadnou chybně na 401 a update flow dostává aktuální session metadata (commit: `this-commit`)
+- [test] CLI smoke test `scripts/run-admin-reservation-action-tests.php` nově ověřuje i negativní větve `401` bez session a `419` při neplatném CSRF, takže lépe hlídá kompatibilitu admin reservation AJAX endpointu (commit: `this-commit`)
 - [test] Přidán CLI smoke test `scripts/run-admin-voucher-post-tests.php`, který přes admin POST include ověřuje vytvoření poukazu i jeho částečné čerpání včetně zápisu transakce do DB (commit: `this-commit`)
 - [refactor] Voucher write vrstva už neobsahuje přímé SQL v admin use-case třídách; vytváření, dávkové generování, načtení pro odeslání, označení e-mailu a čerpání se přesunulo do `VoucherRepository`, zatímco use-case vrstvy řeší už hlavně validaci a workflow (commit: `this-commit`)
 - [refactor] Voucher read vrstva už nemá SQL v `AdminVoucherDataLoader`; načtení admin seznamu, čerpání, lookup rezervací a výběru rezervací se přesunulo do `VoucherRepository`, zatímco loader zůstal jen orchestrace nad repository výsledky (commit: `this-commit`)

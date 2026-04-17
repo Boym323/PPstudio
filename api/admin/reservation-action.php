@@ -14,6 +14,5 @@ $emailConfig = require __DIR__ . '/../../config/email.php';
 \PPStudio\Http\Controller\Admin\AdminReservationApiController::handleMutationRequest(
     $_SERVER,
     $_POST,
-    $_SESSION,
     $emailConfig
 );

@@ -31,12 +31,18 @@ Detailnější dokumentace:
    - `php scripts/run-reservation-public-flow-tests.php`
 6. Pro smoke test admin reservation AJAX mutace:
    - `php scripts/run-admin-reservation-action-tests.php`
-7. Pro public flow smoke testy voucher detailu a ověření poukazu:
+7. Pro smoke/integration test admin reservation use-case větví:
+   - `php scripts/run-admin-reservation-usecase-tests.php`
+8. Pro souhrnný smoke/integration runner pro oba admin use-case testy:
+   - `php scripts/run-admin-usecase-regression-tests.php`
+9. Pro public flow smoke testy voucher detailu a ověření poukazu:
    - `php scripts/run-voucher-public-flow-tests.php`
-8. Pro samostatný smoke test admin DL tisku poukazu:
+10. Pro samostatný smoke test admin DL tisku poukazu:
    - `php scripts/run-admin-voucher-dl-tests.php`
-9. Pro admin voucher POST smoke test vytvoření a čerpání poukazu:
+11. Pro admin voucher POST smoke test vytvoření a čerpání poukazu:
    - `php scripts/run-admin-voucher-post-tests.php`
+12. Pro smoke test admin voucher use-case větví:
+   - `php scripts/run-admin-voucher-usecase-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 

@@ -39,8 +39,10 @@ function childMain(): never
     $_GET = $get;
     $_REQUEST = array_merge($_GET, $_POST);
 
-    session_start();
-    $_SESSION['ppstudio_admin_authenticated'] = true;
+    $sessionId = (string) getenv('PPSTUDIO_ADMIN_VOUCHER_DL_SESSION_ID');
+    if ($sessionId !== '') {
+        session_id($sessionId);
+    }
 
     ob_start();
     register_shutdown_function(static function (): void {
@@ -100,21 +102,40 @@ $statement->close();
 try {
     startSecureSession();
     session_unset();
+    $_SESSION['ppstudio_admin_authenticated'] = true;
+    $sessionId = session_id();
+    session_write_close();
 
-    $response = captureChildResponse(
-        [
-            'REQUEST_METHOD' => 'GET',
-            'HTTP_HOST' => 'voucher-tests.local',
-        ],
+    $baseServer = [
+        'REQUEST_METHOD' => 'GET',
+        'HTTP_HOST' => 'voucher-tests.local',
+    ];
+    $baseEnv = [
+        'PPSTUDIO_SECURITY_STORAGE' => $storageDir,
+        'PPSTUDIO_VOUCHER_VERIFY_SECRET' => $voucherVerifySecret,
+        'PPSTUDIO_ACTION_SECRET' => $voucherVerifySecret,
+        'HTTP_HOST' => 'voucher-tests.local',
+        'HTTPS' => 'off',
+    ];
+
+    $unauthorizedResponse = captureChildResponse(
+        $baseServer,
         [
             'id' => $voucherId,
         ],
+        $baseEnv
+    );
+
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 401, (int) ($unauthorizedResponse['code'] ?? 0), 'admin-voucher-dl ma bez session vratit HTTP 401.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Nejste přihlášeni.', (string) ($unauthorizedResponse['body'] ?? ''), 'admin-voucher-dl ma vratit auth chybu.');
+
+    $response = captureChildResponse(
+        $baseServer,
         [
-            'PPSTUDIO_SECURITY_STORAGE' => $storageDir,
-            'PPSTUDIO_VOUCHER_VERIFY_SECRET' => $voucherVerifySecret,
-            'PPSTUDIO_ACTION_SECRET' => $voucherVerifySecret,
-            'HTTP_HOST' => 'voucher-tests.local',
-            'HTTPS' => 'off',
+            'id' => $voucherId,
+        ],
+        $baseEnv + [
+            'PPSTUDIO_ADMIN_VOUCHER_DL_SESSION_ID' => $sessionId,
         ]
     );
 

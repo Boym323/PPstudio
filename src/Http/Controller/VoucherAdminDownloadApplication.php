@@ -27,13 +27,12 @@ final class VoucherAdminDownloadApplication
 
     /**
      * @param array<string, mixed> $query
-     * @param array<string, mixed> $session
      */
-    public function handle(array $query, array $session): never
+    public function handle(array $query): never
     {
         $this->sessionService->start();
 
-        if (! $this->isAuthenticated($session)) {
+        if (! $this->isAuthenticated($_SESSION)) {
             $this->renderer->render([
                 'ok' => false,
                 'mode' => 'plain_text',
