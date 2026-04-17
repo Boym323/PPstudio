@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [fix] Public layout znovu předává do site šablon i camelCase proměnnou `activeNav`, takže navigace při renderu webu už nehází warningy na nedefinovanou proměnnou a správně označuje aktivní položku menu (commit: `this-commit`)
+- [fix] Opraven pád veřejného webu a souvisejících endpointů po ztenčení bootstrapu; `includes/bootstrap.php` znovu poskytuje kompatibilní security wrappery jako `ppstudioSecurityFacade()`, `requirePublicSiteAccessOrPrompt()`, `requirePublicSiteAccessOrJsonError()`, `csrfInputField()` a session/CSRF helpery (commit: `this-commit`)
 - [refactor] Sjednocené date helpery teď obsluhují validaci `Y-m-d` i formátování/kalendářní metadata pro availability vrstvu; `AdminAvailabilityReadService`, `AvailabilityService` a availability API controllery už nedrží vlastní duplicitní implementace a public site context znovu používá jednu sdílenou instanci `SecurityFacade` místo opakovaného vytváření (commit: `this-commit`)
 - [refactor] Z `includes/bootstrap.php` byly odstraněny globální service locatory pro security a site settings; call-sitey teď vytvářejí `SecurityFacade` a `SiteSettingsService` přímo, takže bootstrap už dělá jen autoload (commit: `this-commit`)
 - [refactor] Z repozitáře zmizela globální helper vrstva z `includes/functions.php`; call-sitey teď používají přímo namespaced helper třídy v `src/Support/` a `includes/functions.php` zůstává jen jako bootstrap kompatibilní include (commit: `this-commit`)

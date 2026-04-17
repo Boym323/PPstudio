@@ -57,6 +57,7 @@ final class SitePageContextBuilder
             'title' => $title,
             'description' => $description,
             'active_nav' => $activeNav,
+            'activeNav' => $activeNav,
             'template' => $template,
             'reservationAlertHtml' => $reservationAlertHtml,
             'csrfToken' => $csrfToken,
