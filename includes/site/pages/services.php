@@ -1,8 +1,3 @@
-<?php
-
-$servicesView = (new \PPStudio\Http\View\SiteServicesPageContextBuilder())->build();
-$serviceCards = $servicesView['serviceCards'];
-?>
 <section class="services services-primary" id="services">
     <div class="container">
         <h1 class="section-title">Naše <span>Služby</span></h1>

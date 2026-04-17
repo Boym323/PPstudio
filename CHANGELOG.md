@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Zbývající public page view-modely pro `O mně`, `Recenze` a `Služby` se přesunuly do `SitePageContextBuilder`; šablony už nedělají vlastní inline PHP skládání dat a veřejné stránky jsou tím pádem čistší view vrstva (commit: `this-commit`)
 - [refactor] Veřejný site render má nově OOP application vrstvu `SitePageApplication` a stránka `Služby` získává data přes `SiteServicesPageContextBuilder`; `includes/site/render.php` zůstal jen jako BC wrapper a URL i výstup webu se nemění (commit: `this-commit`)
 - [refactor] `sitemap.php` je nově tenký entrypoint; načítání `site_url`, fallback na DB/host a XML render se přesunuly do `SitemapController`, `SitemapBuilder` a `SitemapRenderer` při zachování stejných URL, `lastmod` i `application/xml` výstupu (commit: `this-commit`)
 - [refactor] `reservations-feed.php` je nově tenký entrypoint a ICS feed orchestrace běží přes `ReservationsFeedApplication` + request/auth/data-loader/responder třídy v `src/`, při zachování token checku, HTTP kódů i text/calendar výstupu (commit: `this-commit`)

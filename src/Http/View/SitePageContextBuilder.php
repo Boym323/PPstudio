@@ -56,7 +56,7 @@ final class SitePageContextBuilder
             $reservationAntispamToken = $this->security->reservationAntispamService()->issueToken();
         }
 
-        return [
+        $context = [
             'title' => $title,
             'description' => $description,
             'active_nav' => $activeNav,
@@ -69,6 +69,13 @@ final class SitePageContextBuilder
             'canonicalUrl' => $canonicalUrl,
             'reservationAntispamToken' => $reservationAntispamToken,
         ] + $this->contactContextBuilder->build($siteSettings);
+
+        return match ($activeNav) {
+            'about' => $context + (new SiteAboutPageContextBuilder())->build(),
+            'reviews' => $context + (new SiteReviewsPageContextBuilder())->build($siteSettings),
+            'services' => $context + (new SiteServicesPageContextBuilder())->build(),
+            default => $context,
+        };
     }
 
     private function reservationAlertMarkupFromQuery(): string

@@ -119,8 +119,9 @@ jsou postupně ztenčované na BC vrstvu.
 
 Veřejné stránky se spouštějí přes malou OOP application vrstvu
 `PPStudio\Http\Controller\SitePageApplication`; `includes/site/render.php`
-zůstává jen jako BC wrapper a stránka `Služby` má vlastní context builder v
-`PPStudio\Http\View\SiteServicesPageContextBuilder`.
+zůstává jen jako BC wrapper a stránkové view-modely pro `Služby`, `O mně`
+a `Recenze` teď skládá `PPStudio\Http\View\SitePageContextBuilder` místo
+inline PHP v šablonách.
 
 Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
 v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.

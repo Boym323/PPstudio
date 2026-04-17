@@ -1,8 +1,3 @@
-<?php
-$aboutView = (new \PPStudio\Http\View\SiteAboutPageContextBuilder())->build();
-$certificateItems = $aboutView['certificateItems'];
-?>
-
 <section class="team" id="team">
     <div class="container">
         <h1 class="section-title">O <span>mně</span></h1>
