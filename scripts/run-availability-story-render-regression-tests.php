@@ -115,7 +115,6 @@ array_shift($args);
 $writeFixtures = parseWriteFixturesFlag($args);
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/admin/availability_story.php';
 
 if (! function_exists('imagecreatetruecolor') || ! function_exists('imagepng')) {
     ppstudioCliTestFail(SCRIPT_PREFIX, 'Na serveru chybi GD extension pro render testy.');
@@ -135,10 +134,11 @@ $backgroundPath = $tempDir . '/background.png';
 createDeterministicBackground($backgroundPath);
 
 try {
+    $storyService = new \PPStudio\Service\AvailabilityStoryService();
     $scenarios = storyRenderScenarios($backgroundPath);
 
     foreach ($scenarios as $scenario) {
-        $rendered = ppstudioRenderAvailabilityStoryImage(
+        $rendered = $storyService->renderImage(
             $scenario['title'],
             $scenario['month'],
             $scenario['slots'],
@@ -180,7 +180,7 @@ try {
         );
     }
 
-    $invalidBackgroundImage = ppstudioRenderAvailabilityStoryImage(
+    $invalidBackgroundImage = $storyService->renderImage(
         'Zbyvaji volne terminy',
         'Duben',
         ['17.4. 10:00, 10:30, 11:00', '18.4. 12:00, 12:30'],

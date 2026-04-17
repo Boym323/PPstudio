@@ -32,17 +32,6 @@ function ppstudioSecurityFacade(): \PPStudio\Security\SecurityFacade
     return $service;
 }
 
-function ppstudioAvailabilityFacade(): \PPStudio\Service\AvailabilityFacade
-{
-    static $service = null;
-
-    if (! $service instanceof \PPStudio\Service\AvailabilityFacade) {
-        $service = new \PPStudio\Service\AvailabilityFacade();
-    }
-
-    return $service;
-}
-
 function ppstudioSiteSettingsService(?\mysqli $connection = null): \PPStudio\Service\SiteSettingsService
 {
     static $services = [];

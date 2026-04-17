@@ -6,6 +6,7 @@ namespace PPStudio\Http\Controller\Admin;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Service\AdminAvailabilityStoryService;
+use PPStudio\Service\AvailabilityStoryService;
 
 final class AdminAvailabilityStoryController
 {
@@ -34,7 +35,7 @@ final class AdminAvailabilityStoryController
         $source = $isPreview ? $get : $post;
         $storyService = new AdminAvailabilityStoryService($connection);
         $payload = $storyService->buildRenderPayload($source, true);
-        $image = \ppstudioRenderAvailabilityStoryImage(
+        $image = (new AvailabilityStoryService())->renderImage(
             (string) ($payload['title'] ?? ''),
             (string) ($payload['month_label'] ?? ''),
             is_array($payload['slot_lines'] ?? null) ? $payload['slot_lines'] : [],

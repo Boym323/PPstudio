@@ -136,7 +136,7 @@ function cleanupFixture(mysqli $connection, string $token, ?int $serviceId, ?int
  */
 function runBasicFlow(mysqli $connection, int $serviceId, string $date, string $token): array
 {
-    $availabilityFacade = ppstudioAvailabilityFacade();
+    $availabilityFacade = new \PPStudio\Service\AvailabilityFacade();
     $times = $availabilityFacade->getAvailableTimesForDate($connection, $serviceId, $date);
     assertOrFail(count($times) > 0, 'Ocekavan alespon jeden volny slot v prvnim okne.');
 
@@ -245,7 +245,7 @@ function launchWorker(string $token, int $serviceId, string $dateTime, string $s
 
 function runConcurrencyFlow(mysqli $connection, int $serviceId, string $date, string $token): array
 {
-    $availabilityFacade = ppstudioAvailabilityFacade();
+    $availabilityFacade = new \PPStudio\Service\AvailabilityFacade();
     $times = $availabilityFacade->getAvailableTimesForDate($connection, $serviceId, $date);
     $slot = '';
 
@@ -293,7 +293,7 @@ function runWorkerMode(array $options): never
     $connection = connectDb();
 
     try {
-        $availabilityFacade = ppstudioAvailabilityFacade();
+        $availabilityFacade = new \PPStudio\Service\AvailabilityFacade();
         while (microtime(true) < $startAt) {
             usleep(1000);
         }
