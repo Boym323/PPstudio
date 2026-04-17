@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Společné helpery z `includes/functions.php` byly rozdělené do namespaced utilit v `src/Support/`; původní globální funkce zůstaly jako kompatibilní wrappery a nové moduly pokrývají view, formátování, datumy, kontakty, nastavení, stavy rezervací, otevírací hodiny a normalizaci hodnot (commit: `this-commit`)
 - [refactor] `includes/site/pages/about.php` byla ztenčena na čistší markup a certifikátový view-model se přesunul do `PPStudio\Http\View\SiteAboutPageContextBuilder`; loading uploadů, metadata i preview URL jsou teď připravené v OOP vrstvě bez inline výpočtů v šabloně (commit: `this-commit`)
 - [refactor] `includes/site/pages/reviews.php` byl ztenčen na čistší markup a validace Firmy.cz iframe embedu se přesunula do `PPStudio\Http\View\SiteReviewsPageContextBuilder` a `PPStudio\Http\View\SiteTrustedSingleIframeEmbedRenderer`; global helper z `includes/site/render.php` už není potřeba (commit: `this-commit`)
 - [refactor] `includes/site/pages/pricing.php` byla ztenčena na čistý markup a kontaktní fallbacky teď čerpají stejné view proměnné jako ostatní public stránky; HTML výstup i CTA zůstaly beze změny (commit: `this-commit`)

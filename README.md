@@ -102,6 +102,11 @@ pro čisté databázové dotazy a služby v `src/Service/` pro výpočty, valida
 orchestrace. Původní procedurální funkce v `includes/` mohou dočasně zůstat jako
 kompatibilní wrappery nad novými třídami.
 
+Společné technické helpery jsou postupně rozdělované do `src/Support/`
+(`ViewHelper`, `FormatHelper`, `DateHelper`, `ReservationStatusHelper`,
+`ValueHelper`, `OpeningHoursHelper`, `SettingsHelper`, `ContactHelper`),
+zatímco `includes/functions.php` zůstává jen jako kompatibilní mezivrstva.
+
 Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
 v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.
 
