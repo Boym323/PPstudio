@@ -244,7 +244,7 @@ final class AdminServiceMutationService
             return $this->error('Cena musí být číslo nebo prázdné pole.', ['service_form' => $serviceForm]);
         }
 
-        $normalizedPrice = \normalizeNullableFloat($price);
+        $normalizedPrice = \PPStudio\Support\ValueHelper::normalizeNullableFloat($price);
         $durationValue = (int) $duration;
         $resolvedCategoryId = 0;
         $priceChanged = false;

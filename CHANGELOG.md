@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Z repozitáře zmizela globální helper vrstva z `includes/functions.php`; call-sitey teď používají přímo namespaced helper třídy v `src/Support/` a `includes/functions.php` zůstává jen jako bootstrap kompatibilní include (commit: `this-commit`)
 - [refactor] Availability vrstva je teď bez globálních helperů `ppstudioAvailabilityFacade()` a bez `includes/admin/availability_story.php`; public/admin endpointy i CLI testy používají přímo `AvailabilityFacade` a `AvailabilityStoryService` (commit: `this-commit`)
 - [refactor] Admin settings POST workflow nově orchestruje `AdminSettingsPostActionHandler::handle()` místo inline větvení v `AdminApplication`; uložené hodnoty i hlášky pro studio, integrace a e-mail zůstaly stejné (commit: `this-commit`)
 - [refactor] Editace služeb v adminu nově prochází přes OOP loader `AdminServiceFormDataLoader`; `includes/admin/actions/load/service_forms.php` je už jen tenký BC wrapper a zůstává zachované plnění `service_form` a `category_form` pro šablonu (commit: `this-commit`)

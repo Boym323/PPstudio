@@ -40,8 +40,8 @@ final class PublicServiceCatalogService
                     'badge' => $this->badge($service),
                     'icon' => $this->icon($service),
                     'category' => $service->category ?? 'Ostatní služby',
-                    'duration' => \formatDuration($service->durationMinutes),
-                    'price' => \formatPrice($service->price),
+                    'duration' => \PPStudio\Support\FormatHelper::formatDuration($service->durationMinutes),
+                    'price' => \PPStudio\Support\FormatHelper::formatPrice($service->price),
                 ];
             }
 

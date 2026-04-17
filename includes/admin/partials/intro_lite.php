@@ -5,11 +5,11 @@
                 </div>
 
                 <?php if ($message !== ''): ?>
-                    <div class="alert alert-success"><?= escape($message) ?></div>
+                    <div class="alert alert-success"><?= \PPStudio\Support\ViewHelper::escape($message) ?></div>
                 <?php endif; ?>
 
                 <?php if ($error !== ''): ?>
-                    <div class="alert alert-error"><?= escape($error) ?></div>
+                    <div class="alert alert-error"><?= \PPStudio\Support\ViewHelper::escape($error) ?></div>
                 <?php endif; ?>
 
                 <div class="admin-toast" data-admin-toast hidden aria-live="polite" aria-atomic="true"></div>

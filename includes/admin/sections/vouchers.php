@@ -8,20 +8,20 @@
                             <div class="voucher-summary-grid">
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Celkem poukazů</span>
-                                    <strong class="voucher-summary-value"><?= escape((string) ($voucherSummary['total_count'] ?? count($voucherRows))) ?></strong>
+                                    <strong class="voucher-summary-value"><?= \PPStudio\Support\ViewHelper::escape((string) ($voucherSummary['total_count'] ?? count($voucherRows))) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Aktivní</span>
-                                    <strong class="voucher-summary-value"><?= escape((string) ($voucherSummary['active_count'] ?? 0)) ?></strong>
+                                    <strong class="voucher-summary-value"><?= \PPStudio\Support\ViewHelper::escape((string) ($voucherSummary['active_count'] ?? 0)) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Zůstatek celkem</span>
-                                    <strong class="voucher-summary-value"><?= escape(formatPrice($voucherSummary['total_remaining'] ?? 0)) ?></strong>
+                                    <strong class="voucher-summary-value"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatPrice($voucherSummary['total_remaining'] ?? 0)) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Vyčerpáno / expirováno</span>
                                     <strong class="voucher-summary-value">
-                                        <?= escape((string) (($voucherSummary['spent_out_count'] ?? 0) + ($voucherSummary['expired_count'] ?? 0))) ?>
+                                        <?= \PPStudio\Support\ViewHelper::escape((string) (($voucherSummary['spent_out_count'] ?? 0) + ($voucherSummary['expired_count'] ?? 0))) ?>
                                     </strong>
                                 </article>
                             </div>
@@ -32,27 +32,27 @@
                                         <?= csrfInputField() ?>
                                         <label>
                                             <span>Prefix kódu</span>
-                                            <input type="text" name="voucher_batch_prefix" maxlength="12" value="<?= escape($voucherBatchForm['prefix']) ?>" placeholder="PP26">
+                                            <input type="text" name="voucher_batch_prefix" maxlength="12" value="<?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['prefix']) ?>" placeholder="PP26">
                                         </label>
                                         <label>
                                             <span>Počet</span>
-                                            <input type="number" name="voucher_batch_count" min="1" max="200" value="<?= escape($voucherBatchForm['count']) ?>">
+                                            <input type="number" name="voucher_batch_count" min="1" max="200" value="<?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['count']) ?>">
                                         </label>
                                         <label>
                                             <span>Hodnota poukazu (Kč)</span>
-                                            <input type="number" name="voucher_batch_value" min="1" step="1" value="<?= escape($voucherBatchForm['value']) ?>">
+                                            <input type="number" name="voucher_batch_value" min="1" step="1" value="<?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['value']) ?>">
                                         </label>
                                         <label>
                                             <span>Platnost do</span>
-                                            <input type="date" name="voucher_batch_expires_at" value="<?= escape($voucherBatchForm['expires_at']) ?>">
+                                            <input type="date" name="voucher_batch_expires_at" value="<?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['expires_at']) ?>">
                                         </label>
                                         <label>
                                             <span>Příjemce (volitelné)</span>
-                                            <input type="text" name="voucher_batch_recipient_name" value="<?= escape($voucherBatchForm['recipient_name']) ?>" placeholder="Jméno obdarované">
+                                            <input type="text" name="voucher_batch_recipient_name" value="<?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['recipient_name']) ?>" placeholder="Jméno obdarované">
                                         </label>
                                         <label class="full-span">
                                             <span>Poznámka série</span>
-                                            <textarea name="voucher_batch_note" rows="3" placeholder="Např. jarní tisk 2026"><?= escape($voucherBatchForm['note']) ?></textarea>
+                                            <textarea name="voucher_batch_note" rows="3" placeholder="Např. jarní tisk 2026"><?= \PPStudio\Support\ViewHelper::escape($voucherBatchForm['note']) ?></textarea>
                                         </label>
                                         <button class="button button-primary full-span" type="submit" name="generate_voucher_batch" value="1">Vygenerovat kódy</button>
                                     </form>
@@ -64,27 +64,27 @@
                                         <?= csrfInputField() ?>
                                         <label>
                                             <span>Kód (prázdné = auto)</span>
-                                            <input type="text" name="voucher_code" maxlength="40" value="<?= escape($voucherForm['code']) ?>" placeholder="PP26-ABC123">
+                                            <input type="text" name="voucher_code" maxlength="40" value="<?= \PPStudio\Support\ViewHelper::escape($voucherForm['code']) ?>" placeholder="PP26-ABC123">
                                         </label>
                                         <label>
                                             <span>Hodnota poukazu (Kč)</span>
-                                            <input type="number" name="voucher_value" min="1" step="1" value="<?= escape($voucherForm['value']) ?>" required>
+                                            <input type="number" name="voucher_value" min="1" step="1" value="<?= \PPStudio\Support\ViewHelper::escape($voucherForm['value']) ?>" required>
                                         </label>
                                         <label>
                                             <span>Platnost do</span>
-                                            <input type="date" name="voucher_expires_at" value="<?= escape($voucherForm['expires_at']) ?>">
+                                            <input type="date" name="voucher_expires_at" value="<?= \PPStudio\Support\ViewHelper::escape($voucherForm['expires_at']) ?>">
                                         </label>
                                         <label>
                                             <span>Příjemce (volitelné)</span>
-                                            <input type="text" name="voucher_recipient_name" value="<?= escape($voucherForm['recipient_name']) ?>" placeholder="Jméno obdarované">
+                                            <input type="text" name="voucher_recipient_name" value="<?= \PPStudio\Support\ViewHelper::escape($voucherForm['recipient_name']) ?>" placeholder="Jméno obdarované">
                                         </label>
                                         <label>
                                             <span>E-mail příjemce (volitelné)</span>
-                                            <input type="email" name="voucher_recipient_email" value="<?= escape($voucherForm['recipient_email']) ?>" placeholder="např. jana@example.cz">
+                                            <input type="email" name="voucher_recipient_email" value="<?= \PPStudio\Support\ViewHelper::escape($voucherForm['recipient_email']) ?>" placeholder="např. jana@example.cz">
                                         </label>
                                         <label class="full-span">
                                             <span>Poznámka</span>
-                                            <textarea name="voucher_note" rows="3" placeholder="Např. prodáno na místě"><?= escape($voucherForm['note']) ?></textarea>
+                                            <textarea name="voucher_note" rows="3" placeholder="Např. prodáno na místě"><?= \PPStudio\Support\ViewHelper::escape($voucherForm['note']) ?></textarea>
                                         </label>
                                         <button class="button button-primary full-span" type="submit" name="create_voucher" value="1">Uložit poukaz</button>
                                     </form>
@@ -125,30 +125,30 @@
                                                 $voucherTransactionCount = (int) ($voucher['transaction_count'] ?? count($voucherTransactions));
                                                 ?>
                                                 <tr>
-                                                    <td data-label="Kód"><strong><?= escape((string) ($voucher['kod'] ?? '')) ?></strong></td>
-                                                    <td data-label="Vydání"><?= escape(formatCzechDateTime((string) ($voucher['issued_at'] ?? ''))) ?></td>
-                                                    <td data-label="Platnost"><?= escape((string) (($voucher['expires_at'] ?? '') !== '' ? formatCzechDate((string) $voucher['expires_at']) : 'Bez omezení')) ?></td>
-                                                    <td data-label="Hodnota"><?= escape(formatPrice($voucher['puvodni_hodnota'] ?? null)) ?></td>
+                                                    <td data-label="Kód"><strong><?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['kod'] ?? '')) ?></strong></td>
+                                                    <td data-label="Vydání"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($voucher['issued_at'] ?? ''))) ?></td>
+                                                    <td data-label="Platnost"><?= \PPStudio\Support\ViewHelper::escape((string) (($voucher['expires_at'] ?? '') !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate((string) $voucher['expires_at']) : 'Bez omezení')) ?></td>
+                                                    <td data-label="Hodnota"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null)) ?></td>
                                                     <td data-label="Zůstatek">
-                                                        <strong><?= escape(formatPrice($voucher['zustatek'] ?? null)) ?></strong>
-                                                        <div class="voucher-balance-meta">Vyčerpáno: <?= escape(formatPrice($spentAmount)) ?></div>
+                                                        <strong><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatPrice($voucher['zustatek'] ?? null)) ?></strong>
+                                                        <div class="voucher-balance-meta">Vyčerpáno: <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatPrice($spentAmount)) ?></div>
                                                         <div class="voucher-progress" aria-hidden="true">
-                                                            <span style="width: <?= escape(number_format($spentPercent, 2, '.', '')) ?>%;"></span>
+                                                            <span style="width: <?= \PPStudio\Support\ViewHelper::escape(number_format($spentPercent, 2, '.', '')) ?>%;"></span>
                                                         </div>
                                                     </td>
                                                     <td data-label="Stav">
-                                                        <span class="status-badge voucher-status-<?= escape($effectiveStatus) ?>"><?= escape($statusLabel) ?></span>
+                                                        <span class="status-badge voucher-status-<?= \PPStudio\Support\ViewHelper::escape($effectiveStatus) ?>"><?= \PPStudio\Support\ViewHelper::escape($statusLabel) ?></span>
                                                     </td>
                                                     <td data-label="Příjemce">
-                                                        <?= escape((string) ($voucher['recipient_name'] ?? '')) ?>
+                                                        <?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['recipient_name'] ?? '')) ?>
                                                         <?php if (trim((string) ($voucher['recipient_email'] ?? '')) !== ''): ?>
-                                                            <div class="voucher-note"><?= escape((string) $voucher['recipient_email']) ?></div>
+                                                            <div class="voucher-note"><?= \PPStudio\Support\ViewHelper::escape((string) $voucher['recipient_email']) ?></div>
                                                         <?php endif; ?>
                                                         <?php if (trim((string) ($voucher['emailed_at'] ?? '')) !== ''): ?>
-                                                            <div class="voucher-note">Naposledy odesláno: <?= escape(formatCzechDateTime((string) $voucher['emailed_at'])) ?></div>
+                                                            <div class="voucher-note">Naposledy odesláno: <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) $voucher['emailed_at'])) ?></div>
                                                         <?php endif; ?>
                                                         <?php if (trim((string) ($voucher['note'] ?? '')) !== ''): ?>
-                                                            <div class="voucher-note"><?= escape((string) $voucher['note']) ?></div>
+                                                            <div class="voucher-note"><?= \PPStudio\Support\ViewHelper::escape((string) $voucher['note']) ?></div>
                                                         <?php endif; ?>
                                                     </td>
                                                     <td data-label="Akce a historie">
@@ -156,22 +156,22 @@
                                                             <summary>
                                                                 Správa poukazu
                                                                 <?php if ($voucherTransactions !== []): ?>
-                                                                    <span class="voucher-manage-count"><?= escape((string) $voucherTransactionCount) ?>x čerpání</span>
+                                                                    <span class="voucher-manage-count"><?= \PPStudio\Support\ViewHelper::escape((string) $voucherTransactionCount) ?>x čerpání</span>
                                                                 <?php else: ?>
                                                                     <span class="voucher-manage-count">Bez čerpání</span>
                                                                 <?php endif; ?>
                                                             </summary>
                                                             <div class="table-actions" style="margin-bottom: .55rem;">
-                                                                <a class="button button-secondary button-small" href="/admin-voucher-dl.php?id=<?= escape((string) $voucherId) ?>" target="_blank" rel="noopener noreferrer">DL tisk / PDF</a>
+                                                                <a class="button button-secondary button-small" href="/admin-voucher-dl.php?id=<?= \PPStudio\Support\ViewHelper::escape((string) $voucherId) ?>" target="_blank" rel="noopener noreferrer">DL tisk / PDF</a>
                                                             </div>
                                                             <form method="post" class="admin-form compact-form compact-form-voucher voucher-send-mail-form">
                                                                 <?= csrfInputField() ?>
-                                                                <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
+                                                                <input type="hidden" name="voucher_id" value="<?= \PPStudio\Support\ViewHelper::escape((string) $voucherId) ?>">
                                                                 <div class="voucher-email-row">
                                                                     <input
                                                                         type="email"
                                                                         name="voucher_recipient_email"
-                                                                        value="<?= escape((string) ($voucher['recipient_email'] ?? '')) ?>"
+                                                                        value="<?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['recipient_email'] ?? '')) ?>"
                                                                         placeholder="E-mail pro zaslání poukazu"
                                                                         <?= $canSendEmail ? '' : 'disabled' ?>
                                                                         required
@@ -193,9 +193,9 @@
                                                                 </div>
                                                             </form>
                                                             <?php if ($canRedeem): ?>
-                                                                <form method="post" class="admin-form compact-form compact-form-voucher" data-voucher-redeem-form data-voucher-remaining="<?= escape(number_format($remainingAmount, 2, '.', '')) ?>">
+                                                                <form method="post" class="admin-form compact-form compact-form-voucher" data-voucher-redeem-form data-voucher-remaining="<?= \PPStudio\Support\ViewHelper::escape(number_format($remainingAmount, 2, '.', '')) ?>">
                                                                     <?= csrfInputField() ?>
-                                                                    <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
+                                                                    <input type="hidden" name="voucher_id" value="<?= \PPStudio\Support\ViewHelper::escape((string) $voucherId) ?>">
                                                                     <div class="voucher-actions-grid">
                                                                         <div class="voucher-amount-row">
                                                                             <input type="number" name="redeem_amount" min="1" step="1" placeholder="Částka (Kč)" required>
@@ -211,8 +211,8 @@
                                                                                 <select name="redeem_reservation_id">
                                                                                     <option value="">Bez vazby na rezervaci</option>
                                                                                     <?php foreach (($voucherReservationOptionsPrepared ?? $voucherReservationOptions) as $reservationOption): ?>
-                                                                                        <option value="<?= escape((string) $reservationOption['id']) ?>" data-reservation-price="<?= escape((string) ($reservationOption['reservation_price_value'] ?? number_format((float) ($reservationOption['reservation_price'] ?? 0), 2, '.', ''))) ?>" data-search="<?= escape((string) ($reservationOption['reservation_search'] ?? '')) ?>">
-                                                                                            <?= escape((string) ($reservationOption['reservation_label'] ?? '')) ?>
+                                                                                        <option value="<?= \PPStudio\Support\ViewHelper::escape((string) $reservationOption['id']) ?>" data-reservation-price="<?= \PPStudio\Support\ViewHelper::escape((string) ($reservationOption['reservation_price_value'] ?? number_format((float) ($reservationOption['reservation_price'] ?? 0), 2, '.', ''))) ?>" data-search="<?= \PPStudio\Support\ViewHelper::escape((string) ($reservationOption['reservation_search'] ?? '')) ?>">
+                                                                                            <?= \PPStudio\Support\ViewHelper::escape((string) ($reservationOption['reservation_label'] ?? '')) ?>
                                                                                         </option>
                                                                                     <?php endforeach; ?>
                                                                                 </select>
@@ -223,26 +223,26 @@
                                                                     </div>
                                                                 </form>
                                                             <?php else: ?>
-                                                                <p class="form-hint">Čerpání není dostupné: poukaz má stav <strong><?= escape(mb_strtolower($statusLabel)) ?></strong>.</p>
+                                                                <p class="form-hint">Čerpání není dostupné: poukaz má stav <strong><?= \PPStudio\Support\ViewHelper::escape(mb_strtolower($statusLabel)) ?></strong>.</p>
                                                             <?php endif; ?>
                                                             <?php if ($voucherTransactions !== []): ?>
                                                                 <details class="voucher-transactions-wrap">
-                                                                    <summary>Historie čerpání (<?= escape((string) count($voucherTransactions)) ?>)</summary>
+                                                                    <summary>Historie čerpání (<?= \PPStudio\Support\ViewHelper::escape((string) count($voucherTransactions)) ?>)</summary>
                                                                     <ul class="voucher-transactions-list">
                                                                         <?php foreach ($voucherTransactions as $transaction): ?>
                                                                             <li>
                                                                                 <div class="voucher-transaction-main">
-                                                                                    <strong><?= escape(formatPrice($transaction['castka'] ?? null)) ?></strong>
-                                                                                    <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
+                                                                                    <strong><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatPrice($transaction['castka'] ?? null)) ?></strong>
+                                                                                    <span><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
                                                                                 </div>
                                                                                 <?php if ((int) ($transaction['rezervace_id'] ?? 0) > 0): ?>
                                                                                     <span class="voucher-transaction-reservation">
                                                                                         Rezervace:
-                                                                                        <?= escape((string) ($transaction['reservation_label'] ?? ('#' . (string) ((int) ($transaction['rezervace_id'] ?? 0))))) ?>
+                                                                                        <?= \PPStudio\Support\ViewHelper::escape((string) ($transaction['reservation_label'] ?? ('#' . (string) ((int) ($transaction['rezervace_id'] ?? 0))))) ?>
                                                                                     </span>
                                                                                 <?php endif; ?>
                                                                                 <?php if (trim((string) ($transaction['poznamka'] ?? '')) !== ''): ?>
-                                                                                    <span class="voucher-transaction-note"><?= escape((string) $transaction['poznamka']) ?></span>
+                                                                                    <span class="voucher-transaction-note"><?= \PPStudio\Support\ViewHelper::escape((string) $transaction['poznamka']) ?></span>
                                                                                 <?php endif; ?>
                                                                             </li>
                                                                         <?php endforeach; ?>

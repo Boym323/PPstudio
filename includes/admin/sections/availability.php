@@ -6,18 +6,18 @@
                         <div class="availability-toolbar">
                             <div class="availability-week-summary">
                                 <span class="availability-summary-label">Zobrazený týden</span>
-                                <strong><?= escape($plannerWeekLabel) ?></strong>
+                                <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
                             </div>
                             <div class="table-actions availability-week-actions">
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
-                                <a class="button button-secondary button-small" href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
+                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
                             </div>
                         </div>
                         <form method="post" class="admin-form" data-availability-planner-form data-save-endpoint="/api/admin/availability-planner.php">
                             <?= csrfInputField() ?>
-                            <input type="hidden" name="planner_start" value="<?= escape($plannerDays[0] ?? '') ?>">
-                            <input type="hidden" name="planner_end" value="<?= escape($plannerDays[count($plannerDays) - 1] ?? '') ?>">
+                            <input type="hidden" name="planner_start" value="<?= \PPStudio\Support\ViewHelper::escape($plannerDays[0] ?? '') ?>">
+                            <input type="hidden" name="planner_end" value="<?= \PPStudio\Support\ViewHelper::escape($plannerDays[count($plannerDays) - 1] ?? '') ?>">
                             <input type="hidden" name="planner_windows" value="[]">
 
                             <div class="availability-mode-card">
@@ -45,7 +45,7 @@
                                                 <option value="">Žádné budoucí dny</option>
                                             <?php else: ?>
                                                 <?php foreach ($plannerEditableDays as $day): ?>
-                                                    <option value="<?= escape($day) ?>"><?= escape(formatCzechDate($day)) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($day) ?>"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day)) ?></option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </select>
@@ -53,7 +53,7 @@
                                     <div class="availability-daily-summary" data-daily-summary>
                                         <div class="summary-item">
                                             <span>Den</span>
-                                            <strong data-daily-summary-day><?= escape($plannerEditableDays === [] ? 'Žádné budoucí dny' : formatCzechDate($plannerEditableDays[0] ?? '')) ?></strong>
+                                            <strong data-daily-summary-day><?= \PPStudio\Support\ViewHelper::escape($plannerEditableDays === [] ? 'Žádné budoucí dny' : \PPStudio\Support\FormatHelper::formatCzechDate($plannerEditableDays[0] ?? '')) ?></strong>
                                         </div>
                                         <div class="summary-item">
                                             <span>Volné sloty</span>
@@ -85,11 +85,11 @@
                                             <button
                                                 class="availability-day-chip"
                                                 type="button"
-                                                data-daily-day-chip="<?= escape($day) ?>"
-                                                aria-label="<?= escape($shortDayName . ' ' . formatCzechDate($day)) ?>"
+                                                data-daily-day-chip="<?= \PPStudio\Support\ViewHelper::escape($day) ?>"
+                                                aria-label="<?= \PPStudio\Support\ViewHelper::escape($shortDayName . ' ' . \PPStudio\Support\FormatHelper::formatCzechDate($day)) ?>"
                                             >
-                                                <span class="day-chip-week"><?= escape($shortDayName) ?></span>
-                                                <span class="day-chip-date"><?= escape(formatCzechDate($day)) ?></span>
+                                                <span class="day-chip-week"><?= \PPStudio\Support\ViewHelper::escape($shortDayName) ?></span>
+                                                <span class="day-chip-date"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day)) ?></span>
                                             </button>
                                         <?php endforeach; ?>
                                     <?php else: ?>
@@ -111,7 +111,7 @@
                                             <span>Od</span>
                                             <select data-daily-start>
                                                 <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                    <option value="<?= escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($slot) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </label>
@@ -119,7 +119,7 @@
                                             <span>Do</span>
                                             <select data-daily-end>
                                                 <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                    <option value="<?= escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($slot) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </label>
@@ -152,7 +152,7 @@
                                                 <option value="">Žádné budoucí dny</option>
                                             <?php else: ?>
                                                 <?php foreach ($plannerEditableDays as $day): ?>
-                                                    <option value="<?= escape($day) ?>"><?= escape(formatCzechDate($day)) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($day) ?>"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day)) ?></option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </select>
@@ -161,7 +161,7 @@
                                             <span>Od</span>
                                             <select data-quick-start>
                                                 <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                    <option value="<?= escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($slot) ?>" <?= $index === 0 ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($slot) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </label>
@@ -169,7 +169,7 @@
                                             <span>Do</span>
                                             <select data-quick-end>
                                                 <?php foreach ($plannerSlots as $index => $slot): ?>
-                                                    <option value="<?= escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= escape($slot) ?></option>
+                                                    <option value="<?= \PPStudio\Support\ViewHelper::escape($slot) ?>" <?= $index === count($plannerSlots) - 1 ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($slot) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </label>
@@ -193,11 +193,11 @@
                                                 <button
                                                     class="availability-day-chip"
                                                     type="button"
-                                                    data-quick-day-chip="<?= escape($day) ?>"
-                                                    aria-label="<?= escape($shortDayName . ' ' . formatCzechDate($day)) ?>"
+                                                    data-quick-day-chip="<?= \PPStudio\Support\ViewHelper::escape($day) ?>"
+                                                    aria-label="<?= \PPStudio\Support\ViewHelper::escape($shortDayName . ' ' . \PPStudio\Support\FormatHelper::formatCzechDate($day)) ?>"
                                                 >
-                                                    <span class="day-chip-week"><?= escape($shortDayName) ?></span>
-                                                    <span class="day-chip-date"><?= escape(formatCzechDate($day)) ?></span>
+                                                    <span class="day-chip-week"><?= \PPStudio\Support\ViewHelper::escape($shortDayName) ?></span>
+                                                    <span class="day-chip-date"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day)) ?></span>
                                                 </button>
                                             <?php endforeach; ?>
                                         <?php else: ?>
@@ -228,11 +228,11 @@
                                 <div
                                     class="availability-planner"
                                     data-availability-planner
-                                    data-initial-windows="<?= escape(json_encode($plannerInitialWindows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]') ?>"
-                                    data-booked-windows="<?= escape(json_encode($plannerBookedWindows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]') ?>"
+                                    data-initial-windows="<?= \PPStudio\Support\ViewHelper::escape(json_encode($plannerInitialWindows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]') ?>"
+                                    data-booked-windows="<?= \PPStudio\Support\ViewHelper::escape(json_encode($plannerBookedWindows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '[]') ?>"
                                 >
                                     <div class="planner-scroll">
-                                        <div class="planner-grid" style="--planner-day-columns: <?= escape((string) count($plannerDays)) ?>;">
+                                        <div class="planner-grid" style="--planner-day-columns: <?= \PPStudio\Support\ViewHelper::escape((string) count($plannerDays)) ?>;">
                                             <div class="planner-corner">Čas</div>
                                             <?php foreach ($plannerDays as $day): ?>
                                                 <?php
@@ -256,9 +256,9 @@
                                                         $dayClasses[] = 'is-holiday';
                                                     }
                                                 ?>
-                                                <div class="<?= escape(implode(' ', $dayClasses)) ?>" title="<?= escape((string) ($dayMeta['holiday_name'] ?? '')) ?>">
-                                                    <strong><?= escape(formatCzechDate($day)) ?></strong>
-                                                    <span class="planner-day-name"><?= escape($dayName) ?></span>
+                                                <div class="<?= \PPStudio\Support\ViewHelper::escape(implode(' ', $dayClasses)) ?>" title="<?= \PPStudio\Support\ViewHelper::escape((string) ($dayMeta['holiday_name'] ?? '')) ?>">
+                                                    <strong><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day)) ?></strong>
+                                                    <span class="planner-day-name"><?= \PPStudio\Support\ViewHelper::escape($dayName) ?></span>
                                                     <?php if ($dayMeta['is_holiday']): ?>
                                                         <span class="planner-day-badge">Svátek</span>
                                                     <?php endif; ?>
@@ -266,7 +266,7 @@
                                             <?php endforeach; ?>
 
                                             <?php foreach ($plannerSlots as $slot): ?>
-                                                <div class="planner-time-label"><?= escape($slot) ?></div>
+                                                <div class="planner-time-label"><?= \PPStudio\Support\ViewHelper::escape($slot) ?></div>
                                                 <?php foreach ($plannerDays as $day): ?>
                                                     <?php
                                                         $dayMeta = $plannerDayMeta[$day] ?? ['is_weekend' => false, 'is_holiday' => false, 'holiday_name' => null];
@@ -280,11 +280,11 @@
                                                     ?>
                                                     <button
                                                         type="button"
-                                                        class="<?= escape(implode(' ', $cellClasses)) ?>"
-                                                        data-date="<?= escape($day) ?>"
-                                                        data-time="<?= escape($slot) ?>"
-                                                        aria-label="<?= escape(formatCzechDate($day) . ' ' . $slot . ($dayMeta['is_holiday'] ? ' ' . (string) $dayMeta['holiday_name'] : '')) ?>"
-                                                        title="<?= escape(formatCzechDate($day) . ' ' . $slot . ($dayMeta['is_holiday'] ? ' • ' . (string) $dayMeta['holiday_name'] : '')) ?>"
+                                                        class="<?= \PPStudio\Support\ViewHelper::escape(implode(' ', $cellClasses)) ?>"
+                                                        data-date="<?= \PPStudio\Support\ViewHelper::escape($day) ?>"
+                                                        data-time="<?= \PPStudio\Support\ViewHelper::escape($slot) ?>"
+                                                        aria-label="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day) . ' ' . $slot . ($dayMeta['is_holiday'] ? ' ' . (string) $dayMeta['holiday_name'] : '')) ?>"
+                                                        title="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate($day) . ' ' . $slot . ($dayMeta['is_holiday'] ? ' • ' . (string) $dayMeta['holiday_name'] : '')) ?>"
                                                         aria-pressed="false"
                                                     ></button>
                                                 <?php endforeach; ?>
@@ -327,7 +327,7 @@
                         </form>
                         <p class="form-hint">Uložením přepíšete dostupnost jen pro právě zobrazený týden. Rezervované termíny zůstávají zachované a v mřížce je nepřepíšete.</p>
                         <details class="availability-list-wrap" data-availability-list-wrap data-delete-endpoint="/api/admin/availability-window.php">
-                            <summary data-availability-list-summary>Uložená okna dostupnosti (<?= escape((string) count($availabilityRows)) ?>)</summary>
+                            <summary data-availability-list-summary>Uložená okna dostupnosti (<?= \PPStudio\Support\ViewHelper::escape((string) count($availabilityRows)) ?>)</summary>
                             <p class="form-hint availability-list-intro">Přehled uložených intervalů pro rychlou kontrolu a ruční smazání jednotlivých oken.</p>
                             <div class="admin-table-wrap planner-table-wrap">
                                 <table class="admin-table availability-admin-table">
@@ -338,13 +338,13 @@
                                         <?php else: ?>
                                             <?php foreach ($availabilityRows as $row): ?>
                                                 <tr>
-                                                    <td data-label="Datum"><?= escape(formatCzechDate(substr((string) $row['start_at'], 0, 10))) ?></td>
-                                                    <td data-label="Časové okno"><?= escape(substr((string) $row['start_at'], 11, 5)) ?> - <?= escape(substr((string) $row['end_at'], 11, 5)) ?></td>
-                                                    <td data-label="Poznámka"><?= escape((string) ($row['poznamka'] ?? '')) ?></td>
+                                                    <td data-label="Datum"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDate(substr((string) $row['start_at'], 0, 10))) ?></td>
+                                                    <td data-label="Časové okno"><?= \PPStudio\Support\ViewHelper::escape(substr((string) $row['start_at'], 11, 5)) ?> - <?= \PPStudio\Support\ViewHelper::escape(substr((string) $row['end_at'], 11, 5)) ?></td>
+                                                    <td data-label="Poznámka"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['poznamka'] ?? '')) ?></td>
                                                     <td data-label="Akce">
                                                         <form method="post">
                                                             <?= csrfInputField() ?>
-                                                            <input type="hidden" name="window_id" value="<?= escape((string) $row['id']) ?>">
+                                                            <input type="hidden" name="window_id" value="<?= \PPStudio\Support\ViewHelper::escape((string) $row['id']) ?>">
                                                             <button class="button button-danger button-small" type="submit" name="delete_window" value="1">Smazat</button>
                                                         </form>
                                                     </td>
@@ -367,7 +367,7 @@
                                 <h3>Vlastní background</h3>
                                 <?php if ($storyBackgroundUrl !== ''): ?>
                                     <div class="availability-story-template-preview">
-                                        <img src="<?= escape($storyBackgroundUrl) ?>" alt="Aktuální background pro Instagram story" loading="lazy" decoding="async">
+                                        <img src="<?= \PPStudio\Support\ViewHelper::escape($storyBackgroundUrl) ?>" alt="Aktuální background pro Instagram story" loading="lazy" decoding="async">
                                     </div>
                                     <p class="form-hint">Aktuálně se používá vaše vlastní šablona pozadí.</p>
                                 <?php else: ?>
@@ -393,7 +393,7 @@
 
                         <form method="post" action="/admin-availability-story.php" class="admin-form" data-availability-story-form data-preview-endpoint="/admin-availability-story.php">
                             <?= csrfInputField() ?>
-                            <input type="hidden" name="story_background_path" value="<?= escape($storyBackground) ?>">
+                            <input type="hidden" name="story_background_path" value="<?= \PPStudio\Support\ViewHelper::escape($storyBackground) ?>">
                             <div class="admin-form admin-form-grid availability-story-grid">
                                 <label>
                                     <span>Styl výstupu</span>
@@ -409,15 +409,15 @@
                                 </label>
                                 <label>
                                     <span>Nadpis měsíce</span>
-                                    <input type="text" name="story_month_label" value="<?= escape($storyDefaultMonth) ?>">
+                                    <input type="text" name="story_month_label" value="<?= \PPStudio\Support\ViewHelper::escape($storyDefaultMonth) ?>">
                                 </label>
                                 <label>
                                     <span>Od data</span>
-                                    <input type="date" name="story_from" value="<?= escape($storyDefaultFrom) ?>">
+                                    <input type="date" name="story_from" value="<?= \PPStudio\Support\ViewHelper::escape($storyDefaultFrom) ?>">
                                 </label>
                                 <label>
                                     <span>Do data</span>
-                                    <input type="date" name="story_to" value="<?= escape($storyDefaultTo) ?>">
+                                    <input type="date" name="story_to" value="<?= \PPStudio\Support\ViewHelper::escape($storyDefaultTo) ?>">
                                 </label>
                                 <label>
                                     <span>Max. počet dnů</span>
@@ -429,7 +429,7 @@
                                 </label>
                                 <label class="availability-story-services">
                                     <span>Řádky pod termíny</span>
-                                    <textarea name="story_services" rows="5" placeholder="Každý řádek bude na obrázku jako samostatný štítek"><?= escape(implode("\n", $storyDefaultServices)) ?></textarea>
+                                    <textarea name="story_services" rows="5" placeholder="Každý řádek bude na obrázku jako samostatný štítek"><?= \PPStudio\Support\ViewHelper::escape(implode("\n", $storyDefaultServices)) ?></textarea>
                                 </label>
                             </div>
                             <div class="availability-story-preview-card">
@@ -439,7 +439,7 @@
                                 </div>
                                 <div class="availability-story-preview-frame">
                                     <img
-                                        src="/admin-availability-story.php?preview=1&amp;story_style=story&amp;story_title=<?= escape(urlencode('Zbývají volné termíny')) ?>&amp;story_month_label=<?= escape(urlencode($storyDefaultMonth)) ?>&amp;story_from=<?= escape($storyDefaultFrom) ?>&amp;story_to=<?= escape($storyDefaultTo) ?>&amp;story_max_days=5&amp;story_max_times_per_day=5&amp;story_services=<?= escape(urlencode(implode("\n", $storyDefaultServices))) ?>&amp;story_background_path=<?= escape(urlencode($storyBackground)) ?>"
+                                        src="/admin-availability-story.php?preview=1&amp;story_style=story&amp;story_title=<?= \PPStudio\Support\ViewHelper::escape(urlencode('Zbývají volné termíny')) ?>&amp;story_month_label=<?= \PPStudio\Support\ViewHelper::escape(urlencode($storyDefaultMonth)) ?>&amp;story_from=<?= \PPStudio\Support\ViewHelper::escape($storyDefaultFrom) ?>&amp;story_to=<?= \PPStudio\Support\ViewHelper::escape($storyDefaultTo) ?>&amp;story_max_days=5&amp;story_max_times_per_day=5&amp;story_services=<?= \PPStudio\Support\ViewHelper::escape(urlencode(implode("\n", $storyDefaultServices))) ?>&amp;story_background_path=<?= \PPStudio\Support\ViewHelper::escape(urlencode($storyBackground)) ?>"
                                         alt="Náhled Instagram story s volnými termíny"
                                         data-availability-story-preview
                                     >

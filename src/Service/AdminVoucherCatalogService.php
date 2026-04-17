@@ -112,7 +112,7 @@ final class AdminVoucherCatalogService
         foreach ($voucherReservationOptions as $reservationOption) {
             $reservationPrice = (float) ($reservationOption['reservation_price'] ?? 0);
             $labelParts = [
-                \formatCzechDateTime((string) ($reservationOption['datum_cas'] ?? '')),
+                \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservationOption['datum_cas'] ?? '')),
                 (string) ($reservationOption['jmeno'] ?? ''),
                 (string) ($reservationOption['service_name'] ?? ''),
             ];
@@ -159,7 +159,7 @@ final class AdminVoucherCatalogService
             if (is_array($reservationInfo)) {
                 $labelParts = [];
                 if ((string) ($reservationInfo['datum_cas'] ?? '') !== '') {
-                    $labelParts[] = \formatCzechDateTime((string) $reservationInfo['datum_cas']);
+                    $labelParts[] = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) $reservationInfo['datum_cas']);
                 }
                 if ((string) ($reservationInfo['jmeno'] ?? '') !== '') {
                     $labelParts[] = (string) $reservationInfo['jmeno'];

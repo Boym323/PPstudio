@@ -19,7 +19,7 @@ final class AdminAuthenticationService
      */
     public function handle(array $adminConfig, array $options): array
     {
-        $security = \ppstudioSecurityFacade();
+        $security = \(new \PPStudio\Security\SecurityFacade());
         $security->startSecureSession();
 
         $isAuthenticated = (bool) ($_SESSION[$options['auth_session_key']] ?? false);

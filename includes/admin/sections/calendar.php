@@ -5,12 +5,12 @@
                         <div class="admin-form">
                             <label class="full-span">
                                 <span>URL kalendářového feedu rezervací</span>
-                                <input type="text" value="<?= escape(webcalToHttps($subscriptionCalendarUrl)) ?>" readonly>
+                                <input type="text" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\ContactHelper::webcalToHttps($subscriptionCalendarUrl)) ?>" readonly>
                             </label>
                         </div>
                         <div class="table-actions">
                             <?php if ($subscriptionCalendarUrl !== ''): ?>
-                                <a class="button button-primary button-small" href="<?= escape(webcalToHttps($subscriptionCalendarUrl)) ?>" target="_blank" rel="noreferrer">Náhled feedu</a>
+                                <a class="button button-primary button-small" href="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\ContactHelper::webcalToHttps($subscriptionCalendarUrl)) ?>" target="_blank" rel="noreferrer">Náhled feedu</a>
                             <?php endif; ?>
                         </div>
                         <p class="form-hint">Rezervace se propisují do vlastního kalendářového feedu automaticky.</p>

@@ -25,7 +25,7 @@ final class VoucherAdminDownloadService
             new SiteSettingsRepository($connection),
             \defaultSiteSettings()
         ))->load();
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
 
         $voucher = (new VoucherRepository($connection))->findPrintById($voucherId);
         $connection->close();
@@ -38,14 +38,14 @@ final class VoucherAdminDownloadService
         $recipient = trim((string) ($voucher['recipient_name'] ?? ''));
         $originalValue = (float) ($voucher['puvodni_hodnota'] ?? 0);
         $expiresAt = trim((string) ($voucher['expires_at'] ?? ''));
-        $expiresLabel = $expiresAt !== '' ? \formatCzechDate($expiresAt) : 'Bez omezení';
-        $issuedLabel = \formatCzechDateTime((string) ($voucher['issued_at'] ?? ''));
+        $expiresLabel = $expiresAt !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAt) : 'Bez omezení';
+        $issuedLabel = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($voucher['issued_at'] ?? ''));
         $note = trim((string) ($voucher['note'] ?? ''));
-        $verifyUrl = \ppstudioSecurityFacade()->buildVoucherVerifyUrl($siteSettings, $voucherId, $code, $this->requestSecurityService->voucherVerifySecret());
+        $verifyUrl = \(new \PPStudio\Security\SecurityFacade())->buildVoucherVerifyUrl($siteSettings, $voucherId, $code, $this->requestSecurityService->voucherVerifySecret());
         $qrPayload = $verifyUrl !== '' ? $verifyUrl : implode("\n", [
             'PP Studio - darkovy poukaz',
             'Kod: ' . $code,
-            'Hodnota: ' . \formatPrice($originalValue),
+            'Hodnota: ' . \PPStudio\Support\FormatHelper::formatPrice($originalValue),
             'Platnost: ' . $expiresLabel,
         ]);
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($qrPayload);
@@ -58,7 +58,7 @@ final class VoucherAdminDownloadService
             'voucher' => $voucher,
             'code' => $code,
             'recipient' => $recipient,
-            'original_value_label' => \formatPrice($originalValue),
+            'original_value_label' => \PPStudio\Support\FormatHelper::formatPrice($originalValue),
             'expires_label' => $expiresLabel,
             'issued_label' => $issuedLabel,
             'note' => $note,

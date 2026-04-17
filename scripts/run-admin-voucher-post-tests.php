@@ -94,7 +94,7 @@ $recipientEmail = 'voucher-post-' . $token . '@example.test';
 $note = 'admin voucher post smoke test ' . $token;
 
 try {
-    ppstudioSecurityFacade()->startSecureSession();
+    (new \PPStudio\Security\SecurityFacade())->startSecureSession();
     session_unset();
 
     $createResponse = captureChildResponse(

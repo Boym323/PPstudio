@@ -3,35 +3,35 @@ declare(strict_types=1);
 ?>
 <main class="wrap">
     <section class="card">
-        <p class="eyebrow"><?= escape($site_name) ?></p>
+        <p class="eyebrow"><?= \PPStudio\Support\ViewHelper::escape($site_name) ?></p>
         <h1>Ověření dárkového poukazu</h1>
-        <span class="status"><?= escape((string) $status_label) ?></span>
+        <span class="status"><?= \PPStudio\Support\ViewHelper::escape((string) $status_label) ?></span>
 
         <div class="grid">
             <div class="row">
                 <b>Kód</b>
-                <span><?= escape((string) ($voucher['kod'] ?? '')) ?></span>
+                <span><?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['kod'] ?? '')) ?></span>
             </div>
             <div class="row">
                 <b>Platnost do</b>
-                <span><?= escape((string) $expires_label) ?></span>
+                <span><?= \PPStudio\Support\ViewHelper::escape((string) $expires_label) ?></span>
             </div>
             <div class="row">
                 <b>Původní hodnota</b>
-                <span><?= escape((string) $original_value_label) ?></span>
+                <span><?= \PPStudio\Support\ViewHelper::escape((string) $original_value_label) ?></span>
             </div>
             <?php if ($is_privileged): ?>
                 <div class="row">
                     <b>Aktuální zůstatek</b>
-                    <span><?= escape((string) $remaining_value_label) ?></span>
+                    <span><?= \PPStudio\Support\ViewHelper::escape((string) $remaining_value_label) ?></span>
                 </div>
                 <div class="row">
                     <b>Příjemce</b>
-                    <span><?= escape((string) (($voucher['recipient_name'] ?? '') !== '' ? $voucher['recipient_name'] : 'Neuvedeno')) ?></span>
+                    <span><?= \PPStudio\Support\ViewHelper::escape((string) (($voucher['recipient_name'] ?? '') !== '' ? $voucher['recipient_name'] : 'Neuvedeno')) ?></span>
                 </div>
                 <div class="row">
                     <b>Vydáno</b>
-                    <span><?= escape((string) $issued_at_label) ?></span>
+                    <span><?= \PPStudio\Support\ViewHelper::escape((string) $issued_at_label) ?></span>
                 </div>
             <?php else: ?>
                 <div class="row">

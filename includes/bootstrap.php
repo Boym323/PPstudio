@@ -21,7 +21,7 @@ if (is_file($composerAutoload)) {
     });
 }
 
-function ppstudioSecurityFacade(): \PPStudio\Security\SecurityFacade
+function (new \PPStudio\Security\SecurityFacade()): \PPStudio\Security\SecurityFacade
 {
     static $service = null;
 
@@ -51,7 +51,7 @@ function ppstudioSiteSettingsService(?\mysqli $connection = null): \PPStudio\Ser
     return $services[$key];
 }
 
-function loadSiteSettings(?\mysqli $connection = null): array
+function (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository(?\mysqli $connection = null), defaultSiteSettings()))->load(): array
 {
     if (! $connection instanceof \mysqli) {
         return defaultSiteSettings();
@@ -60,17 +60,17 @@ function loadSiteSettings(?\mysqli $connection = null): array
     return ppstudioSiteSettingsService($connection)->load();
 }
 
-function saveSiteSetting(\mysqli $connection, string $key, string $value): bool
+function (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository(\mysqli $connection), defaultSiteSettings()))->save(string $key, string $value): bool
 {
     return ppstudioSiteSettingsService($connection)->save($key, $value);
 }
 
 function requirePublicSiteAccessOrPrompt(): void
 {
-    ppstudioSecurityFacade()->publicSiteLockService()->requireAccessOrPrompt($_SERVER, $_POST);
+    (new \PPStudio\Security\SecurityFacade())->publicSiteLockService()->requireAccessOrPrompt($_SERVER, $_POST);
 }
 
 function requirePublicSiteAccessOrJsonError(): void
 {
-    ppstudioSecurityFacade()->publicSiteLockService()->requireAccessOrJsonError();
+    (new \PPStudio\Security\SecurityFacade())->publicSiteLockService()->requireAccessOrJsonError();
 }

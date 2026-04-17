@@ -151,7 +151,7 @@ final class AdminApplication
         $mediaFeedback = '';
         $mediaFeedbackType = '';
         $reservationPerPageOptions = [25, 50];
-        $reservationStatusFilterOptions = ['all' => 'Všechny stavy'] + reservationStatusOptions();
+        $reservationStatusFilterOptions = ['all' => 'Všechny stavy'] + \PPStudio\Support\ReservationStatusHelper::options();
         $reservationPeriodFilterOptions = [
             'all' => 'Všechna období',
             'today' => 'Dnes',
@@ -284,7 +284,7 @@ final class AdminApplication
         }
 
         if ($connection instanceof \mysqli) {
-            $siteSettings = loadSiteSettings($connection);
+            $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
             $subscriptionCalendarUrl = (new MailerIntegrationService($this->emailConfig))
                 ->buildSubscriptionCalendarUrl($siteSettings);
 

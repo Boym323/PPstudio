@@ -36,13 +36,13 @@ final class MailerIntegrationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $recipientName = trim((string) ($voucher['recipient_name'] ?? ''));
         $voucherCode = trim((string) ($voucher['kod'] ?? ''));
-        $voucherValue = \formatPrice($voucher['puvodni_hodnota'] ?? null);
+        $voucherValue = \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null);
         $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
-        $expiresAt = $expiresAtRaw !== '' ? \formatCzechDate($expiresAtRaw) : 'Bez omezení';
-        $voucherUrl = \ppstudioSecurityFacade()->buildVoucherViewUrl(
+        $expiresAt = $expiresAtRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAtRaw) : 'Bez omezení';
+        $voucherUrl = \(new \PPStudio\Security\SecurityFacade())->buildVoucherViewUrl(
             $siteSettings,
             (int) ($voucher['id'] ?? 0),
             $voucherCode,
@@ -69,26 +69,26 @@ final class MailerIntegrationService
 
         $htmlBody = '<p>Dobrý den';
         if ($recipientName !== '') {
-            $htmlBody .= ' ' . \escape($recipientName);
+            $htmlBody .= ' ' . \PPStudio\Support\ViewHelper::escape($recipientName);
         }
         $htmlBody .= ',</p>'
-            . '<p>posíláme vám dárkový poukaz do <strong>' . \escape($siteName) . '</strong>.</p>'
+            . '<p>posíláme vám dárkový poukaz do <strong>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</strong>.</p>'
             . '<div style="margin:18px 0;padding:18px 20px;border:1px solid #eadccf;border-radius:20px;background:#fffaf4;">'
-            . '<p style="margin:0 0 10px;"><strong>Kód poukazu:</strong> ' . \escape($voucherCode) . '</p>'
-            . '<p style="margin:0 0 10px;"><strong>Hodnota:</strong> ' . \escape($voucherValue) . '</p>'
-            . '<p style="margin:0;"><strong>Platnost do:</strong> ' . \escape($expiresAt) . '</p>';
+            . '<p style="margin:0 0 10px;"><strong>Kód poukazu:</strong> ' . \PPStudio\Support\ViewHelper::escape($voucherCode) . '</p>'
+            . '<p style="margin:0 0 10px;"><strong>Hodnota:</strong> ' . \PPStudio\Support\ViewHelper::escape($voucherValue) . '</p>'
+            . '<p style="margin:0;"><strong>Platnost do:</strong> ' . \PPStudio\Support\ViewHelper::escape($expiresAt) . '</p>';
 
         $htmlBody .= '</div>';
 
         if ($voucherUrl !== '') {
             $htmlBody .= '<p>Poukaz si můžete kdykoli otevřít, vytisknout nebo uložit jako PDF přes tlačítko níže:</p>'
                 . '<p style="margin:18px 0;">'
-                . '<a href="' . \escape($voucherUrl) . '" style="display:inline-block;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Otevřít dárkový poukaz</a>'
+                . '<a href="' . \PPStudio\Support\ViewHelper::escape($voucherUrl) . '" style="display:inline-block;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Otevřít dárkový poukaz</a>'
                 . '</p>';
         }
 
         $htmlBody .= '<p>Při návštěvě studia stačí nahlásit kód poukazu.</p>'
-            . '<p>' . \escape($siteName) . '</p>';
+            . '<p>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</p>';
 
         return $this->mailer->send(
             $recipientEmail,
@@ -103,7 +103,7 @@ final class MailerIntegrationService
      */
     public function buildReservationsFeedIcal(mysqli $connection, array $siteSettings): string
     {
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $escapeIcalText = static function (string $value): string {
             return str_replace(
                 ["\\", ";", ",", "\r\n", "\n"],
@@ -168,7 +168,7 @@ final class MailerIntegrationService
      */
     public function buildSubscriptionCalendarUrl(array $siteSettings): string
     {
-        $siteUrl = rtrim(\setting($siteSettings, 'site_url', ''), '/');
+        $siteUrl = rtrim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', ''), '/');
         $token = (string) ($this->emailConfig['calendar_token'] ?? '');
 
         if ($siteUrl === '' || $token === '') {

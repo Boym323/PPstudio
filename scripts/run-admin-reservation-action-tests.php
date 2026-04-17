@@ -132,10 +132,10 @@ $reservationId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    ppstudioSecurityFacade()->startSecureSession();
+    (new \PPStudio\Security\SecurityFacade())->startSecureSession();
     session_unset();
 
-    $csrfToken = ppstudioSecurityFacade()->getCsrfToken();
+    $csrfToken = (new \PPStudio\Security\SecurityFacade())->getCsrfToken();
     $sessionId = session_id();
     $_SESSION['ppstudio_admin_authenticated'] = true;
     session_write_close();

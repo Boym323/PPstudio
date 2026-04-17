@@ -10,7 +10,7 @@
                 $renderReservationRows = static function (array $rows, string $emptyText, bool $showStatus = true): void {
                     if ($rows === []) {
                         ?>
-                        <p class="dashboard-empty"><?= escape($emptyText) ?></p>
+                        <p class="dashboard-empty"><?= \PPStudio\Support\ViewHelper::escape($emptyText) ?></p>
                         <?php
                         return;
                     }
@@ -19,18 +19,18 @@
                         <?php foreach ($rows as $row): ?>
                             <div class="dashboard-row">
                                 <div>
-                                    <p class="dashboard-row-title"><?= escape((string) ($row['nazev'] ?? 'Procedura')) ?></p>
-                                    <p class="dashboard-row-subtitle"><?= escape((string) ($row['jmeno'] ?? 'Klientka')) ?></p>
+                                    <p class="dashboard-row-title"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['nazev'] ?? 'Procedura')) ?></p>
+                                    <p class="dashboard-row-subtitle"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['jmeno'] ?? 'Klientka')) ?></p>
                                 </div>
                                 <div class="dashboard-row-meta">
-                                    <p><?= escape(formatCzechDateTime((string) ($row['datum_cas'] ?? ''))) ?></p>
+                                    <p><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($row['datum_cas'] ?? ''))) ?></p>
                                     <?php if ($showStatus): ?>
-                                        <span class="status-badge status-<?= escape((string) ($row['stav'] ?? 'nova')) ?>">
-                                            <?= escape(reservationStatusLabel((string) ($row['stav'] ?? 'nova'))) ?>
+                                        <span class="status-badge status-<?= \PPStudio\Support\ViewHelper::escape((string) ($row['stav'] ?? 'nova')) ?>">
+                                            <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\ReservationStatusHelper::label((string) ($row['stav'] ?? 'nova'))) ?>
                                         </span>
                                     <?php elseif (($row['telefon'] ?? '') !== '' || ($row['email'] ?? '') !== ''): ?>
                                         <p class="dashboard-row-submeta">
-                                            <?= escape(trim((string) (($row['telefon'] ?? '') !== '' ? $row['telefon'] : ($row['email'] ?? '')))) ?>
+                                            <?= \PPStudio\Support\ViewHelper::escape(trim((string) (($row['telefon'] ?? '') !== '' ? $row['telefon'] : ($row['email'] ?? '')))) ?>
                                         </p>
                                     <?php endif; ?>
                                 </div>
@@ -44,22 +44,22 @@
                 <section class="dashboard-kpi-grid" id="dashboard">
                     <article class="stat-card">
                         <p class="panel-label">Dnes rezervace</p>
-                        <strong class="stat-value"><?= escape((string) ((int) ($dashboardStats['today_reservations'] ?? 0))) ?></strong>
+                        <strong class="stat-value"><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($dashboardStats['today_reservations'] ?? 0))) ?></strong>
                         <p class="stat-note">Co dnes skutečně odbavíte.</p>
                     </article>
                     <article class="stat-card">
                         <p class="panel-label">Zítra rezervace</p>
-                        <strong class="stat-value"><?= escape((string) count($dashboardTomorrowReservations)) ?></strong>
+                        <strong class="stat-value"><?= \PPStudio\Support\ViewHelper::escape((string) count($dashboardTomorrowReservations)) ?></strong>
                         <p class="stat-note">Rychlá kontrola zítřejšího diáře.</p>
                     </article>
                     <article class="stat-card">
                         <p class="panel-label">Čeká na potvrzení</p>
-                        <strong class="stat-value"><?= escape((string) ((int) ($dashboardStats['pending_reservations'] ?? 0))) ?></strong>
+                        <strong class="stat-value"><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($dashboardStats['pending_reservations'] ?? 0))) ?></strong>
                         <p class="stat-note">Nové rezervace, které čekají na reakci.</p>
                     </article>
                     <article class="stat-card">
                         <p class="panel-label">Volné sloty dnes</p>
-                        <strong class="stat-value"><?= escape((string) ((int) ($dashboardStats['free_slots_today'] ?? 0))) ?></strong>
+                        <strong class="stat-value"><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($dashboardStats['free_slots_today'] ?? 0))) ?></strong>
                         <p class="stat-note">Volné půlhodiny v dnešním zbytku dne.</p>
                     </article>
                 </section>
@@ -72,9 +72,9 @@
                         <?php else: ?>
                             <div class="dashboard-attention-list">
                                 <?php foreach ($dashboardAttentionItems as $item): ?>
-                                    <div class="dashboard-attention-item dashboard-attention-<?= escape((string) ($item['tone'] ?? 'neutral')) ?>">
-                                        <p class="dashboard-row-title"><?= escape((string) ($item['title'] ?? 'Upozornění')) ?></p>
-                                        <p class="dashboard-row-subtitle"><?= escape((string) ($item['text'] ?? '')) ?></p>
+                                    <div class="dashboard-attention-item dashboard-attention-<?= \PPStudio\Support\ViewHelper::escape((string) ($item['tone'] ?? 'neutral')) ?>">
+                                        <p class="dashboard-row-title"><?= \PPStudio\Support\ViewHelper::escape((string) ($item['title'] ?? 'Upozornění')) ?></p>
+                                        <p class="dashboard-row-subtitle"><?= \PPStudio\Support\ViewHelper::escape((string) ($item['text'] ?? '')) ?></p>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -105,28 +105,28 @@
                                 <?php foreach ($dashboardRecentReservationChanges as $change): ?>
                                     <div class="dashboard-row">
                                         <div>
-                                            <p class="dashboard-row-title"><?= escape((string) ($change['label'] ?? 'Změna rezervace')) ?></p>
+                                            <p class="dashboard-row-title"><?= \PPStudio\Support\ViewHelper::escape((string) ($change['label'] ?? 'Změna rezervace')) ?></p>
                                             <?php if (($change['new_datetime'] ?? '') !== ''): ?>
                                                 <p class="dashboard-row-subtitle">
-                                                    Nový termín: <?= escape(formatCzechDateTime((string) ($change['new_datetime'] ?? ''))) ?>
+                                                    Nový termín: <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($change['new_datetime'] ?? ''))) ?>
                                                 </p>
                                             <?php elseif (($change['old_datetime'] ?? '') !== ''): ?>
                                                 <p class="dashboard-row-subtitle">
-                                                    Původní termín: <?= escape(formatCzechDateTime((string) ($change['old_datetime'] ?? ''))) ?>
+                                                    Původní termín: <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($change['old_datetime'] ?? ''))) ?>
                                                 </p>
                                             <?php elseif (($change['cancel_reason'] ?? '') !== ''): ?>
                                                 <p class="dashboard-row-subtitle">
-                                                    Důvod: <?= escape((string) ($change['cancel_reason'] ?? '')) ?>
+                                                    Důvod: <?= \PPStudio\Support\ViewHelper::escape((string) ($change['cancel_reason'] ?? '')) ?>
                                                 </p>
                                             <?php else: ?>
-                                                <p class="dashboard-row-subtitle">Rezervace #<?= escape((string) ((int) ($change['reservation_id'] ?? 0))) ?></p>
+                                                <p class="dashboard-row-subtitle">Rezervace #<?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($change['reservation_id'] ?? 0))) ?></p>
                                             <?php endif; ?>
                                         </div>
                                         <div class="dashboard-row-meta">
-                                            <p><?= escape(formatCzechDateTime((string) ($change['time'] ?? ''))) ?></p>
+                                            <p><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($change['time'] ?? ''))) ?></p>
                                             <?php if (($change['event_type'] ?? '') !== ''): ?>
                                                 <span class="dashboard-change-type dashboard-change-<?= str_contains((string) ($change['event_type'] ?? ''), 'cancelled') ? 'cancelled' : 'rescheduled' ?>">
-                                                    <?= escape(str_contains((string) ($change['event_type'] ?? ''), 'cancelled') ? 'Zrušení' : 'Přesun') ?>
+                                                    <?= \PPStudio\Support\ViewHelper::escape(str_contains((string) ($change['event_type'] ?? ''), 'cancelled') ? 'Zrušení' : 'Přesun') ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -153,11 +153,11 @@
                                 ?>
                                 <div class="dashboard-status-item">
                                     <div class="dashboard-status-header">
-                                        <span><?= escape($statusLabel) ?></span>
-                                        <strong><?= escape((string) $statusCount) ?> (<?= escape((string) $statusPercent) ?> %)</strong>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape($statusLabel) ?></span>
+                                        <strong><?= \PPStudio\Support\ViewHelper::escape((string) $statusCount) ?> (<?= \PPStudio\Support\ViewHelper::escape((string) $statusPercent) ?> %)</strong>
                                     </div>
                                     <div class="dashboard-status-bar">
-                                        <div class="dashboard-status-fill status-<?= escape($statusKey) ?>" style="width: <?= escape((string) $statusPercent) ?>%;"></div>
+                                        <div class="dashboard-status-fill status-<?= \PPStudio\Support\ViewHelper::escape($statusKey) ?>" style="width: <?= \PPStudio\Support\ViewHelper::escape((string) $statusPercent) ?>%;"></div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -172,9 +172,9 @@
                             <div class="dashboard-ranked-list">
                                 <?php foreach ($dashboardTopServices as $index => $row): ?>
                                     <div class="dashboard-ranked-item">
-                                        <strong>#<?= escape((string) ($index + 1)) ?></strong>
-                                        <span><?= escape((string) ($row['nazev'] ?? 'Procedura')) ?></span>
-                                        <span><?= escape((string) ((int) ($row['reservations_count'] ?? 0))) ?>x</span>
+                                        <strong>#<?= \PPStudio\Support\ViewHelper::escape((string) ($index + 1)) ?></strong>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['nazev'] ?? 'Procedura')) ?></span>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($row['reservations_count'] ?? 0))) ?>x</span>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -189,9 +189,9 @@
                             <div class="dashboard-ranked-list">
                                 <?php foreach ($dashboardTopCategories as $index => $row): ?>
                                     <div class="dashboard-ranked-item">
-                                        <strong>#<?= escape((string) ($index + 1)) ?></strong>
-                                        <span><?= escape((string) ($row['category_name'] ?? 'Kategorie')) ?></span>
-                                        <span><?= escape((string) ((int) ($row['reservations_count'] ?? 0))) ?>x</span>
+                                        <strong>#<?= \PPStudio\Support\ViewHelper::escape((string) ($index + 1)) ?></strong>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['category_name'] ?? 'Kategorie')) ?></span>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($row['reservations_count'] ?? 0))) ?>x</span>
                                     </div>
                                 <?php endforeach; ?>
                             </div>

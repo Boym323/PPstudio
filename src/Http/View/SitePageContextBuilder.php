@@ -24,17 +24,17 @@ final class SitePageContextBuilder
         $template = (string) ($config['template'] ?? '');
 
         $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
-        $csrfToken = \ppstudioSecurityFacade()->getCsrfToken();
+        $csrfToken = \(new \PPStudio\Security\SecurityFacade())->getCsrfToken();
         $siteSettings = \defaultSiteSettings();
 
         $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
         if ($connection instanceof \mysqli) {
-            $siteSettings = \loadSiteSettings($connection);
+            $siteSettings = \(new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
             $connection->close();
         }
 
         $fallbackSiteUrl = rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
-        $siteBaseUrl = rtrim((string) \setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
+        $siteBaseUrl = rtrim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
         if ($siteBaseUrl === '') {
             $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
             if ($host !== '') {
@@ -49,7 +49,7 @@ final class SitePageContextBuilder
 
         $reservationAntispamToken = '';
         if ($activeNav === 'reservation') {
-            $reservationAntispamToken = \ppstudioSecurityFacade()->reservationAntispamService()->issueToken();
+            $reservationAntispamToken = \(new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->issueToken();
         }
 
         return [
@@ -89,6 +89,6 @@ final class SitePageContextBuilder
 
         $message = $reservationMessages[$reservationStatus];
 
-        return '<div class="reservation-alert reservation-alert-' . \escape($message['type']) . '">' . \escape($message['text']) . '</div>';
+        return '<div class="reservation-alert reservation-alert-' . \PPStudio\Support\ViewHelper::escape($message['type']) . '">' . \PPStudio\Support\ViewHelper::escape($message['text']) . '</div>';
     }
 }

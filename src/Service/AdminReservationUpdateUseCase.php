@@ -25,7 +25,7 @@ final class AdminReservationUpdateUseCase
         $adminNote = trim((string) ($post['poznamka_admina'] ?? ''));
         $cancelReason = trim((string) ($post['duvod_zruseni'] ?? ''));
         $dateTimeRaw = trim((string) ($post['datum_cas'] ?? ''));
-        $allowedStatuses = \reservationStatusOptions();
+        $allowedStatuses = \PPStudio\Support\ReservationStatusHelper::options();
 
         if ($reservationId <= 0) {
             return $this->error('Neplatné ID rezervace.', 422);
@@ -113,7 +113,7 @@ final class AdminReservationUpdateUseCase
                 $this->notificationService->sendConfirmedEmail($this->siteSettings, $reservationAfterUpdate, [
                     'previous_datetime' => $previousDateTime,
                 ]);
-                \ppstudioSecurityFacade()->securityEventLogger()->log('reservation_admin_rescheduled', 'admin_reservation', 'info', [
+                \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_admin_rescheduled', 'admin_reservation', 'info', [
                     'reservation_id' => $reservationId,
                     'old_datetime' => $previousDateTime,
                     'new_datetime' => $newDateTime,
@@ -122,7 +122,7 @@ final class AdminReservationUpdateUseCase
 
             if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
                 $this->notificationService->sendCancelledEmail($this->siteSettings, $reservationAfterUpdate);
-                \ppstudioSecurityFacade()->securityEventLogger()->log('reservation_admin_cancelled', 'admin_reservation', 'warning', [
+                \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_admin_cancelled', 'admin_reservation', 'warning', [
                     'reservation_id' => $reservationId,
                     'cancelled_by' => $cancelMeta['cancelled_by'],
                     'cancelled_by_user' => $cancelMeta['cancelled_by_user'],
@@ -134,10 +134,10 @@ final class AdminReservationUpdateUseCase
         return $this->success('Rezervace byla upravena.', [
             'reservation_id' => $reservationId,
             'status_key' => $status,
-            'status_label' => \reservationStatusLabel($status),
+            'status_label' => \PPStudio\Support\ReservationStatusHelper::label($status),
             'admin_note' => $adminNote,
             'cancel_reason' => $cancelReason,
-            'datetime_label' => \formatCzechDateTime($responseDateTime),
+            'datetime_label' => \PPStudio\Support\FormatHelper::formatCzechDateTime($responseDateTime),
             'datetime_local' => str_replace(' ', 'T', substr($responseDateTime, 0, 16)),
         ]);
     }

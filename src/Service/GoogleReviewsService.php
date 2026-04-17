@@ -12,8 +12,8 @@ final class GoogleReviewsService
     public function loadPayload(array $siteSettings): array
     {
         $apiKey = trim((string) \ppstudioEnv('PPSTUDIO_GOOGLE_PLACES_API_KEY', ''));
-        $placeId = trim((string) \setting($siteSettings, 'google_place_id', ''));
-        $language = trim((string) \setting($siteSettings, 'google_reviews_language', 'cs'));
+        $placeId = trim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_place_id', ''));
+        $language = trim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_language', 'cs'));
         if ($language === '') {
             $language = 'cs';
         }
@@ -92,7 +92,7 @@ final class GoogleReviewsService
                 'name' => trim((string) ($googleResult['name'] ?? 'PP Studio')),
                 'rating' => (float) ($googleResult['rating'] ?? 0),
                 'total_ratings' => (int) ($googleResult['user_ratings_total'] ?? 0),
-                'url' => trim((string) ($googleResult['url'] ?? \setting($siteSettings, 'google_reviews_url', ''))),
+                'url' => trim((string) ($googleResult['url'] ?? \PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_url', ''))),
             ],
             'reviews' => $reviews,
         ];

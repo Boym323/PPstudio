@@ -10,24 +10,24 @@
                         <div class="settings-section-tabs" role="tablist" aria-label="Podsekce nastavení">
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'studio' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=studio#nastaveni"
+                                href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=studio#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'studio' ? 'true' : 'false' ?>"
                             >Studio a kontakt</a>
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'recenze' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=recenze#nastaveni"
+                                href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=recenze#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'recenze' ? 'true' : 'false' ?>"
                             >Recenze a sociální sítě</a>
                             <a
                                 class="button button-secondary button-small <?= $settingsSection === 'email' ? 'is-active' : '' ?>"
-                                href="<?= escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=email#nastaveni"
+                                href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=nastaveni&amp;settings_section=email#nastaveni"
                                 role="tab"
                                 aria-selected="<?= $settingsSection === 'email' ? 'true' : 'false' ?>"
                             >E-mailové notifikace</a>
                         </div>
-                        <p>Zobrazte jen tu část nastavení, kterou zrovna potřebujete upravit. Aktivní podsekce: <strong><?= escape($settingsSectionLabel) ?></strong>.</p>
+                        <p>Zobrazte jen tu část nastavení, kterou zrovna potřebujete upravit. Aktivní podsekce: <strong><?= \PPStudio\Support\ViewHelper::escape($settingsSectionLabel) ?></strong>.</p>
                     </div>
 
                     <div class="settings-section-panel" <?= $settingsSection !== 'studio' ? 'hidden' : '' ?>>
@@ -45,11 +45,11 @@
                                         : (str_contains($fieldKey, 'url') ? 'url' : 'text');
                                 ?>
                                     <label class="<?= $isLong ? 'full-span' : '' ?>">
-                                        <span><?= escape($fieldLabel) ?></span>
+                                        <span><?= \PPStudio\Support\ViewHelper::escape($fieldLabel) ?></span>
                                         <?php if ($isLong): ?>
-                                            <textarea name="<?= escape($fieldKey) ?>" rows="4"><?= escape(setting($siteSettings, $fieldKey, '')) ?></textarea>
+                                            <textarea name="<?= \PPStudio\Support\ViewHelper::escape($fieldKey) ?>" rows="4"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, $fieldKey, '')) ?></textarea>
                                         <?php else: ?>
-                                            <input type="<?= $inputType ?>" name="<?= escape($fieldKey) ?>" value="<?= escape(setting($siteSettings, $fieldKey, '')) ?>">
+                                            <input type="<?= $inputType ?>" name="<?= \PPStudio\Support\ViewHelper::escape($fieldKey) ?>" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, $fieldKey, '')) ?>">
                                         <?php endif; ?>
                                     </label>
                                 <?php endforeach; ?>
@@ -65,11 +65,11 @@
                             <form method="post" class="admin-form admin-form-grid">
                                 <?= csrfInputField() ?>
                                 <input type="hidden" name="settings_section" value="recenze">
-                                <label><span>Google recenze URL</span><input type="url" name="google_reviews_url" value="<?= escape(setting($siteSettings, 'google_reviews_url', '')) ?>"></label>
-                                <label><span>Firmy.cz URL</span><input type="url" name="firmy_reviews_url" value="<?= escape(setting($siteSettings, 'firmy_reviews_url', '')) ?>"></label>
-                                <label><span>Google Place ID</span><input type="text" name="google_place_id" value="<?= escape(setting($siteSettings, 'google_place_id', '')) ?>" placeholder="např. ChIJ..."></label>
-                                <label><span>Jazyk recenzí (kód)</span><input type="text" name="google_reviews_language" value="<?= escape(setting($siteSettings, 'google_reviews_language', 'cs')) ?>" placeholder="cs"></label>
-                                <label class="full-span"><span>Firmy.cz embed HTML</span><textarea name="firmy_reviews_embed" rows="4"><?= escape(setting($siteSettings, 'firmy_reviews_embed', '')) ?></textarea></label>
+                                <label><span>Google recenze URL</span><input type="url" name="google_reviews_url" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_url', '')) ?>"></label>
+                                <label><span>Firmy.cz URL</span><input type="url" name="firmy_reviews_url" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'firmy_reviews_url', '')) ?>"></label>
+                                <label><span>Google Place ID</span><input type="text" name="google_place_id" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_place_id', '')) ?>" placeholder="např. ChIJ..."></label>
+                                <label><span>Jazyk recenzí (kód)</span><input type="text" name="google_reviews_language" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_language', 'cs')) ?>" placeholder="cs"></label>
+                                <label class="full-span"><span>Firmy.cz embed HTML</span><textarea name="firmy_reviews_embed" rows="4"><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'firmy_reviews_embed', '')) ?></textarea></label>
                                 <button class="button button-primary full-span" type="submit" name="save_integrations" value="1">Uložit napojení recenzí</button>
                             </form>
                             <p class="form-hint">Google Places API key je načítán pouze z ENV (<code>PPSTUDIO_GOOGLE_PLACES_API_KEY</code>). Pro Firmy.cz lze použít embed HTML.</p>
@@ -85,19 +85,19 @@
                                 <input type="hidden" name="settings_section" value="email">
                                 <label>
                                     <span>Notifikační e-maily</span>
-                                    <input type="text" name="notification_emails" value="<?= escape(setting($siteSettings, 'notification_emails', '')) ?>" placeholder="info@ppstudio.cz, druha@adresa.cz">
+                                    <input type="text" name="notification_emails" value="<?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'notification_emails', '')) ?>" placeholder="info@ppstudio.cz, druha@adresa.cz">
                                 </label>
                                 <label>
                                     <span>Odesílatel</span>
-                                    <input type="text" value="<?= escape((string) ($emailConfig['from_email'] ?? '')) ?>" readonly>
+                                    <input type="text" value="<?= \PPStudio\Support\ViewHelper::escape((string) ($emailConfig['from_email'] ?? '')) ?>" readonly>
                                 </label>
                                 <label>
                                     <span>SMTP server</span>
-                                    <input type="text" value="<?= escape((string) ($emailConfig['host'] ?? '')) ?>" readonly>
+                                    <input type="text" value="<?= \PPStudio\Support\ViewHelper::escape((string) ($emailConfig['host'] ?? '')) ?>" readonly>
                                 </label>
                                 <label>
                                     <span>Reply-to</span>
-                                    <input type="text" value="<?= escape((string) ($emailConfig['reply_to'] ?? '')) ?>" readonly>
+                                    <input type="text" value="<?= \PPStudio\Support\ViewHelper::escape((string) ($emailConfig['reply_to'] ?? '')) ?>" readonly>
                                 </label>
                                 <label class="full-span">
                                     <span>Automatické potvrzení z e-mailu</span>

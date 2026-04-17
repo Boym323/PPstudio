@@ -11,7 +11,7 @@ final class ReservationLinkSigner
 
     public function buildAdminActionUrl(array $siteSettings, int $reservationId, string $action): string
     {
-        $siteUrl = rtrim(\setting($siteSettings, 'site_url', ''), '/');
+        $siteUrl = rtrim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', ''), '/');
         $secret = (string) ($this->emailConfig['action_secret'] ?? '');
         $ttl = (int) ($this->emailConfig['action_ttl_seconds'] ?? 172800);
 
@@ -26,7 +26,7 @@ final class ReservationLinkSigner
 
     public function buildCustomerActionUrl(array $siteSettings, array $reservation, string $action, string $path): string
     {
-        $siteUrl = rtrim(\setting($siteSettings, 'site_url', ''), '/');
+        $siteUrl = rtrim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', ''), '/');
         $secret = (string) ($this->emailConfig['action_secret'] ?? '');
         $reservationId = (int) ($reservation['id'] ?? 0);
 

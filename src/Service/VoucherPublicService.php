@@ -26,7 +26,7 @@ final class VoucherPublicService
         $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            \ppstudioSecurityFacade()->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
+            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -45,9 +45,9 @@ final class VoucherPublicService
         $status = $this->effectiveStatus($voucher);
         $statusLabel = $this->statusLabel($status);
         $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
-        $expiresLabel = $expiresAtRaw !== '' ? \formatCzechDate($expiresAtRaw) : 'Bez omezení';
-        $valueLabel = \formatPrice($voucher['puvodni_hodnota'] ?? null);
-        $security = \ppstudioSecurityFacade();
+        $expiresLabel = $expiresAtRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAtRaw) : 'Bez omezení';
+        $valueLabel = \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null);
+        $security = \(new \PPStudio\Security\SecurityFacade());
         $voucherUrl = $security->buildVoucherViewUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $verifyUrl = $security->buildVoucherVerifyUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $qrPayload = $voucherUrl !== '' ? $voucherUrl : implode("\n", [
@@ -58,7 +58,7 @@ final class VoucherPublicService
         ]);
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($qrPayload);
 
-        \ppstudioSecurityFacade()->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
+        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
         ]);
@@ -88,7 +88,7 @@ final class VoucherPublicService
         $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            \ppstudioSecurityFacade()->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
+            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -107,7 +107,7 @@ final class VoucherPublicService
         $status = $this->effectiveStatus($voucher);
         $expiresAt = trim((string) ($voucher['expires_at'] ?? ''));
 
-        \ppstudioSecurityFacade()->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
+        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
             'privileged_view' => $isPrivileged ? 1 : 0,
@@ -121,10 +121,10 @@ final class VoucherPublicService
             'voucher' => $voucher,
             'is_privileged' => $isPrivileged,
             'status_label' => $this->statusLabel($status),
-            'expires_label' => $expiresAt !== '' ? \formatCzechDate($expiresAt) : 'Bez omezení',
-            'issued_at_label' => \formatCzechDateTime((string) ($voucher['issued_at'] ?? '')),
-            'original_value_label' => \formatPrice($voucher['puvodni_hodnota'] ?? null),
-            'remaining_value_label' => \formatPrice($voucher['zustatek'] ?? null),
+            'expires_label' => $expiresAt !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAt) : 'Bez omezení',
+            'issued_at_label' => \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($voucher['issued_at'] ?? '')),
+            'original_value_label' => \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null),
+            'remaining_value_label' => \PPStudio\Support\FormatHelper::formatPrice($voucher['zustatek'] ?? null),
         ];
     }
 
@@ -144,7 +144,7 @@ final class VoucherPublicService
             new SiteSettingsRepository($connection),
             \defaultSiteSettings()
         ))->load();
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $voucher = (new VoucherRepository($connection))->findPublicById($voucherId);
         $connection->close();
 

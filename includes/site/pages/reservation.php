@@ -26,13 +26,13 @@
                 </div>
                 <div class="reservation-fallback-actions">
                     <?php if ($contactPhoneHref !== ''): ?>
-                        <a class="cta-button cta-button-primary" href="<?= escape($contactPhoneHref) ?>">Zavolat</a>
+                        <a class="cta-button cta-button-primary" href="<?= \PPStudio\Support\ViewHelper::escape($contactPhoneHref) ?>">Zavolat</a>
                     <?php endif; ?>
                     <?php if ($contactEmailHref !== ''): ?>
-                        <a class="cta-button cta-button-ghost" href="<?= escape($contactEmailHref) ?>">Napsat e-mail</a>
+                        <a class="cta-button cta-button-ghost" href="<?= \PPStudio\Support\ViewHelper::escape($contactEmailHref) ?>">Napsat e-mail</a>
                     <?php endif; ?>
                     <?php if ($contactInstagramUrl !== ''): ?>
-                        <a class="cta-button cta-button-ghost" href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener">
+                        <a class="cta-button cta-button-ghost" href="<?= \PPStudio\Support\ViewHelper::escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener">
                             <i class="fab fa-instagram" aria-hidden="true"></i>
                             <span>Instagram</span>
                         </a>
@@ -41,8 +41,8 @@
             </section>
             <div class="reservation-feedback" data-reservation-feedback><?= $reservationAlertHtml ?></div>
             <form class="reservation-form" method="post" action="/reservation-submit.php" data-reservation-form>
-                <input type="hidden" name="_csrf" value="<?= escape($csrfToken) ?>">
-                <input type="hidden" name="reservation_token" value="<?= escape($reservationAntispamToken) ?>">
+                <input type="hidden" name="_csrf" value="<?= \PPStudio\Support\ViewHelper::escape($csrfToken) ?>">
+                <input type="hidden" name="reservation_token" value="<?= \PPStudio\Support\ViewHelper::escape($reservationAntispamToken) ?>">
                 <label class="hp-field" aria-hidden="true">
                     Vaše webová stránka
                     <input type="text" name="website" tabindex="-1" autocomplete="off">
@@ -195,28 +195,28 @@
         <div class="contact-grid" id="contact-info">
             <div>
                 <div class="contact-box">
-                    <strong><?= escape($contactName) ?></strong><br>
-                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <a href="<?= escape($contactPhoneHref) ?>"><?= escape($contactPhone) ?></a><br>
+                    <strong><?= \PPStudio\Support\ViewHelper::escape($contactName) ?></strong><br>
+                    <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <a href="<?= \PPStudio\Support\ViewHelper::escape($contactPhoneHref) ?>"><?= \PPStudio\Support\ViewHelper::escape($contactPhone) ?></a><br>
                     <i class="fas fa-envelope" style="color:#7a5a43; margin-right:6px;"></i>
-                    <a class="email" href="<?= escape($contactEmailHref) ?>" data-user="<?= escape($contactEmailUser) ?>" data-domain="<?= escape($contactEmailDomain) ?>"><?= escape($contactEmailUser) ?> [zavináč] <?= escape($contactEmailDomain) ?></a><br>
+                    <a class="email" href="<?= \PPStudio\Support\ViewHelper::escape($contactEmailHref) ?>" data-user="<?= \PPStudio\Support\ViewHelper::escape($contactEmailUser) ?>" data-domain="<?= \PPStudio\Support\ViewHelper::escape($contactEmailDomain) ?>"><?= \PPStudio\Support\ViewHelper::escape($contactEmailUser) ?> [zavináč] <?= \PPStudio\Support\ViewHelper::escape($contactEmailDomain) ?></a><br>
                     <?php if ($contactInstagramUrl !== ''): ?>
                         <i class="fab fa-instagram" style="color:#7a5a43; margin-right:6px;"></i>
-                        <a href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= escape($contactInstagramHandle !== '' ? '@' . $contactInstagramHandle : $contactInstagramUrl) ?></a><br>
+                        <a href="<?= \PPStudio\Support\ViewHelper::escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= \PPStudio\Support\ViewHelper::escape($contactInstagramHandle !== '' ? '@' . $contactInstagramHandle : $contactInstagramUrl) ?></a><br>
                     <?php endif; ?>
                     <?php if ($contactIco !== ''): ?>
-                        <span style="font-size:0.98em; color:#7a6a5b;"><strong>IČO:</strong> <?= escape($contactIco) ?></span>
+                        <span style="font-size:0.98em; color:#7a6a5b;"><strong>IČO:</strong> <?= \PPStudio\Support\ViewHelper::escape($contactIco) ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="contact-box">
                     <strong>Otevírací doba:</strong><br>
-                    <?= nl2br(escape($contactOpeningHours)) ?>
+                    <?= nl2br(\PPStudio\Support\ViewHelper::escape($contactOpeningHours)) ?>
                 </div>
             </div>
             <div>
                 <?php if ($contactAddress !== ''): ?>
                     <div class="contact-box" style="margin-bottom: 1.2rem;">
                         <strong>Adresa:</strong><br>
-                        <?= nl2br(escape($contactAddress)) ?>
+                        <?= nl2br(\PPStudio\Support\ViewHelper::escape($contactAddress)) ?>
                     </div>
                 <?php endif; ?>
             </div>

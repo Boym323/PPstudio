@@ -22,7 +22,7 @@ if (! $connection instanceof mysqli) {
     echo 'Database unavailable';
     exit;
 }
-$siteSettings = loadSiteSettings($connection);
+$siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
 
 header('Content-Type: text/calendar; charset=utf-8');
 header('Content-Disposition: inline; filename="reservations-feed.ics"');

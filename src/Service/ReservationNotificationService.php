@@ -30,11 +30,11 @@ final class ReservationNotificationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $subject = $siteName . ': přijetí rezervace';
         $customerName = (string) ($reservation['jmeno'] ?? '');
         $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
-        $dateTime = \formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+        $dateTime = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
 
         $textBody = "Dobrý den {$customerName},\n\n"
             . "děkujeme za rezervaci ve studiu {$siteName}.\n"
@@ -43,12 +43,12 @@ final class ReservationNotificationService
             . "Jakmile rezervaci potvrdíme, pošleme vám další e-mail.\n\n"
             . "{$siteName}";
 
-        $htmlBody = '<p>Dobrý den ' . \escape($customerName) . ',</p>'
-            . '<p>děkujeme za rezervaci ve studiu <strong>' . \escape($siteName) . '</strong>.</p>'
-            . '<p><strong>Procedura:</strong> ' . \escape($serviceName) . '<br>'
-            . '<strong>Termín:</strong> ' . \escape($dateTime) . '</p>'
+        $htmlBody = '<p>Dobrý den ' . \PPStudio\Support\ViewHelper::escape($customerName) . ',</p>'
+            . '<p>děkujeme za rezervaci ve studiu <strong>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</strong>.</p>'
+            . '<p><strong>Procedura:</strong> ' . \PPStudio\Support\ViewHelper::escape($serviceName) . '<br>'
+            . '<strong>Termín:</strong> ' . \PPStudio\Support\ViewHelper::escape($dateTime) . '</p>'
             . '<p>Jakmile rezervaci potvrdíme, pošleme vám další e-mail.</p>'
-            . '<p>' . \escape($siteName) . '</p>';
+            . '<p>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</p>';
 
         return $this->mailer->send((string) $reservation['email'], $subject, $htmlBody, $textBody);
     }
@@ -59,7 +59,7 @@ final class ReservationNotificationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $recipients = $this->notificationRecipients($siteSettings);
 
         if ($recipients === []) {
@@ -74,19 +74,19 @@ final class ReservationNotificationService
             . "E-mail: " . (string) ($reservation['email'] ?? '') . "\n"
             . "Telefon: " . (string) ($reservation['telefon'] ?? '') . "\n"
             . "Procedura: " . (string) ($reservation['service_name'] ?? '') . "\n"
-            . "Termín: " . \formatCzechDateTime((string) ($reservation['datum_cas'] ?? '')) . "\n"
+            . "Termín: " . \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? '')) . "\n"
             . "Zdroj: " . (string) ($reservation['zdroj'] ?? 'web') . "\n"
             . "Poznámka: " . (string) ($reservation['poznamka_klienta'] ?? '') . "\n\n"
             . "Akci potvrzení nebo zrušení proveďte přes tlačítka v HTML verzi e-mailu.";
 
-        $htmlBody = nl2br(\escape($textBody));
+        $htmlBody = nl2br(\PPStudio\Support\ViewHelper::escape($textBody));
 
         if ($confirmUrl !== '' || $cancelUrl !== '') {
             $actions = '<div style="margin-top:20px;padding-top:16px;border-top:1px solid #e4d6c5;">';
             if ($confirmUrl !== '') {
                 $actions .= '<div style="margin-bottom:18px;">'
                     . '<a href="'
-                    . \escape($confirmUrl)
+                    . \PPStudio\Support\ViewHelper::escape($confirmUrl)
                     . '" style="display:inline-block;padding:11px 18px;background:#7a5a43;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;box-shadow:0 6px 16px rgba(122,90,67,0.18);">Potvrdit rezervaci</a>'
                     . '</div>';
             }
@@ -94,7 +94,7 @@ final class ReservationNotificationService
                 $actions .= '<div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e5d9ca;">'
                     . '<p style="margin:0 0 10px 0;font-size:12px;color:#7b6959;">Pozor: následující akce rezervaci okamžitě zruší.</p>'
                     . '<a href="'
-                    . \escape($cancelUrl)
+                    . \PPStudio\Support\ViewHelper::escape($cancelUrl)
                     . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit rezervaci</a>'
                     . '</div>';
             }
@@ -116,22 +116,22 @@ final class ReservationNotificationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $previousDateTimeRaw = trim((string) ($context['previous_datetime'] ?? ''));
         $isRescheduled = $previousDateTimeRaw !== '';
-        $previousDateTime = $previousDateTimeRaw !== '' ? \formatCzechDateTime($previousDateTimeRaw) : '';
+        $previousDateTime = $previousDateTimeRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDateTime($previousDateTimeRaw) : '';
 
         $subject = $isRescheduled
             ? $siteName . ': potvrzení změny termínu rezervace'
             : $siteName . ': potvrzení rezervace';
         $customerName = (string) ($reservation['jmeno'] ?? '');
         $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
-        $dateTime = \formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
-        $location = \setting($siteSettings, 'contact_address', 'Adresa studia');
+        $dateTime = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+        $location = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_address', 'Adresa studia');
         $rescheduleUrl = $this->linkSigner->buildCustomerRescheduleUrl($siteSettings, $reservation);
         $cancelUrl = $this->linkSigner->buildCustomerCancelUrl($siteSettings, $reservation);
         $canManageUntil = $this->linkSigner->customerActionDeadline($reservation);
-        $canManageLabel = $canManageUntil > 0 ? \formatCzechDateTime(date('Y-m-d H:i:s', $canManageUntil)) : '';
+        $canManageLabel = $canManageUntil > 0 ? \PPStudio\Support\FormatHelper::formatCzechDateTime(date('Y-m-d H:i:s', $canManageUntil)) : '';
 
         $textBody = "Dobrý den {$customerName},\n\n"
             . ($isRescheduled ? "váš termín rezervace byl změněn.\n" : "vaše rezervace byla potvrzena.\n")
@@ -155,13 +155,13 @@ final class ReservationNotificationService
         $textBody .= "\n"
             . "\n{$siteName}";
 
-        $htmlBody = '<p>Dobrý den ' . \escape($customerName) . ',</p>'
-            . '<p>' . \escape($isRescheduled ? 'váš termín rezervace byl změněn.' : 'vaše rezervace byla potvrzena.') . '</p>'
-            . '<p><strong>Procedura:</strong> ' . \escape($serviceName) . '<br>'
+        $htmlBody = '<p>Dobrý den ' . \PPStudio\Support\ViewHelper::escape($customerName) . ',</p>'
+            . '<p>' . \PPStudio\Support\ViewHelper::escape($isRescheduled ? 'váš termín rezervace byl změněn.' : 'vaše rezervace byla potvrzena.') . '</p>'
+            . '<p><strong>Procedura:</strong> ' . \PPStudio\Support\ViewHelper::escape($serviceName) . '<br>'
             . ($isRescheduled
-                ? '<strong>Původní termín:</strong> ' . \escape($previousDateTime) . '<br><strong>Nový termín:</strong> ' . \escape($dateTime) . '<br>'
-                : '<strong>Termín:</strong> ' . \escape($dateTime) . '<br>')
-            . '<strong>Místo:</strong> ' . \escape($location) . '</p>'
+                ? '<strong>Původní termín:</strong> ' . \PPStudio\Support\ViewHelper::escape($previousDateTime) . '<br><strong>Nový termín:</strong> ' . \PPStudio\Support\ViewHelper::escape($dateTime) . '<br>'
+                : '<strong>Termín:</strong> ' . \PPStudio\Support\ViewHelper::escape($dateTime) . '<br>')
+            . '<strong>Místo:</strong> ' . \PPStudio\Support\ViewHelper::escape($location) . '</p>'
             . '<p>V příloze najdete soubor pro vložení do kalendáře.</p>';
 
         if ($cancelUrl !== '' || $rescheduleUrl !== '') {
@@ -169,22 +169,22 @@ final class ReservationNotificationService
                 . '<p style="margin:0 0 10px 0;">Potřebujete změnu? Použijte bezpečná tlačítka níže:</p>';
             if ($rescheduleUrl !== '') {
                 $htmlBody .= '<a href="'
-                    . \escape($rescheduleUrl)
+                    . \PPStudio\Support\ViewHelper::escape($rescheduleUrl)
                     . '" style="display:inline-block;padding:10px 16px;background:#7a5a43;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;box-shadow:0 6px 16px rgba(122,90,67,0.18);">Přesunout termín</a>';
             }
             if ($cancelUrl !== '') {
                 $htmlBody .= ($rescheduleUrl !== '' ? '<span style="display:inline-block;width:24px;"></span>' : '')
                     . '<a href="'
-                    . \escape($cancelUrl)
+                    . \PPStudio\Support\ViewHelper::escape($cancelUrl)
                     . '" style="display:inline-block;padding:10px 16px;background:#fbf5ee;color:#8c4f42;text-decoration:none;border-radius:999px;font-weight:700;border:1px solid #d9c0b5;">Zrušit termín</a>';
             }
             $htmlBody .= '<p style="margin:10px 0 0 0;font-size:12px;color:#6e5f52;">Po otevření odkazu se zobrazí potvrzovací krok.'
-                . ($canManageLabel !== '' ? ' Změnu nebo zrušení lze provést nejpozději do ' . \escape($canManageLabel) . '.' : '')
+                . ($canManageLabel !== '' ? ' Změnu nebo zrušení lze provést nejpozději do ' . \PPStudio\Support\ViewHelper::escape($canManageLabel) . '.' : '')
                 . '</p>'
                 . '</div>';
         }
 
-        $htmlBody .= '<p>' . \escape($siteName) . '</p>';
+        $htmlBody .= '<p>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</p>';
 
         return $this->mailer->send(
             (string) $reservation['email'],
@@ -205,11 +205,11 @@ final class ReservationNotificationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $subject = $siteName . ': rezervace byla zrušena';
         $customerName = (string) ($reservation['jmeno'] ?? '');
         $serviceName = (string) ($reservation['service_name'] ?? 'Vybraná procedura');
-        $dateTime = \formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+        $dateTime = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
         $cancelledBy = trim((string) ($reservation['zruseno_kym'] ?? ''));
         $cancelledByLabel = match ($cancelledBy) {
             'customer_link' => 'zákazníkem přes e-mailový odkaz',
@@ -231,7 +231,7 @@ final class ReservationNotificationService
         return $this->mailer->send(
             (string) $reservation['email'],
             $subject,
-            nl2br(\escape($textBody)),
+            nl2br(\PPStudio\Support\ViewHelper::escape($textBody)),
             $textBody
         );
     }
@@ -242,12 +242,12 @@ final class ReservationNotificationService
             return false;
         }
 
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $subject = $siteName . ': připomínka rezervace';
         $customerName = trim((string) ($reservation['jmeno'] ?? ''));
         $serviceName = trim((string) ($reservation['service_name'] ?? 'Vybraná procedura'));
-        $dateTime = \formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
-        $address = trim((string) \setting($siteSettings, 'contact_address', ''));
+        $dateTime = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+        $address = trim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_address', ''));
         $rescheduleUrl = $this->linkSigner->buildCustomerRescheduleUrl($siteSettings, $reservation);
         $cancelUrl = $this->linkSigner->buildCustomerCancelUrl($siteSettings, $reservation);
 
@@ -272,16 +272,16 @@ final class ReservationNotificationService
 
         $htmlBody = '<p>Dobrý den';
         if ($customerName !== '') {
-            $htmlBody .= ' ' . \escape($customerName);
+            $htmlBody .= ' ' . \PPStudio\Support\ViewHelper::escape($customerName);
         }
         $htmlBody .= ',</p>'
-            . '<p>připomínáme vaši rezervaci v <strong>' . \escape($siteName) . '</strong>.</p>'
+            . '<p>připomínáme vaši rezervaci v <strong>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</strong>.</p>'
             . '<div style="margin:18px 0;padding:16px 18px;border:1px solid #eadccf;border-radius:18px;background:#fffaf4;">'
-            . '<p style="margin:0 0 10px;"><strong>Procedura:</strong> ' . \escape($serviceName) . '</p>'
-            . '<p style="margin:0 0 10px;"><strong>Termín:</strong> ' . \escape($dateTime) . '</p>';
+            . '<p style="margin:0 0 10px;"><strong>Procedura:</strong> ' . \PPStudio\Support\ViewHelper::escape($serviceName) . '</p>'
+            . '<p style="margin:0 0 10px;"><strong>Termín:</strong> ' . \PPStudio\Support\ViewHelper::escape($dateTime) . '</p>';
 
         if ($address !== '') {
-            $htmlBody .= '<p style="margin:0;"><strong>Místo:</strong> ' . nl2br(\escape($address)) . '</p>';
+            $htmlBody .= '<p style="margin:0;"><strong>Místo:</strong> ' . nl2br(\PPStudio\Support\ViewHelper::escape($address)) . '</p>';
         }
 
         $htmlBody .= '</div>';
@@ -291,25 +291,25 @@ final class ReservationNotificationService
                 . '<div style="margin:18px 0;">';
 
             if ($rescheduleUrl !== '') {
-                $htmlBody .= '<a href="' . \escape($rescheduleUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Přesunout termín</a>';
+                $htmlBody .= '<a href="' . \PPStudio\Support\ViewHelper::escape($rescheduleUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#7a5a43;color:#ffffff;text-decoration:none;font-weight:700;box-shadow:0 10px 22px rgba(122,90,67,0.18);">Přesunout termín</a>';
             }
 
             if ($cancelUrl !== '') {
-                $htmlBody .= '<a href="' . \escape($cancelUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#fff7f0;border:1px solid #d8b2a9;color:#8b5f56;text-decoration:none;font-weight:700;">Zrušit termín</a>';
+                $htmlBody .= '<a href="' . \PPStudio\Support\ViewHelper::escape($cancelUrl) . '" style="display:inline-block;margin:0 12px 12px 0;padding:11px 18px;border-radius:999px;background:#fff7f0;border:1px solid #d8b2a9;color:#8b5f56;text-decoration:none;font-weight:700;">Zrušit termín</a>';
             }
 
             $htmlBody .= '</div>';
         }
 
         $htmlBody .= '<p>Těšíme se na vaši návštěvu.</p>'
-            . '<p>' . \escape($siteName) . '</p>';
+            . '<p>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</p>';
 
         return $this->mailer->send((string) $reservation['email'], $subject, $htmlBody, $textBody);
     }
 
     public function notificationRecipients(array $siteSettings): array
     {
-        $raw = \setting($siteSettings, 'notification_emails', '');
+        $raw = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'notification_emails', '');
         $parts = preg_split('/[,;\s]+/', $raw) ?: [];
         $emails = [];
 
@@ -325,12 +325,12 @@ final class ReservationNotificationService
 
     public function buildReservationIcal(array $siteSettings, array $reservation): string
     {
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
         $start = new DateTimeImmutable((string) ($reservation['datum_cas'] ?? 'now'));
         $duration = max(15, (int) ($reservation['service_duration'] ?? 60));
         $end = $start->modify('+' . $duration . ' minutes');
-        $location = \setting($siteSettings, 'contact_address', '');
+        $location = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_address', '');
         $description = 'Rezervace ve studiu ' . $siteName . ' - ' . $serviceName;
         $uid = 'reservation-' . ((string) ($reservation['id'] ?? uniqid('', true))) . '@ppstudio.cz';
         $nowUtc = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Ymd\THis\Z');

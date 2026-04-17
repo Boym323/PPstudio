@@ -11,17 +11,17 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/android-chrome-512x512.png">
     <meta name="theme-color" content="#f7f1e8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<?= escape($description) ?>">
+    <meta name="description" content="<?= \PPStudio\Support\ViewHelper::escape($description) ?>">
     <meta name="keywords" content="kosmetický salon Zlín, kosmetika, péče o pleť, lash lifting, laminace obočí, kosmetické poradenství, PP Studio">
-    <title><?= escape($title) ?></title>
-    <meta property="og:title" content="<?= escape($title) ?>">
-    <meta property="og:description" content="<?= escape($description) ?>">
-    <meta property="og:image" content="<?= escape($ogImageUrl) ?>">
-    <meta property="og:url" content="<?= escape($canonicalUrl) ?>">
+    <title><?= \PPStudio\Support\ViewHelper::escape($title) ?></title>
+    <meta property="og:title" content="<?= \PPStudio\Support\ViewHelper::escape($title) ?>">
+    <meta property="og:description" content="<?= \PPStudio\Support\ViewHelper::escape($description) ?>">
+    <meta property="og:image" content="<?= \PPStudio\Support\ViewHelper::escape($ogImageUrl) ?>">
+    <meta property="og:url" content="<?= \PPStudio\Support\ViewHelper::escape($canonicalUrl) ?>">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="cs_CZ">
-    <meta property="og:site_name" content="<?= escape($siteName) ?>">
-    <link rel="canonical" href="<?= escape($canonicalUrl) ?>">
+    <meta property="og:site_name" content="<?= \PPStudio\Support\ViewHelper::escape($siteName) ?>">
+    <link rel="canonical" href="<?= \PPStudio\Support\ViewHelper::escape($canonicalUrl) ?>">
 
     <script type="application/ld+json">
         <?= json_encode($schemaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
@@ -29,7 +29,7 @@
 
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="/assets/css/site.css?v=<?= escape($cssVersion) ?>">
+    <link rel="stylesheet" href="/assets/css/site.css?v=<?= \PPStudio\Support\ViewHelper::escape($cssVersion) ?>">
 
 </head>
 <body>
@@ -41,7 +41,7 @@
 
     <?php include __DIR__ . '/partials/footer.php'; ?>
 
-    <script src="/assets/js/site.js?v=<?= escape($jsVersion) ?>" defer></script>
+    <script src="/assets/js/site.js?v=<?= \PPStudio\Support\ViewHelper::escape($jsVersion) ?>" defer></script>
 </body>
 </html>
 

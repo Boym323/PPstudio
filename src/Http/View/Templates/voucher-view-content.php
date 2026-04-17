@@ -6,13 +6,13 @@ declare(strict_types=1);
         <button class="btn btn-primary" type="button" onclick="window.print()">Tisk / Uložit jako PDF</button>
         <a class="btn btn-secondary" href="/rezervace.php">Přejít na rezervaci</a>
         <?php if (($verify_url ?? '') !== ''): ?>
-            <a class="btn btn-secondary" href="<?= escape((string) $verify_url) ?>">Ověření poukazu</a>
+            <a class="btn btn-secondary" href="<?= \PPStudio\Support\ViewHelper::escape((string) $verify_url) ?>">Ověření poukazu</a>
         <?php endif; ?>
     </div>
 
     <article class="voucher-shell screen-only">
         <header class="voucher-hero">
-            <p class="eyebrow"><?= escape($site_name) ?></p>
+            <p class="eyebrow"><?= \PPStudio\Support\ViewHelper::escape($site_name) ?></p>
             <h1>Dárkový poukaz</h1>
             <p class="hero-copy">
                 Připravili jsme pro vás dárkový poukaz, který můžete využít při rezervaci ve studiu.
@@ -22,16 +22,16 @@ declare(strict_types=1);
 
         <section class="voucher-body">
             <div class="voucher-panel">
-                <span class="status-badge"><?= escape((string) $status_label) ?></span>
-                <div class="voucher-value"><?= escape((string) $value_label) ?></div>
+                <span class="status-badge"><?= \PPStudio\Support\ViewHelper::escape((string) $status_label) ?></span>
+                <div class="voucher-value"><?= \PPStudio\Support\ViewHelper::escape((string) $value_label) ?></div>
                 <div class="voucher-grid">
                     <div class="voucher-grid-item">
                         <strong>Kód poukazu</strong>
-                        <span><?= escape((string) ($voucher['kod'] ?? '')) ?></span>
+                        <span><?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['kod'] ?? '')) ?></span>
                     </div>
                     <div class="voucher-grid-item">
                         <strong>Platnost do</strong>
-                        <span><?= escape((string) $expires_label) ?></span>
+                        <span><?= \PPStudio\Support\ViewHelper::escape((string) $expires_label) ?></span>
                     </div>
                 </div>
             </div>
@@ -41,7 +41,7 @@ declare(strict_types=1);
                 <p>Na návštěvě stačí nahlásit kód poukazu. Pokud si přejete poukaz vytisknout nebo předat dál, použijte tlačítko pro tisk v horní části stránky.</p>
                 <div class="voucher-code-box">
                     <strong>Kód pro uplatnění</strong>
-                    <span><?= escape((string) ($voucher['kod'] ?? '')) ?></span>
+                    <span><?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['kod'] ?? '')) ?></span>
                 </div>
                 <div class="voucher-actions">
                     <button class="btn btn-primary" type="button" onclick="window.print()">Vytisknout poukaz</button>
@@ -56,16 +56,16 @@ declare(strict_types=1);
 
     <article class="voucher-print-page print-only">
         <section class="voucher-print-main">
-            <div class="voucher-print-brand"><?= escape($site_name) ?></div>
+            <div class="voucher-print-brand"><?= \PPStudio\Support\ViewHelper::escape($site_name) ?></div>
             <h1 class="voucher-print-title">Dárkový poukaz</h1>
-            <div class="voucher-print-value"><?= escape((string) $value_label) ?></div>
+            <div class="voucher-print-value"><?= \PPStudio\Support\ViewHelper::escape((string) $value_label) ?></div>
             <div class="voucher-print-meta">
-                <div class="voucher-print-meta-row"><b>Kód:</b> <?= escape((string) ($voucher['kod'] ?? '')) ?></div>
-                <div class="voucher-print-meta-row"><b>Platnost do:</b> <?= escape((string) $expires_label) ?></div>
+                <div class="voucher-print-meta-row"><b>Kód:</b> <?= \PPStudio\Support\ViewHelper::escape((string) ($voucher['kod'] ?? '')) ?></div>
+                <div class="voucher-print-meta-row"><b>Platnost do:</b> <?= \PPStudio\Support\ViewHelper::escape((string) $expires_label) ?></div>
             </div>
         </section>
         <aside class="voucher-print-side">
-            <img class="voucher-print-qr" src="<?= escape((string) $qr_url) ?>" alt="QR kód poukazu">
+            <img class="voucher-print-qr" src="<?= \PPStudio\Support\ViewHelper::escape((string) $qr_url) ?>" alt="QR kód poukazu">
             <div class="voucher-print-caption">
                 QR kód otevře dárkový poukaz<br>
                 pro tisk nebo uplatnění ve studiu.

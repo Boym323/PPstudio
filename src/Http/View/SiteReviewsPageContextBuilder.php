@@ -18,9 +18,9 @@ final class SiteReviewsPageContextBuilder
      */
     public function build(array $siteSettings): array
     {
-        $googleReviewsUrl = trim(\setting($siteSettings, 'google_reviews_url', ''));
-        $firmyReviewsUrl = trim(\setting($siteSettings, 'firmy_reviews_url', ''));
-        $firmyEmbed = $this->trustedSingleIframeEmbedRenderer->render(\setting($siteSettings, 'firmy_reviews_embed', ''));
+        $googleReviewsUrl = trim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_url', ''));
+        $firmyReviewsUrl = trim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'firmy_reviews_url', ''));
+        $firmyEmbed = $this->trustedSingleIframeEmbedRenderer->render(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'firmy_reviews_embed', ''));
 
         return [
             'googleReviewsUrl' => $googleReviewsUrl,

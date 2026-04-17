@@ -23,7 +23,7 @@ final class AdminLiteDataLoader
     {
         extract($state, EXTR_OVERWRITE);
 
-        $siteSettings = loadSiteSettings($connection);
+        $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
         $subscriptionCalendarUrl = $this->mailerIntegrationService->buildSubscriptionCalendarUrl($siteSettings);
 
         return $this->captureDefinedState(get_defined_vars());

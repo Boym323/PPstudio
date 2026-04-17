@@ -1,7 +1,7 @@
         <aside class="admin-sidebar">
             <div>
                 <p class="eyebrow">PPStudio admin</p>
-                <h2><?= escape(setting($siteSettings, 'site_name', defaultSiteName())) ?></h2>
+                <h2><?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', defaultSiteName())) ?></h2>
             </div>
             <nav class="admin-side-nav">
                 <p class="admin-nav-group">Provoz</p>

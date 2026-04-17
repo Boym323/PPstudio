@@ -16,7 +16,7 @@ final class AdminReservationApiController
      */
     public static function handleMutationRequest(array $server, array $post, array $emailConfig): never
     {
-        \ppstudioSecurityFacade()->startSecureSession();
+        \(new \PPStudio\Security\SecurityFacade())->startSecureSession();
         self::sendJsonHeaders();
 
         if (! self::isAuthenticated($_SESSION)) {
@@ -33,7 +33,7 @@ final class AdminReservationApiController
             ], 405);
         }
 
-        if (! \ppstudioSecurityFacade()->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! \(new \PPStudio\Security\SecurityFacade())->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection([
                 'success' => false,
                 'error' => 'Platnost formuláře vypršela. Obnovte stránku.',
@@ -48,7 +48,7 @@ final class AdminReservationApiController
             ], 500);
         }
 
-        $siteSettings = \loadSiteSettings($connection);
+        $siteSettings = \(new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
         $mutationService = (new AdminReservationModule($connection, $emailConfig, $siteSettings))->mutationService();
         $result = isset($post['delete_reservation'])
             ? $mutationService->deleteReservation($post)

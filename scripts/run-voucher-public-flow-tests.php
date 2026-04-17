@@ -131,10 +131,10 @@ $voucherId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    ppstudioSecurityFacade()->startSecureSession();
+    (new \PPStudio\Security\SecurityFacade())->startSecureSession();
     session_unset();
 
-    $security = ppstudioSecurityFacade();
+    $security = (new \PPStudio\Security\SecurityFacade());
     $secret = $security->voucherVerifySecret();
     $signature = $security->buildVoucherVerifySignature($secret, $voucherId, $code);
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $signature !== '', 'Podpis poukazu nesmi byt prazdny.');

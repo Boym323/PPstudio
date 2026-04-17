@@ -467,7 +467,7 @@ final class AdminDashboardService
             $dashboardAttentionItems[] = [
                 'tone' => 'neutral',
                 'title' => 'Poslední změna v rezervacích',
-                'text' => trim((string) ($latestChange['label'] ?? 'Změna rezervace')) . ' ' . mb_strtolower(formatCzechDateTime((string) ($latestChange['time'] ?? ''))),
+                'text' => trim((string) ($latestChange['label'] ?? 'Změna rezervace')) . ' ' . mb_strtolower(\PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($latestChange['time'] ?? ''))),
             ];
         }
 

@@ -49,7 +49,7 @@ final class ReservationActionPageRenderer
         $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
         $serviceDuration = (int) ($reservation['service_duration'] ?? 0);
         $serviceLabel = $serviceName . ($serviceDuration > 0 ? ' (' . $serviceDuration . ' min)' : '');
-        $currentDateTime = \formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
+        $currentDateTime = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? ''));
         $currentDateTimeMachine = '';
 
         if ($reservation !== null && isset($reservation['datum_cas'])) {
@@ -71,7 +71,7 @@ final class ReservationActionPageRenderer
             'show_form' => (bool) ($state['show_form'] ?? false),
             'reservation' => $reservation,
             'site_settings' => $siteSettings,
-            'site_name' => \setting($siteSettings, 'site_name', \defaultSiteName()),
+            'site_name' => \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName()),
             'service_label' => $serviceLabel,
             'current_date_time' => $currentDateTime,
             'current_date_time_machine' => $currentDateTimeMachine,

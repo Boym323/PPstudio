@@ -6,6 +6,6 @@ use PPStudio\Http\Controller\Admin\AdminAvailabilityApiController;
 require __DIR__ . '/../../includes/bootstrap.php';
 require __DIR__ . '/../../config/app.php';
 
-ppstudioSecurityFacade()->startSecureSession();
+(new \PPStudio\Security\SecurityFacade())->startSecureSession();
 
 AdminAvailabilityApiController::handleWindowDeleteRequest($_SERVER, $_SESSION, $_POST, dirname(__DIR__, 2));

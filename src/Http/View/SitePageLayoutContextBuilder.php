@@ -15,10 +15,10 @@ final class SitePageLayoutContextBuilder
         $resolvedSiteBaseUrl = (string) ($context['siteBaseUrl'] ?? rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/'));
         $canonicalUrl = (string) ($context['canonicalUrl'] ?? ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/');
 
-        $schemaAddress = trim(\setting($siteSettings, 'contact_address', ''));
-        $schemaInstagramUrl = \setting($siteSettings, 'contact_instagram_url', '');
-        $schemaPhone = \setting($siteSettings, 'contact_phone', '+420732856036');
-        $siteName = \setting($siteSettings, 'site_name', \defaultSiteName());
+        $schemaAddress = trim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_address', ''));
+        $schemaInstagramUrl = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_instagram_url', '');
+        $schemaPhone = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_phone', '+420732856036');
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
         $schemaData = [
             '@context' => 'https://schema.org',
             '@type' => 'BeautySalon',

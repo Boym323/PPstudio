@@ -243,7 +243,7 @@ final class ReservationReminderService
 
     private function logSecurityEvent(string $eventType, string $severity, array $reservation): void
     {
-        \ppstudioSecurityFacade()->securityEventLogger()->log(
+        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log(
             $eventType,
             'reservation_reminder',
             $severity,

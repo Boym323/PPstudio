@@ -10,13 +10,13 @@
                             <input type="hidden" name="tab" value="reminder-log">
                             <label>
                                 Vyhledat
-                                <input type="text" name="reminder_q" value="<?= escape($reminderLogFilters['q']) ?>" placeholder="run token, event, context...">
+                                <input type="text" name="reminder_q" value="<?= \PPStudio\Support\ViewHelper::escape($reminderLogFilters['q']) ?>" placeholder="run token, event, context...">
                             </label>
                             <label>
                                 Událost
                                 <select name="reminder_event">
                                     <?php foreach ($reminderLogEventOptions as $eventValue => $eventLabel): ?>
-                                        <option value="<?= escape($eventValue) ?>" <?= $eventValue === $reminderLogFilters['event'] ? 'selected' : '' ?>><?= escape($eventLabel) ?></option>
+                                        <option value="<?= \PPStudio\Support\ViewHelper::escape($eventValue) ?>" <?= $eventValue === $reminderLogFilters['event'] ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($eventLabel) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </label>
@@ -24,7 +24,7 @@
                                 Úroveň
                                 <select name="reminder_severity">
                                     <?php foreach ($reminderLogSeverityOptions as $severityValue => $severityLabel): ?>
-                                        <option value="<?= escape($severityValue) ?>" <?= $severityValue === $reminderLogFilters['severity'] ? 'selected' : '' ?>><?= escape($severityLabel) ?></option>
+                                        <option value="<?= \PPStudio\Support\ViewHelper::escape($severityValue) ?>" <?= $severityValue === $reminderLogFilters['severity'] ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape($severityLabel) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </label>
@@ -32,7 +32,7 @@
                                 Počet řádků
                                 <select name="reminder_limit">
                                     <?php foreach ($reminderLogLimitOptions as $limitValue): ?>
-                                        <option value="<?= escape((string) $limitValue) ?>" <?= $limitValue === $reminderLogFilters['limit'] ? 'selected' : '' ?>><?= escape((string) $limitValue) ?></option>
+                                        <option value="<?= \PPStudio\Support\ViewHelper::escape((string) $limitValue) ?>" <?= $limitValue === $reminderLogFilters['limit'] ? 'selected' : '' ?>><?= \PPStudio\Support\ViewHelper::escape((string) $limitValue) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </label>
@@ -42,9 +42,9 @@
                             </div>
                         </form>
                         <p class="form-hint">
-                            Zobrazeno <strong><?= escape((string) ((int) ($reminderLogStats['shown'] ?? 0))) ?></strong> z
-                            <strong><?= escape((string) ((int) ($reminderLogStats['total'] ?? 0))) ?></strong> záznamů.
-                            Zdroj: <strong><?= escape((string) ($reminderLogStats['source'] ?? 'db')) ?></strong>.
+                            Zobrazeno <strong><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($reminderLogStats['shown'] ?? 0))) ?></strong> z
+                            <strong><?= \PPStudio\Support\ViewHelper::escape((string) ((int) ($reminderLogStats['total'] ?? 0))) ?></strong> záznamů.
+                            Zdroj: <strong><?= \PPStudio\Support\ViewHelper::escape((string) ($reminderLogStats['source'] ?? 'db')) ?></strong>.
                             <?php if (($reminderLogStats['source'] ?? '') === 'table_missing'): ?>
                                 DB tabulka <code>reservation_reminder_logs</code> zatím není k dispozici.
                             <?php endif; ?>
@@ -97,17 +97,17 @@
                                                 $reservationLabel .= ' · ' . $reservationName;
                                             }
                                             if ($reservationDatetime !== '') {
-                                                $reservationLabel .= ' · ' . formatCzechDateTime($reservationDatetime);
+                                                $reservationLabel .= ' · ' . \PPStudio\Support\FormatHelper::formatCzechDateTime($reservationDatetime);
                                             }
                                         }
                                         ?>
                                         <tr>
-                                            <td data-label="Čas"><?= escape($timeLabel) ?></td>
-                                            <td data-label="Run"><code><?= escape((string) ($row['run_token'] ?? '')) ?></code></td>
-                                            <td data-label="Událost"><span class="antispam-reason-badge"><?= escape((string) ($row['event_type'] ?? '')) ?></span></td>
-                                            <td data-label="Úroveň"><?= escape(strtoupper((string) ($row['severity'] ?? ''))) ?></td>
-                                            <td data-label="Rezervace"><?= escape($reservationLabel) ?></td>
-                                            <td data-label="Kontext" class="antispam-context"><?= escape($contextPreview) ?></td>
+                                            <td data-label="Čas"><?= \PPStudio\Support\ViewHelper::escape($timeLabel) ?></td>
+                                            <td data-label="Run"><code><?= \PPStudio\Support\ViewHelper::escape((string) ($row['run_token'] ?? '')) ?></code></td>
+                                            <td data-label="Událost"><span class="antispam-reason-badge"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['event_type'] ?? '')) ?></span></td>
+                                            <td data-label="Úroveň"><?= \PPStudio\Support\ViewHelper::escape(strtoupper((string) ($row['severity'] ?? ''))) ?></td>
+                                            <td data-label="Rezervace"><?= \PPStudio\Support\ViewHelper::escape($reservationLabel) ?></td>
+                                            <td data-label="Kontext" class="antispam-context"><?= \PPStudio\Support\ViewHelper::escape($contextPreview) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -127,15 +127,15 @@
                             $reminderPrevPage = max(1, $reminderLogFilters['page'] - 1);
                             $reminderNextPage = min($reminderLogPagination['total_pages'], $reminderLogFilters['page'] + 1);
                             ?>
-                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderPrevPage])) ?>#reminder-log">Předchozí</a>
+                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderPrevPage])) ?>#reminder-log">Předchozí</a>
                             <?php for ($pageNumber = 1; $pageNumber <= $reminderLogPagination['total_pages']; $pageNumber++): ?>
                                 <?php if ($pageNumber === 1 || $pageNumber === $reminderLogPagination['total_pages'] || abs($pageNumber - $reminderLogFilters['page']) <= 1): ?>
-                                    <a class="button button-small <?= $pageNumber === $reminderLogFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $pageNumber])) ?>#reminder-log"><?= escape((string) $pageNumber) ?></a>
+                                    <a class="button button-small <?= $pageNumber === $reminderLogFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $pageNumber])) ?>#reminder-log"><?= \PPStudio\Support\ViewHelper::escape((string) $pageNumber) ?></a>
                                 <?php elseif ($pageNumber === 2 || $pageNumber === $reminderLogPagination['total_pages'] - 1): ?>
                                     <span class="pagination-separator">…</span>
                                 <?php endif; ?>
                             <?php endfor; ?>
-                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] >= $reminderLogPagination['total_pages'] ? ' is-disabled' : '' ?>" href="/admin.php?<?= escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderNextPage])) ?>#reminder-log">Další</a>
+                            <a class="button button-secondary button-small<?= $reminderLogFilters['page'] >= $reminderLogPagination['total_pages'] ? ' is-disabled' : '' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($reminderBaseParams + ['reminder_page' => (string) $reminderNextPage])) ?>#reminder-log">Další</a>
                         </div>
                     <?php endif; ?>
                 </section>

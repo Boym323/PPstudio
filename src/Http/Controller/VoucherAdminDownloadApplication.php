@@ -20,7 +20,7 @@ final class VoucherAdminDownloadApplication
     {
         return new self(
             new SessionService(),
-            new VoucherAdminDownloadService(\ppstudioSecurityFacade()->requestSecurityService()),
+            new VoucherAdminDownloadService(\(new \PPStudio\Security\SecurityFacade())->requestSecurityService()),
             new VoucherAdminDownloadPageRenderer()
         );
     }

@@ -27,13 +27,13 @@
                 </div>
                 <div class="pricing-fallback-actions">
                     <?php if ($contactPhoneHref !== ''): ?>
-                        <a class="cta-button cta-button-primary" href="<?= escape($contactPhoneHref) ?>">Zavolat</a>
+                        <a class="cta-button cta-button-primary" href="<?= \PPStudio\Support\ViewHelper::escape($contactPhoneHref) ?>">Zavolat</a>
                     <?php endif; ?>
                     <?php if ($contactEmailHref !== ''): ?>
-                        <a class="cta-button cta-button-ghost" href="<?= escape($contactEmailHref) ?>">Napsat e-mail</a>
+                        <a class="cta-button cta-button-ghost" href="<?= \PPStudio\Support\ViewHelper::escape($contactEmailHref) ?>">Napsat e-mail</a>
                     <?php endif; ?>
                     <?php if ($contactInstagramUrl !== ''): ?>
-                        <a class="cta-button cta-button-ghost" href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener">
+                        <a class="cta-button cta-button-ghost" href="<?= \PPStudio\Support\ViewHelper::escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener">
                             <i class="fab fa-instagram" aria-hidden="true"></i>
                             <span>Instagram</span>
                         </a>

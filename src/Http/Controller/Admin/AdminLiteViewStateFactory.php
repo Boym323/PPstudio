@@ -101,7 +101,7 @@ final class AdminLiteViewStateFactory
             'mediaFeedback' => '',
             'mediaFeedbackType' => '',
             'reservationPerPageOptions' => [25, 50],
-            'reservationStatusFilterOptions' => ['all' => 'Všechny stavy'] + reservationStatusOptions(),
+            'reservationStatusFilterOptions' => ['all' => 'Všechny stavy'] + \PPStudio\Support\ReservationStatusHelper::options(),
             'reservationPeriodFilterOptions' => [
                 'all' => 'Všechna období',
                 'today' => 'Dnes',

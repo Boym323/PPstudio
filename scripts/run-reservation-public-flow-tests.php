@@ -64,7 +64,7 @@ function childMain(string $scenario): never
     if ($scenario === 'lock_page') {
         ppstudioCliTestBootstrapBase();
 
-        ppstudioSecurityFacade()->publicSiteLockService()->renderPage('Test');
+        (new \PPStudio\Security\SecurityFacade())->publicSiteLockService()->renderPage('Test');
     }
 
     if ($scenario === 'reservation_submit') {
@@ -105,7 +105,7 @@ $previousEnv = ppstudioCliTestSetEnv([
 ]);
 
 try {
-    $securityFacade = ppstudioSecurityFacade();
+    $securityFacade = (new \PPStudio\Security\SecurityFacade());
     $securityFacade->startSecureSession();
     session_unset();
 

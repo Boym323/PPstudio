@@ -20,8 +20,8 @@ $pages = [
 $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
 
 if ($connection instanceof mysqli) {
-    $siteSettings = loadSiteSettings($connection);
-    $siteUrl = rtrim(setting($siteSettings, 'site_url', $siteUrl), '/');
+    $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
+    $siteUrl = rtrim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', $siteUrl), '/');
     $connection->close();
 }
 
@@ -39,7 +39,7 @@ echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
 
 foreach ($pages as $path) {
     echo "  <url>\n";
-    echo '    <loc>' . escape($siteUrl . $path) . "</loc>\n";
+    echo '    <loc>' . \PPStudio\Support\ViewHelper::escape($siteUrl . $path) . "</loc>\n";
     echo "    <lastmod>{$lastMod}</lastmod>\n";
     echo "  </url>\n";
 }

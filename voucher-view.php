@@ -6,6 +6,6 @@ require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 
 \PPStudio\Http\Controller\VoucherPublicApplication::create(
-    ppstudioSecurityFacade()->sessionService(),
-    ppstudioSecurityFacade()->requestSecurityService()
+    (new \PPStudio\Security\SecurityFacade())->sessionService(),
+    (new \PPStudio\Security\SecurityFacade())->requestSecurityService()
 )->handleView($_GET);

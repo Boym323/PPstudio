@@ -99,7 +99,7 @@ $voucherId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    ppstudioSecurityFacade()->startSecureSession();
+    (new \PPStudio\Security\SecurityFacade())->startSecureSession();
     session_unset();
     $_SESSION['ppstudio_admin_authenticated'] = true;
     $sessionId = session_id();

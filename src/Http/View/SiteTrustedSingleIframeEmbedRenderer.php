@@ -21,7 +21,7 @@ final class SiteTrustedSingleIframeEmbedRenderer
             return '';
         }
 
-        $safeSrc = \escape($src);
+        $safeSrc = \PPStudio\Support\ViewHelper::escape($src);
 
         return '<iframe src="' . $safeSrc . '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>';
     }

@@ -6,7 +6,7 @@ declare(strict_types=1);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= escape($page_title) ?></title>
+    <title><?= \PPStudio\Support\ViewHelper::escape($page_title) ?></title>
     <link rel="stylesheet" href="/assets/css/site.css">
     <?php if (($inline_styles ?? '') !== ''): ?>
         <style>

@@ -89,7 +89,7 @@ final class PublicSiteLockService
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
-    <title><?= \escape($siteName) ?> | Dočasně uzamčeno</title>
+    <title><?= \PPStudio\Support\ViewHelper::escape($siteName) ?> | Dočasně uzamčeno</title>
     <style>
         :root { color-scheme: light; }
         * { box-sizing: border-box; }
@@ -263,17 +263,17 @@ final class PublicSiteLockService
         <p class="lock-lead">Na stránce právě pracujeme a brzy ji spustíme v plné podobě.</p>
         <p class="lock-copy">Mezitím můžete sledovat novinky, volné termíny a aktuality studia na Instagramu.</p>
         <div class="lock-actions">
-            <a class="lock-link lock-link-primary" href="<?= \escape($instagramUrl) ?>" target="_blank" rel="noopener noreferrer">Sledovat PP Studio na Instagramu</a>
+            <a class="lock-link lock-link-primary" href="<?= \PPStudio\Support\ViewHelper::escape($instagramUrl) ?>" target="_blank" rel="noopener noreferrer">Sledovat PP Studio na Instagramu</a>
         </div>
         <?php if ($errorMessage !== ''): ?>
-            <div class="lock-error"><?= \escape($errorMessage) ?></div>
+            <div class="lock-error"><?= \PPStudio\Support\ViewHelper::escape($errorMessage) ?></div>
         <?php endif; ?>
         <section class="lock-panel" aria-labelledby="lock-panel-title">
             <h2 id="lock-panel-title" class="lock-panel-title">Interní vstup</h2>
             <p class="lock-panel-copy">Pokud máte přístupové heslo, můžete si stránku zobrazit už teď.</p>
             <div class="lock-form-wrap">
-                <form method="post" action="<?= \escape($currentUrl) ?>">
-                    <input type="hidden" name="_csrf" value="<?= \escape($csrf) ?>">
+                <form method="post" action="<?= \PPStudio\Support\ViewHelper::escape($currentUrl) ?>">
+                    <input type="hidden" name="_csrf" value="<?= \PPStudio\Support\ViewHelper::escape($csrf) ?>">
                     <label for="public-site-password">Heslo</label>
                     <input id="public-site-password" type="password" name="public_site_password" required autocomplete="current-password">
                     <button type="submit" name="public_site_unlock" value="1">Vstoupit na web</button>

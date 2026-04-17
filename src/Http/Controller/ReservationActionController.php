@@ -53,7 +53,7 @@ final class ReservationActionController
         $serviceName = (string) ($reservation['service_name'] ?? 'Rezervace');
         $serviceDuration = (int) ($reservation['service_duration'] ?? 0);
         $serviceLabel = $serviceName . ($serviceDuration > 0 ? ' (' . $serviceDuration . ' min)' : '');
-        $currentDateTime = $reservation !== null ? \formatCzechDateTime((string) ($reservation['datum_cas'] ?? '')) : '';
+        $currentDateTime = $reservation !== null ? \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($reservation['datum_cas'] ?? '')) : '';
 
         return [
             'success' => ($state['message_type'] ?? '') === 'success',

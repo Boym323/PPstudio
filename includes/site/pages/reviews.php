@@ -10,10 +10,10 @@
         ?>
         <div class="reviews-links">
             <?php if ($googleReviewsUrl !== ''): ?>
-                <a class="review-source-link" href="<?= escape($googleReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Google</a>
+                <a class="review-source-link" href="<?= \PPStudio\Support\ViewHelper::escape($googleReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Google</a>
             <?php endif; ?>
             <?php if ($firmyReviewsUrl !== ''): ?>
-                <a class="review-source-link" href="<?= escape($firmyReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Firmy.cz</a>
+                <a class="review-source-link" href="<?= \PPStudio\Support\ViewHelper::escape($firmyReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Firmy.cz</a>
             <?php endif; ?>
         </div>
 

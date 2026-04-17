@@ -14,14 +14,14 @@ $serviceCards = $publicServiceCatalogService instanceof PublicServiceCatalogServ
             <div class="services-grid">
                 <?php foreach ($serviceCards as $serviceCard): ?>
                     <div class="service-card">
-                        <span class="service-badge"><?= escape((string) ($serviceCard['badge'] ?? 'Doporučená péče')) ?></span>
-                        <i class="fas <?= escape((string) ($serviceCard['icon'] ?? 'fa-leaf')) ?>" aria-hidden="true"></i>
-                        <h3><?= escape((string) ($serviceCard['name'] ?? 'Procedura')) ?></h3>
-                        <p><?= escape((string) ($serviceCard['description'] ?? '')) ?></p>
+                        <span class="service-badge"><?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['badge'] ?? 'Doporučená péče')) ?></span>
+                        <i class="fas <?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['icon'] ?? 'fa-leaf')) ?>" aria-hidden="true"></i>
+                        <h3><?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['name'] ?? 'Procedura')) ?></h3>
+                        <p><?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['description'] ?? '')) ?></p>
                         <div class="service-highlights">
-                            <p><strong>Kategorie:</strong> <?= escape((string) ($serviceCard['category'] ?? 'Ostatní služby')) ?></p>
-                            <p><strong>Délka:</strong> <?= escape((string) ($serviceCard['duration'] ?? 'Dle vybrané procedury')) ?></p>
-                            <p><strong>Cena:</strong> <?= escape((string) ($serviceCard['price'] ?? 'Cena na dotaz')) ?></p>
+                            <p><strong>Kategorie:</strong> <?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['category'] ?? 'Ostatní služby')) ?></p>
+                            <p><strong>Délka:</strong> <?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['duration'] ?? 'Dle vybrané procedury')) ?></p>
+                            <p><strong>Cena:</strong> <?= \PPStudio\Support\ViewHelper::escape((string) ($serviceCard['price'] ?? 'Cena na dotaz')) ?></p>
                         </div>
                         <div class="service-card-actions">
                             <a href="/cenik.php#ceniky" class="service-link">Zobrazit v ceníku</a>

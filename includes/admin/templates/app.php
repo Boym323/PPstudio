@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | <?= escape(setting($siteSettings, 'site_name', defaultSiteName())) ?></title>
+    <title>Admin | <?= \PPStudio\Support\ViewHelper::escape(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', defaultSiteName())) ?></title>
     <?php
     $adminCssVersion = (string) (@filemtime(__DIR__ . '/../../../assets/css/admin.css') ?: time());
     $adminJsVersion = (string) (@filemtime(__DIR__ . '/../../../assets/js/main.js') ?: time());
     ?>
-    <link rel="stylesheet" href="/assets/css/admin.css?v=<?= escape($adminCssVersion) ?>">
+    <link rel="stylesheet" href="/assets/css/admin.css?v=<?= \PPStudio\Support\ViewHelper::escape($adminCssVersion) ?>">
 </head>
 <body>
     <div class="admin-page">
@@ -36,6 +36,6 @@
             </div>
         </main>
     </div>
-    <script src="/assets/js/main.js?v=<?= escape($adminJsVersion) ?>"></script>
+    <script src="/assets/js/main.js?v=<?= \PPStudio\Support\ViewHelper::escape($adminJsVersion) ?>"></script>
 </body>
 </html>

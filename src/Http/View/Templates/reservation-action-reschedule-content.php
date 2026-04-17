@@ -7,23 +7,23 @@ declare(strict_types=1);
         <h1>Přesun termínu</h1>
 
         <p class="reschedule-message<?= $message_type === 'success' ? ' is-success' : ($message_type === 'error' ? ' is-error' : ' is-helper') ?>" data-reschedule-message>
-            <?= escape($message) ?>
+            <?= \PPStudio\Support\ViewHelper::escape($message) ?>
         </p>
 
         <?php if ($reservation !== null): ?>
             <div class="reschedule-summary">
-                <div><strong>Služba:</strong> <?= escape($service_label) ?></div>
-                <div><strong>Aktuální termín:</strong> <span data-current-slot><?= escape($current_date_time !== '' ? $current_date_time : '—') ?></span></div>
+                <div><strong>Služba:</strong> <?= \PPStudio\Support\ViewHelper::escape($service_label) ?></div>
+                <div><strong>Aktuální termín:</strong> <span data-current-slot><?= \PPStudio\Support\ViewHelper::escape($current_date_time !== '' ? $current_date_time : '—') ?></span></div>
             </div>
         <?php endif; ?>
 
         <?php if ($show_form && $reservation !== null): ?>
             <form method="post" data-reschedule-form>
-                <input type="hidden" name="id" value="<?= escape((string) $reservation_id) ?>">
-                <input type="hidden" name="action" value="<?= escape($action) ?>">
-                <input type="hidden" name="exp" value="<?= escape((string) $expires_at) ?>">
-                <input type="hidden" name="nonce" value="<?= escape($nonce) ?>">
-                <input type="hidden" name="sig" value="<?= escape($signature) ?>">
+                <input type="hidden" name="id" value="<?= \PPStudio\Support\ViewHelper::escape((string) $reservation_id) ?>">
+                <input type="hidden" name="action" value="<?= \PPStudio\Support\ViewHelper::escape($action) ?>">
+                <input type="hidden" name="exp" value="<?= \PPStudio\Support\ViewHelper::escape((string) $expires_at) ?>">
+                <input type="hidden" name="nonce" value="<?= \PPStudio\Support\ViewHelper::escape($nonce) ?>">
+                <input type="hidden" name="sig" value="<?= \PPStudio\Support\ViewHelper::escape($signature) ?>">
 
                 <div class="reservation-calendar" data-reservation-calendar>
                     <div class="reservation-calendar-head">
@@ -79,8 +79,8 @@ declare(strict_types=1);
                     <p data-reschedule-success-message>Potvrzení změny vám během chvíle dorazí e-mailem.</p>
                 </div>
                 <div class="reservation-success-summary">
-                    <p><strong>Služba:</strong> <span data-reschedule-success-service><?= escape($service_label) ?></span></p>
-                    <p><strong>Nový termín:</strong> <span data-reschedule-success-slot><?= escape($current_date_time !== '' ? $current_date_time : '—') ?></span></p>
+                    <p><strong>Služba:</strong> <span data-reschedule-success-service><?= \PPStudio\Support\ViewHelper::escape($service_label) ?></span></p>
+                    <p><strong>Nový termín:</strong> <span data-reschedule-success-slot><?= \PPStudio\Support\ViewHelper::escape($current_date_time !== '' ? $current_date_time : '—') ?></span></p>
                 </div>
                 <div class="reservation-success-actions">
                     <a href="/index.php#rezervace" class="reservation-back">Zpět na web</a>
