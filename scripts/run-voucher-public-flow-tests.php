@@ -10,42 +10,7 @@ if (PHP_SAPI !== 'cli') {
 
 const SCRIPT_PREFIX = '[voucher-public-flow-tests]';
 
-function fail(string $message): never
-{
-    fwrite(STDERR, SCRIPT_PREFIX . " [FAIL] {$message}\n");
-    exit(1);
-}
-
-function assertTrue(bool $condition, string $message): void
-{
-    if (! $condition) {
-        fail($message);
-    }
-}
-
-function assertSame(mixed $expected, mixed $actual, string $message): void
-{
-    if ($expected !== $actual) {
-        fail($message . ' Expected: ' . var_export($expected, true) . ' Actual: ' . var_export($actual, true));
-    }
-}
-
-function assertContains(string $needle, string $haystack, string $message): void
-{
-    if (! str_contains($haystack, $needle)) {
-        fail($message . ' Missing: ' . $needle);
-    }
-}
-
-function tempSecurityStorageDir(): string
-{
-    $dir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'ppstudio-voucher-flow-' . bin2hex(random_bytes(4));
-    if (! mkdir($dir, 0770, true) && ! is_dir($dir)) {
-        fail('Nepodarilo se vytvorit docasny security storage.');
-    }
-
-    return $dir;
-}
+require_once __DIR__ . '/_test_helpers.php';
 
 function captureChildResponse(string $scenario, array $server, array $get, array $env): array
 {
@@ -62,35 +27,7 @@ function captureChildResponse(string $scenario, array $server, array $get, array
         'PPSTUDIO_VOUCHER_FLOW_SERVER' => json_encode($server, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         'PPSTUDIO_VOUCHER_FLOW_GET' => json_encode($get, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     ]);
-
-    $descriptorSpec = [
-        0 => ['pipe', 'r'],
-        1 => ['pipe', 'w'],
-        2 => ['pipe', 'w'],
-    ];
-
-    $process = proc_open($command, $descriptorSpec, $pipes, dirname(__DIR__), $childEnv);
-    if (! is_resource($process)) {
-        fail('Nepodarilo se spustit child proces.');
-    }
-
-    fclose($pipes[0]);
-    $stdout = stream_get_contents($pipes[1]) ?: '';
-    $stderr = stream_get_contents($pipes[2]) ?: '';
-    fclose($pipes[1]);
-    fclose($pipes[2]);
-
-    $exitCode = proc_close($process);
-    if ($exitCode !== 0) {
-        fail('Child proces selhal: ' . trim($stderr ?: $stdout));
-    }
-
-    $decoded = json_decode($stdout, true);
-    if (! is_array($decoded)) {
-        fail('Child proces vratil nevalidni vystup: ' . trim($stdout));
-    }
-
-    return $decoded;
+    return ppstudioCliTestCaptureJsonChildResponse(SCRIPT_PREFIX, $command, $childEnv, dirname(__DIR__));
 }
 
 function childMain(string $scenario): never
@@ -140,7 +77,7 @@ function childMain(string $scenario): never
         require dirname(__DIR__) . '/voucher-verify.php';
     }
 
-    fail('Neznama child scenario: ' . $scenario);
+    ppstudioCliTestFail(SCRIPT_PREFIX, 'Neznama child scenario: ' . $scenario);
 }
 
 $argvCopy = $argv;
@@ -157,7 +94,7 @@ if ($isChild) {
     }
 
     if ($scenario === '') {
-        fail('Chybi --scenario pro child rezim.');
+        ppstudioCliTestFail(SCRIPT_PREFIX, 'Chybi --scenario pro child rezim.');
     }
 
     childMain($scenario);
@@ -171,25 +108,15 @@ require dirname(__DIR__) . '/includes/settings.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$storageDir = tempSecurityStorageDir();
+$storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-voucher-flow-');
 $voucherVerifySecret = 'voucher-flow-' . bin2hex(random_bytes(16));
-$previousEnv = [];
-foreach ([
+$previousEnv = ppstudioCliTestSetEnv([
     'PPSTUDIO_SECURITY_STORAGE' => $storageDir,
     'PPSTUDIO_VOUCHER_VERIFY_SECRET' => $voucherVerifySecret,
     'PPSTUDIO_ACTION_SECRET' => $voucherVerifySecret,
     'HTTP_HOST' => 'voucher-tests.local',
     'HTTPS' => 'off',
-] as $name => $value) {
-    $previousEnv[$name] = [
-        'env' => getenv($name),
-        'server' => array_key_exists($name, $_SERVER) ? $_SERVER[$name] : null,
-        'server_exists' => array_key_exists($name, $_SERVER),
-    ];
-    putenv($name . '=' . $value);
-    $_ENV[$name] = $value;
-    $_SERVER[$name] = $value;
-}
+]);
 
 $connection = \PPStudio\Database\DatabaseFactory::connect();
 $token = bin2hex(random_bytes(4));
@@ -215,7 +142,7 @@ try {
 
     $secret = ppstudioVoucherVerifySecret();
     $signature = buildVoucherVerifySignature($secret, $voucherId, $code);
-    assertTrue($signature !== '', 'Podpis poukazu nesmi byt prazdny.');
+    ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $signature !== '', 'Podpis poukazu nesmi byt prazdny.');
 
     $viewResponse = captureChildResponse(
         'voucher_view',
@@ -235,9 +162,9 @@ try {
             'HTTPS' => 'off',
         ]
     );
-    assertSame(200, (int) ($viewResponse['code'] ?? 0), 'voucher-view ma vratit HTTP 200.');
-    assertContains('Dárkový poukaz', (string) ($viewResponse['body'] ?? ''), 'voucher-view ma obsahovat titul.');
-    assertContains($code, (string) ($viewResponse['body'] ?? ''), 'voucher-view ma zobrazit kod poukazu.');
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 200, (int) ($viewResponse['code'] ?? 0), 'voucher-view ma vratit HTTP 200.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Dárkový poukaz', (string) ($viewResponse['body'] ?? ''), 'voucher-view ma obsahovat titul.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, $code, (string) ($viewResponse['body'] ?? ''), 'voucher-view ma zobrazit kod poukazu.');
 
     $verifyPublicResponse = captureChildResponse(
         'voucher_verify_public',
@@ -257,9 +184,9 @@ try {
             'HTTPS' => 'off',
         ]
     );
-    assertSame(200, (int) ($verifyPublicResponse['code'] ?? 0), 'voucher-verify ma vratit HTTP 200.');
-    assertContains('Ověření dárkového poukazu', (string) ($verifyPublicResponse['body'] ?? ''), 'voucher-verify ma obsahovat titul.');
-    assertContains($code, (string) ($verifyPublicResponse['body'] ?? ''), 'voucher-verify ma zobrazit kod poukazu.');
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 200, (int) ($verifyPublicResponse['code'] ?? 0), 'voucher-verify ma vratit HTTP 200.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Ověření dárkového poukazu', (string) ($verifyPublicResponse['body'] ?? ''), 'voucher-verify ma obsahovat titul.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, $code, (string) ($verifyPublicResponse['body'] ?? ''), 'voucher-verify ma zobrazit kod poukazu.');
 
     $verifyPrivilegedResponse = captureChildResponse(
         'voucher_verify_privileged',
@@ -279,13 +206,13 @@ try {
             'HTTPS' => 'off',
         ]
     );
-    assertSame(200, (int) ($verifyPrivilegedResponse['code'] ?? 0), 'Privilegovany voucher-verify ma vratit HTTP 200.');
-    assertContains('Aktuální zůstatek', (string) ($verifyPrivilegedResponse['body'] ?? ''), 'Privilegovany voucher-verify ma zobrazit zůstatek.');
+    ppstudioCliTestAssertSame(SCRIPT_PREFIX, 200, (int) ($verifyPrivilegedResponse['code'] ?? 0), 'Privilegovany voucher-verify ma vratit HTTP 200.');
+    ppstudioCliTestAssertContains(SCRIPT_PREFIX, 'Aktuální zůstatek', (string) ($verifyPrivilegedResponse['body'] ?? ''), 'Privilegovany voucher-verify ma zobrazit zůstatek.');
 
-    echo SCRIPT_PREFIX . ' [OK] Voucher public flow smoke tests passed.' . PHP_EOL;
+    echo SCRIPT_PREFIX . ' [OK] Voucher flow smoke tests passed.' . PHP_EOL;
     exit(0);
 } catch (Throwable $exception) {
-    fail('Exception: ' . $exception->getMessage());
+    ppstudioCliTestFail(SCRIPT_PREFIX, 'Exception: ' . $exception->getMessage());
 } finally {
     $delete = $connection->prepare('DELETE FROM poukazy WHERE id = ?');
     $delete->bind_param('i', $voucherId);
@@ -293,23 +220,7 @@ try {
     $delete->close();
     $connection->close();
 
-    foreach ($previousEnv as $name => $state) {
-        $value = $state['env'] ?? null;
-        if ($value === false || $value === null) {
-            putenv($name);
-            unset($_ENV[$name]);
-        } else {
-            putenv($name . '=' . $value);
-            $_ENV[$name] = $value;
-        }
-
-        if (($state['server_exists'] ?? false) === true) {
-            $_SERVER[$name] = $state['server'];
-            continue;
-        }
-
-        unset($_SERVER[$name]);
-    }
+    ppstudioCliTestRestoreEnv($previousEnv);
 
     if (is_dir($storageDir)) {
         $files = glob($storageDir . '/*') ?: [];

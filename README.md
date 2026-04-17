@@ -31,6 +31,8 @@ Detailnější dokumentace:
    - `php scripts/run-reservation-public-flow-tests.php`
 6. Pro public flow smoke testy voucher detailu a ověření poukazu:
    - `php scripts/run-voucher-public-flow-tests.php`
+7. Pro samostatný smoke test admin DL tisku poukazu:
+   - `php scripts/run-admin-voucher-dl-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 

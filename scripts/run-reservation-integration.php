@@ -8,6 +8,8 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
+require_once __DIR__ . '/_test_helpers.php';
+
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require dirname(__DIR__) . '/config/app.php';
 require dirname(__DIR__) . '/includes/functions.php';
@@ -34,17 +36,9 @@ function parseOptions(array $argv): array
     ];
 }
 
-function fail(string $message): never
-{
-    fwrite(STDERR, SCRIPT_PREFIX . " [FAIL] {$message}\n");
-    exit(1);
-}
-
 function assertOrFail(bool $condition, string $message): void
 {
-    if (! $condition) {
-        fail($message);
-    }
+    ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $condition, $message);
 }
 
 function connectDb(): mysqli
@@ -229,7 +223,7 @@ function launchWorker(string $token, int $serviceId, string $dateTime, string $s
 
     $process = proc_open($command, $descriptorSpec, $pipes, dirname(__DIR__));
     if (! is_resource($process)) {
-        fail('Nepodarilo se spustit worker proces.');
+        ppstudioCliTestFail(SCRIPT_PREFIX, 'Nepodarilo se spustit worker proces.');
     }
 
     fclose($pipes[0]);
@@ -240,12 +234,12 @@ function launchWorker(string $token, int $serviceId, string $dateTime, string $s
 
     $exitCode = proc_close($process);
     if ($exitCode !== 0) {
-        fail('Worker selhal: ' . trim($stderr ?: $stdout));
+        ppstudioCliTestFail(SCRIPT_PREFIX, 'Worker selhal: ' . trim($stderr ?: $stdout));
     }
 
     $decoded = json_decode($stdout, true);
     if (! is_array($decoded)) {
-        fail('Worker vratil nevalidni vystup: ' . trim($stdout));
+        ppstudioCliTestFail(SCRIPT_PREFIX, 'Worker vratil nevalidni vystup: ' . trim($stdout));
     }
 
     return [
@@ -297,7 +291,7 @@ function runWorkerMode(array $options): never
     $startAt = $options['start_at'];
 
     if ($token === '' || $serviceId <= 0 || $dateTime === '' || $startAt <= 0.0) {
-        fail('Worker mode vyzaduje --token, --service-id, --date-time a --start-at.');
+        ppstudioCliTestFail(SCRIPT_PREFIX, 'Worker mode vyzaduje --token, --service-id, --date-time a --start-at.');
     }
 
     $connection = connectDb();
@@ -354,7 +348,7 @@ try {
     echo SCRIPT_PREFIX . ' [OK] Parallel statuses: ' . implode(', ', $parallel['worker_statuses']) . PHP_EOL;
     exit(0);
 } catch (Throwable $exception) {
-    fail('Exception: ' . $exception->getMessage());
+    ppstudioCliTestFail(SCRIPT_PREFIX, 'Exception: ' . $exception->getMessage());
 } finally {
     if ($fixture !== null) {
         cleanupFixture(
