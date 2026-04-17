@@ -7,100 +7,30 @@ use PPStudio\Database\DatabaseFactory;
 
 final class AdminApplication
 {
+    private AdminAuthenticationService $authenticationService;
+
     public function __construct(
         private array $adminConfig,
         private array $emailConfig,
     ) {
+        $this->authenticationService = new AdminAuthenticationService();
     }
 
     public function handle(): never
     {
-        startSecureSession();
-
         $projectRoot = $this->projectRoot();
-        $isAuthenticated = (bool) ($_SESSION['ppstudio_admin_authenticated'] ?? false);
-        $loginError = '';
-        $error = '';
-        $loginIp = getClientIpAddress();
-        $loginUsernameInput = trim((string) ($_POST['username'] ?? ''));
-        $loginRateState = ppstudioLoginThrottleState('admin', $loginIp, $loginUsernameInput);
-        $isLocked = (bool) ($loginRateState['locked'] ?? false);
-        $minutesLeft = (int) ($loginRateState['minutes_left'] ?? 0);
+        $authState = $this->authenticationService->handle($this->adminConfig, [
+            'auth_session_key' => 'ppstudio_admin_authenticated',
+            'username_session_key' => 'ppstudio_admin_username',
+            'throttle_scope' => 'admin',
+            'redirect_path' => 'admin.php',
+            'event_source' => 'admin_login',
+            'event_name_prefix' => 'admin_login',
+        ]);
+        $error = (string) $authState['error'];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-            if (isset($_POST['admin_login'])) {
-                $loginError = 'Platnost přihlášení vypršela. Obnovte stránku a zkuste to znovu.';
-            } else {
-                $error = 'Platnost formuláře vypršela. Obnovte stránku a akci opakujte.';
-            }
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login']) && $loginError === '') {
-            $username = trim((string) ($_POST['username'] ?? ''));
-            $password = (string) ($_POST['password'] ?? '');
-            $storedUsername = (string) ($this->adminConfig['username'] ?? '');
-            $storedHash = (string) ($this->adminConfig['password_hash'] ?? '');
-            $legacyPassword = (string) ($this->adminConfig['password'] ?? '');
-            $passwordMatches = $storedHash !== ''
-                ? password_verify($password, $storedHash)
-                : ($legacyPassword !== '' && hash_equals($legacyPassword, $password));
-
-            if ($isLocked) {
-                $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za ' . $minutesLeft . ' min.';
-                securityEventLog('admin_login_locked', 'admin_login', 'warning', [
-                    'username' => $username,
-                    'minutes_left' => $minutesLeft,
-                ]);
-            } elseif ($username === $storedUsername && $passwordMatches) {
-                $_SESSION['ppstudio_admin_authenticated'] = true;
-                $_SESSION['ppstudio_admin_username'] = $username;
-                ppstudioLoginThrottleReset('admin', $loginIp, $username);
-                securityEventLog('admin_login_success', 'admin_login', 'info', [
-                    'username' => $username,
-                ]);
-                session_regenerate_id(true);
-                header('Location: admin.php');
-                exit;
-            }
-
-            if ($loginError === '') {
-                $failureState = ppstudioLoginThrottleRegisterFailure('admin', $loginIp, $username);
-                if ((bool) ($failureState['locked'] ?? false)) {
-                    $minutesToWait = (int) ($failureState['minutes_left'] ?? 15);
-                    $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za 15 min.';
-                    if ($minutesToWait > 0) {
-                        $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za ' . $minutesToWait . ' min.';
-                    }
-                    securityEventLog('admin_login_locked', 'admin_login', 'warning', [
-                        'username' => $username,
-                        'minutes_left' => $minutesToWait,
-                    ]);
-                } else {
-                    $loginError = 'Neplatné přihlašovací údaje.';
-                    securityEventLog('admin_login_failed', 'admin_login', 'warning', [
-                        'username' => $username,
-                        'remaining' => (int) ($failureState['remaining'] ?? 0),
-                    ]);
-                }
-            }
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_logout']) && isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-            unset($_SESSION['ppstudio_admin_authenticated']);
-            unset($_SESSION['ppstudio_admin_username']);
-            header('Location: admin.php');
-            exit;
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-            $_POST = [];
-        }
-
-        if (! $isAuthenticated && isset($_SESSION['ppstudio_admin_authenticated'])) {
-            $isAuthenticated = true;
-        }
-
-        if (! $isAuthenticated) {
+        if (! $authState['is_authenticated']) {
+            $loginError = (string) $authState['login_error'];
             include $projectRoot . '/includes/admin/templates/login.php';
             exit;
         }

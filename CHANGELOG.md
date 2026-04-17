@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `admin-lite.php` je nově tenký wrapper nad OOP vrstvou `AdminLiteApplication`; login/logout, CSRF, login throttling, výchozí view state i orchestrace POST/load include adaptérů se přesunuly do `src/` při zachování lite session klíčů a šablon `login_lite.php` / `app_lite.php` (commit: `this-commit`)
 - [test] Přidán souhrnný CLI runner `scripts/run-admin-usecase-regression-tests.php`, který spouští oba nové admin use-case regression testy pro rezervace i vouchery jedním příkazem a zastaví se na první chybě (commit: `this-commit`)
 - [test] Přidán CLI regression test `scripts/run-admin-voucher-usecase-tests.php`, který přímo nad voucher use-casy ověřuje batch generování, odmítnutí expirovaného/stornovaného poukazu, čerpání nad zůstatek a e-mailing při neaktivním poukazu nebo vypnutém maileru (commit: `this-commit`)
 - [test] Přidán CLI regression test `scripts/run-admin-reservation-usecase-tests.php`, který přímo nad reservation use-casy ověřuje potvrzení, zrušení, přeplánování, blokaci přesunu zrušené/dokončené rezervace a ruční vytvoření včetně kolize slotu (commit: `this-commit`)
