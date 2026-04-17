@@ -296,57 +296,26 @@ final class AdminApplication
                 )
             );
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                if (isset($_POST['save_settings'])) {
-                    $result = $settingsPostActionHandler->saveStudioSettings(
-                        $siteSettings,
-                        $studioSettingFields,
-                        $_POST
-                    );
-                    $siteSettings = $result['siteSettings'];
-                    if ($result['message'] !== '') {
-                        $message = $result['message'];
-                    }
-                    if ($result['error'] !== '') {
-                        $error = $result['error'];
-                    }
-                }
-
-                if (isset($_POST['save_integrations'])) {
-                    $result = $settingsPostActionHandler->saveIntegrations(
-                        $siteSettings,
-                        [
-                            'google_reviews_url',
-                            'firmy_reviews_url',
-                            'firmy_reviews_embed',
-                            'google_place_id',
-                            'google_reviews_language',
-                        ],
-                        $_POST
-                    );
-                    $siteSettings = $result['siteSettings'];
-                    if ($result['message'] !== '') {
-                        $message = $result['message'];
-                    }
-                    if ($result['error'] !== '') {
-                        $error = $result['error'];
-                    }
-                }
-
-                if (isset($_POST['save_email_settings'])) {
-                    $result = $settingsPostActionHandler->saveEmailSettings(
-                        $siteSettings,
-                        ['notification_emails'],
-                        $_POST
-                    );
-                    $siteSettings = $result['siteSettings'];
-                    if ($result['message'] !== '') {
-                        $message = $result['message'];
-                    }
-                    if ($result['error'] !== '') {
-                        $error = $result['error'];
-                    }
-                }
+            $settingsPostState = $settingsPostActionHandler->handle(
+                $_SERVER,
+                $_POST,
+                $siteSettings,
+                $studioSettingFields,
+                [
+                    'google_reviews_url',
+                    'firmy_reviews_url',
+                    'firmy_reviews_embed',
+                    'google_place_id',
+                    'google_reviews_language',
+                ],
+                ['notification_emails']
+            );
+            $siteSettings = $settingsPostState['siteSettings'];
+            if ($settingsPostState['message'] !== '') {
+                $message = $settingsPostState['message'];
+            }
+            if ($settingsPostState['error'] !== '') {
+                $error = $settingsPostState['error'];
             }
 
             $antispamData = $securityLogDataLoader->loadAntispam(

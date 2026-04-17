@@ -13,6 +13,57 @@ final class AdminSettingsPostActionHandler
     }
 
     /**
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $post
+     * @param array<string, string> $siteSettings
+     * @param array<string, string> $studioSettingFields
+     * @param string[] $integrationKeys
+     * @param string[] $emailSettingKeys
+     * @return array{siteSettings: array<string, string>, message: string, error: string}
+     */
+    public function handle(
+        array $server,
+        array $post,
+        array $siteSettings,
+        array $studioSettingFields,
+        array $integrationKeys,
+        array $emailSettingKeys
+    ): array {
+        $state = [
+            'siteSettings' => $siteSettings,
+            'message' => '',
+            'error' => '',
+        ];
+
+        if (($server['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            return $state;
+        }
+
+        if (isset($post['save_settings'])) {
+            $state = $this->applyResult(
+                $state,
+                $this->saveStudioSettings($state['siteSettings'], $studioSettingFields, $post)
+            );
+        }
+
+        if (isset($post['save_integrations'])) {
+            $state = $this->applyResult(
+                $state,
+                $this->saveIntegrations($state['siteSettings'], $integrationKeys, $post)
+            );
+        }
+
+        if (isset($post['save_email_settings'])) {
+            $state = $this->applyResult(
+                $state,
+                $this->saveEmailSettings($state['siteSettings'], $emailSettingKeys, $post)
+            );
+        }
+
+        return $state;
+    }
+
+    /**
      * @param array<string, string> $siteSettings
      * @param array<string, string> $studioSettingFields
      * @param array<string, mixed> $post
@@ -104,6 +155,20 @@ final class AdminSettingsPostActionHandler
             'siteSettings' => $siteSettings,
             'message' => '',
             'error' => $errorMessage,
+        ];
+    }
+
+    /**
+     * @param array{siteSettings: array<string, string>, message: string, error: string} $state
+     * @param array{siteSettings: array<string, string>, message: string, error: string} $result
+     * @return array{siteSettings: array<string, string>, message: string, error: string}
+     */
+    private function applyResult(array $state, array $result): array
+    {
+        return [
+            'siteSettings' => $result['siteSettings'],
+            'message' => $result['message'] !== '' ? $result['message'] : $state['message'],
+            'error' => $result['error'] !== '' ? $result['error'] : $state['error'],
         ];
     }
 }
