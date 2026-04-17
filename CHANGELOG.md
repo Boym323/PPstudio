@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Veřejné stránky `voucher-view.php` a `voucher-verify.php` už drží jen bootstrap; nová OOP vrstva `VoucherPublicApplication`, `VoucherPublicService`, `VoucherPublicPageRenderer` a voucher šablony převzala DB lookup, validaci podpisu, status view-model i HTML render při zachování stávajících URL a podpisových parametrů (commit: `this-commit`)
+- [refactor] Nová OOP view vrstva pro veřejné akční stránky rezervací byla rozdělená na sdílené layouty `admin-card-page` a `site-page` plus samostatné content šablony, takže render je připravený pro další tenké public entrypointy s menší duplicitou HTML skeletu (commit: `this-commit`)
 - [refactor] Veřejné akční stránky rezervací `reservation-action.php`, `reservation-cancel.php` a `reservation-reschedule.php` už drží jen bootstrap; nová OOP vrstva `ReservationActionApplication` a `ReservationActionPageRenderer` převzala HTTP orchestrace, JSON odpověď i HTML render při zachování stávajících URL a parametrů (commit: `this-commit`)
 - [refactor] Veřejné odeslání rezervace bylo ztenčeno přes novou OOP vrstvu `ReservationSubmitApplication`; `reservation-submit.php` je teď jen tenký wrapper nad `ReservationController` a souvisejícími security službami (commit: `this-commit`)
 - [refactor] Hlavní admin bootstrap byl přesunut z `admin.php` do nové OOP třídy `AdminApplication`; entrypoint je teď jen tenký wrapper, zatímco login/logout, throttling a render orchestrace běží v `src/` při zachování stávajícího admin flow (commit: `this-commit`)
