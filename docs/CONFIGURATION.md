@@ -7,7 +7,8 @@ Projekt používá 2 zdroje konfigurace:
 
 ## 1) DB nastavení (`nastaveni`)
 
-Aktivní klíče, které aplikace načítá přes `SITE_SETTING_KEYS` v `config/app.php`:
+Aktivní klíče, které aplikace načítá přes `PPStudio\Config\AppConfig::SITE_SETTING_KEYS`
+(kompatibilně také přes globální `SITE_SETTING_KEYS` definované v `config/app.php`):
 
 - `site_name`
 - `site_url`
@@ -26,7 +27,8 @@ Aktivní klíče, které aplikace načítá přes `SITE_SETTING_KEYS` v `config/
 - `notification_emails`
 - `availability_story_background`
 
-Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` v `config/app.php`.
+Poznámka: fallbacky pro chybějící DB hodnoty vrací `PPStudio\Config\SiteDefaultsProvider`
+(kompatibilně také `defaultSiteSettings()` v `config/app.php`).
 
 ## 2) ENV nastavení (`.env`)
 
@@ -83,9 +85,17 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `PPSTUDIO_SITE_URL` fallback pro `site_url`
 - `PPSTUDIO_CONTACT_INSTAGRAM_URL` fallback pro `contact_instagram_url`
 
+### OOP config vrstva
+
+- `PPStudio\Config\AppConfig` je centrální objekt pro čtení runtime env hodnot a defaultů.
+- `PPStudio\Config\EnvLoader` deterministicky načítá `.env` a `.env.local` v tomto pořadí.
+- `PPStudio\Config\SiteDefaultsProvider` vrací výchozí hodnoty pro webové nastavení.
+- Kompatibilní helpery `ppstudioEnv()`, `defaultSiteSettings()`, `defaultSiteName()` a
+  `defaultContactInstagramUrl()` zůstávají v `config/app.php` jen jako BC vrstva pro starší call-sitey.
+
 ## 3) Kde se načítá konfigurace
 
-- `config/app.php`: načtení `.env` + seznam DB klíčů (`SITE_SETTING_KEYS`).
+- `config/app.php`: bootstrap OOP config vrstvy + BC helpery + seznam DB klíčů (`SITE_SETTING_KEYS`).
 - `config/database.php`: DB připojení z `.env`.
 - `config/admin.php`: přihlášení do plného adminu.
 - `config/admin_lite.php`: přihlášení do user adminu.

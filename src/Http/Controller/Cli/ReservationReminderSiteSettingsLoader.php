@@ -14,7 +14,7 @@ final class ReservationReminderSiteSettingsLoader
      */
     public function load(mysqli|PDO $connection): array
     {
-        $settings = defaultSiteSettings();
+        $settings = \ppstudioAppConfig()->defaultSiteSettings();
 
         if ($connection instanceof mysqli) {
             $query = $connection->query('SELECT setting_key, setting_value FROM nastaveni');

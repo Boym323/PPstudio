@@ -13,7 +13,8 @@ final class SiteSettingsLoader
      */
     public function load(): array
     {
-        $siteSettings = \defaultSiteSettings();
+        $appConfig = \ppstudioAppConfig();
+        $siteSettings = $appConfig->defaultSiteSettings();
         $connection = DatabaseFactory::tryConnect();
 
         if (! $connection instanceof \mysqli) {
@@ -23,7 +24,7 @@ final class SiteSettingsLoader
         try {
             return (new SiteSettingsService(
                 new SiteSettingsRepository($connection),
-                \defaultSiteSettings()
+                $appConfig->defaultSiteSettings()
             ))->load();
         } finally {
             $connection->close();
