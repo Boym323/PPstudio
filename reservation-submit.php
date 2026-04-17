@@ -11,15 +11,10 @@ require __DIR__ . '/includes/mailer.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
 
-startSecureSession();
-
-$controller = new \PPStudio\Http\Controller\ReservationController(
-    new \PPStudio\Service\ReservationSubmitService(
-        new \PPStudio\Service\ReservationNotificationService($emailConfig)
-    ),
+(new \PPStudio\Http\Controller\ReservationSubmitApplication(
+    $emailConfig,
     ppstudioPublicSiteLockService(),
     ppstudioCsrfService(),
     ppstudioReservationAntispamService(),
     ppstudioRequestSecurityService()
-);
-$controller->submit($_SERVER, $_POST);
+))->handle($_SERVER, $_POST);

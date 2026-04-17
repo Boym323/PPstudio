@@ -9,6 +9,12 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 - Typy: `feat`, `fix`, `refactor`, `style`, `docs`, `chore`, `perf`, `security`.
 - Nejnovější záznamy zapisuj nahoru.
 
+## 2026-04-17
+
+- [refactor] Veřejné akční stránky rezervací `reservation-action.php`, `reservation-cancel.php` a `reservation-reschedule.php` už drží jen bootstrap; nová OOP vrstva `ReservationActionApplication` a `ReservationActionPageRenderer` převzala HTTP orchestrace, JSON odpověď i HTML render při zachování stávajících URL a parametrů (commit: `this-commit`)
+- [refactor] Veřejné odeslání rezervace bylo ztenčeno přes novou OOP vrstvu `ReservationSubmitApplication`; `reservation-submit.php` je teď jen tenký wrapper nad `ReservationController` a souvisejícími security službami (commit: `this-commit`)
+- [refactor] Hlavní admin bootstrap byl přesunut z `admin.php` do nové OOP třídy `AdminApplication`; entrypoint je teď jen tenký wrapper, zatímco login/logout, throttling a render orchestrace běží v `src/` při zachování stávajícího admin flow (commit: `this-commit`)
+
 ## 2026-04-16
 
 - [refactor] Availability story/export v adminu nově připravují OOP vrstvy `AdminAvailabilityStoryService` a `AdminAvailabilityStoryController`; admin šablona i `admin-availability-story.php` už jen používají sdílený view-model a rendering payload při zachování existujícího preview/download flow (commit: `this-commit`)
