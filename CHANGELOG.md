@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Public site page context už nenačítá DB a security závislosti inline; `SitePageContextBuilder` nově používá injektovaný `SecurityFacade` a novou službu `SiteSettingsLoader`, zatímco render i výstup webu zůstávají beze změny (commit: `this-commit`)
 - [fix] Public layout znovu předává do site šablon i camelCase proměnnou `activeNav`, takže navigace při renderu webu už nehází warningy na nedefinovanou proměnnou a správně označuje aktivní položku menu (commit: `this-commit`)
 - [fix] Opraven pád veřejného webu a souvisejících endpointů po ztenčení bootstrapu; `includes/bootstrap.php` znovu poskytuje kompatibilní security wrappery jako `ppstudioSecurityFacade()`, `requirePublicSiteAccessOrPrompt()`, `requirePublicSiteAccessOrJsonError()`, `csrfInputField()` a session/CSRF helpery (commit: `this-commit`)
 - [refactor] Sjednocené date helpery teď obsluhují validaci `Y-m-d` i formátování/kalendářní metadata pro availability vrstvu; `AdminAvailabilityReadService`, `AvailabilityService` a availability API controllery už nedrží vlastní duplicitní implementace a public site context znovu používá jednu sdílenou instanci `SecurityFacade` místo opakovaného vytváření (commit: `this-commit`)

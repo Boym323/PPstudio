@@ -3,13 +3,24 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\View;
 
+use PPStudio\Security\SecurityFacade;
+use PPStudio\Service\SiteSettingsLoader;
+
 final class SitePageContextBuilder
 {
     private SiteContactContextBuilder $contactContextBuilder;
+    private SecurityFacade $security;
+    private SiteSettingsLoader $siteSettingsLoader;
 
-    public function __construct(?SiteContactContextBuilder $contactContextBuilder = null)
+    public function __construct(
+        ?SiteContactContextBuilder $contactContextBuilder = null,
+        ?SecurityFacade $security = null,
+        ?SiteSettingsLoader $siteSettingsLoader = null
+    )
     {
         $this->contactContextBuilder = $contactContextBuilder ?? new SiteContactContextBuilder();
+        $this->security = $security ?? new SecurityFacade();
+        $this->siteSettingsLoader = $siteSettingsLoader ?? new SiteSettingsLoader();
     }
 
     /**
@@ -22,17 +33,9 @@ final class SitePageContextBuilder
         $description = (string) ($config['description'] ?? 'PP Studio - kosmetické studio');
         $activeNav = (string) ($config['active_nav'] ?? 'home');
         $template = (string) ($config['template'] ?? '');
-        $security = new \PPStudio\Security\SecurityFacade();
-
         $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
-        $csrfToken = $security->getCsrfToken();
-        $siteSettings = \defaultSiteSettings();
-
-        $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
-        if ($connection instanceof \mysqli) {
-            $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
-            $connection->close();
-        }
+        $csrfToken = $this->security->getCsrfToken();
+        $siteSettings = $this->siteSettingsLoader->load();
 
         $fallbackSiteUrl = rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
         $siteBaseUrl = rtrim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
@@ -50,7 +53,7 @@ final class SitePageContextBuilder
 
         $reservationAntispamToken = '';
         if ($activeNav === 'reservation') {
-            $reservationAntispamToken = $security->reservationAntispamService()->issueToken();
+            $reservationAntispamToken = $this->security->reservationAntispamService()->issueToken();
         }
 
         return [
