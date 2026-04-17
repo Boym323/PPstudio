@@ -35,6 +35,8 @@ Detailnější dokumentace:
    - `php scripts/run-voucher-public-flow-tests.php`
 8. Pro samostatný smoke test admin DL tisku poukazu:
    - `php scripts/run-admin-voucher-dl-tests.php`
+9. Pro admin voucher POST smoke test vytvoření a čerpání poukazu:
+   - `php scripts/run-admin-voucher-post-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 

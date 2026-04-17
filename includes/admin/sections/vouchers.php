@@ -5,43 +5,23 @@
                         <?php if (! $voucherModuleReady): ?>
                             <div class="alert alert-error">Modul poukazů zatím není v databázi dostupný. Spusťte prosím aktualizační SQL skript.</div>
                         <?php else: ?>
-                            <?php
-                            $voucherTotalCount = count($voucherRows);
-                            $voucherActiveCount = 0;
-                            $voucherExpiredCount = 0;
-                            $voucherSpentOutCount = 0;
-                            $voucherTotalOriginal = 0.0;
-                            $voucherTotalRemaining = 0.0;
-                            foreach ($voucherRows as $voucherSummaryRow) {
-                                $voucherTotalOriginal += (float) ($voucherSummaryRow['puvodni_hodnota'] ?? 0);
-                                $voucherTotalRemaining += (float) ($voucherSummaryRow['zustatek'] ?? 0);
-                                $summaryStatus = (string) ($voucherSummaryRow['effective_status'] ?? '');
-                                if ($summaryStatus === 'aktivni') {
-                                    $voucherActiveCount++;
-                                } elseif ($summaryStatus === 'expirovan') {
-                                    $voucherExpiredCount++;
-                                } elseif ($summaryStatus === 'vycerpan') {
-                                    $voucherSpentOutCount++;
-                                }
-                            }
-                            ?>
                             <div class="voucher-summary-grid">
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Celkem poukazů</span>
-                                    <strong class="voucher-summary-value"><?= escape((string) $voucherTotalCount) ?></strong>
+                                    <strong class="voucher-summary-value"><?= escape((string) ($voucherSummary['total_count'] ?? count($voucherRows))) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Aktivní</span>
-                                    <strong class="voucher-summary-value"><?= escape((string) $voucherActiveCount) ?></strong>
+                                    <strong class="voucher-summary-value"><?= escape((string) ($voucherSummary['active_count'] ?? 0)) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Zůstatek celkem</span>
-                                    <strong class="voucher-summary-value"><?= escape(formatPrice($voucherTotalRemaining)) ?></strong>
+                                    <strong class="voucher-summary-value"><?= escape(formatPrice($voucherSummary['total_remaining'] ?? 0)) ?></strong>
                                 </article>
                                 <article class="voucher-summary-card">
                                     <span class="voucher-summary-label">Vyčerpáno / expirováno</span>
                                     <strong class="voucher-summary-value">
-                                        <?= escape((string) ($voucherSpentOutCount + $voucherExpiredCount)) ?>
+                                        <?= escape((string) (($voucherSummary['spent_out_count'] ?? 0) + ($voucherSummary['expired_count'] ?? 0))) ?>
                                     </strong>
                                 </article>
                             </div>
@@ -129,22 +109,20 @@
                                         <?php if ($voucherRows === []): ?>
                                             <tr><td colspan="8">Zatím zde nejsou žádné poukazy.</td></tr>
                                         <?php else: ?>
-                                            <?php foreach ($voucherRows as $voucher): ?>
+                                            <?php foreach (($voucherRowsPrepared ?? $voucherRows) as $voucher): ?>
                                                 <?php
-                                                $voucherId = (int) ($voucher['id'] ?? 0);
+                                                $voucherId = (int) ($voucher['voucher_id'] ?? $voucher['id'] ?? 0);
                                                 $effectiveStatus = (string) ($voucher['effective_status'] ?? 'aktivni');
-                                                $statusLabel = match ($effectiveStatus) {
-                                                    'aktivni' => 'Aktivní',
-                                                    'vycerpan' => 'Vyčerpán',
-                                                    'storno' => 'Storno',
-                                                    'expirovan' => 'Expirovaný',
-                                                    default => ucfirst($effectiveStatus),
-                                                };
-                                                $originalAmount = (float) ($voucher['puvodni_hodnota'] ?? 0);
-                                                $remainingAmount = (float) ($voucher['zustatek'] ?? 0);
-                                                $spentAmount = max(0.0, $originalAmount - $remainingAmount);
-                                                $spentPercent = $originalAmount > 0 ? min(100.0, max(0.0, ($spentAmount / $originalAmount) * 100.0)) : 0.0;
-                                                $voucherTransactions = $voucherTransactionsByVoucher[$voucherId] ?? [];
+                                                $statusLabel = (string) ($voucher['status_label'] ?? ucfirst($effectiveStatus));
+                                                $remainingAmount = (float) ($voucher['remaining_amount'] ?? $voucher['zustatek'] ?? 0);
+                                                $spentAmount = (float) ($voucher['spent_amount'] ?? 0);
+                                                $spentPercent = (float) ($voucher['spent_percent'] ?? 0);
+                                                $voucherTransactions = is_array($voucher['transactions'] ?? null)
+                                                    ? $voucher['transactions']
+                                                    : ($voucherTransactionsByVoucher[$voucherId] ?? []);
+                                                $canSendEmail = (bool) ($voucher['can_send_email'] ?? ($effectiveStatus === 'aktivni'));
+                                                $canRedeem = (bool) ($voucher['can_redeem'] ?? ($effectiveStatus === 'aktivni'));
+                                                $voucherTransactionCount = (int) ($voucher['transaction_count'] ?? count($voucherTransactions));
                                                 ?>
                                                 <tr>
                                                     <td data-label="Kód"><strong><?= escape((string) ($voucher['kod'] ?? '')) ?></strong></td>
@@ -178,7 +156,7 @@
                                                             <summary>
                                                                 Správa poukazu
                                                                 <?php if ($voucherTransactions !== []): ?>
-                                                                    <span class="voucher-manage-count"><?= escape((string) count($voucherTransactions)) ?>x čerpání</span>
+                                                                    <span class="voucher-manage-count"><?= escape((string) $voucherTransactionCount) ?>x čerpání</span>
                                                                 <?php else: ?>
                                                                     <span class="voucher-manage-count">Bez čerpání</span>
                                                                 <?php endif; ?>
@@ -195,7 +173,7 @@
                                                                         name="voucher_recipient_email"
                                                                         value="<?= escape((string) ($voucher['recipient_email'] ?? '')) ?>"
                                                                         placeholder="E-mail pro zaslání poukazu"
-                                                                        <?= $effectiveStatus === 'aktivni' ? '' : 'disabled' ?>
+                                                                        <?= $canSendEmail ? '' : 'disabled' ?>
                                                                         required
                                                                     >
                                                                     <button
@@ -203,18 +181,18 @@
                                                                         type="submit"
                                                                         name="send_voucher_email"
                                                                         value="1"
-                                                                        <?= $effectiveStatus === 'aktivni' ? '' : 'disabled' ?>
+                                                                        <?= $canSendEmail ? '' : 'disabled' ?>
                                                                     >
                                                                         Odeslat e-mailem
                                                                     </button>
                                                                 </div>
                                                                 <div class="form-hint">
-                                                                    <?= $effectiveStatus === 'aktivni'
+                                                                    <?= $canSendEmail
                                                                         ? 'Po odeslání se e-mail uloží i k poukazu pro další použití.'
                                                                         : 'E-mailem lze odesílat jen aktivní poukazy.' ?>
                                                                 </div>
                                                             </form>
-                                                            <?php if ($effectiveStatus === 'aktivni'): ?>
+                                                            <?php if ($canRedeem): ?>
                                                                 <form method="post" class="admin-form compact-form compact-form-voucher" data-voucher-redeem-form data-voucher-remaining="<?= escape(number_format($remainingAmount, 2, '.', '')) ?>">
                                                                     <?= csrfInputField() ?>
                                                                     <input type="hidden" name="voucher_id" value="<?= escape((string) $voucherId) ?>">
@@ -232,19 +210,9 @@
                                                                                 <summary>Ruční výběr ze selectu</summary>
                                                                                 <select name="redeem_reservation_id">
                                                                                     <option value="">Bez vazby na rezervaci</option>
-                                                                                    <?php foreach ($voucherReservationOptions as $reservationOption): ?>
-                                                                                        <?php
-                                                                                        $reservationPrice = (float) ($reservationOption['reservation_price'] ?? 0);
-                                                                                        $reservationLabelParts = [
-                                                                                            formatCzechDateTime((string) ($reservationOption['datum_cas'] ?? '')),
-                                                                                            (string) ($reservationOption['jmeno'] ?? ''),
-                                                                                            (string) ($reservationOption['service_name'] ?? ''),
-                                                                                        ];
-                                                                                        $reservationLabel = implode(' - ', array_values(array_filter($reservationLabelParts, static fn(string $part): bool => trim($part) !== '')));
-                                                                                        $reservationSearch = mb_strtolower(trim((string) (($reservationOption['jmeno'] ?? '') . ' ' . ($reservationOption['telefon'] ?? '') . ' ' . ($reservationOption['service_name'] ?? '') . ' ' . ($reservationOption['datum_cas'] ?? ''))));
-                                                                                        ?>
-                                                                                        <option value="<?= escape((string) $reservationOption['id']) ?>" data-reservation-price="<?= escape(number_format($reservationPrice, 2, '.', '')) ?>" data-search="<?= escape($reservationSearch) ?>">
-                                                                                            <?= escape($reservationLabel) ?>
+                                                                                    <?php foreach (($voucherReservationOptionsPrepared ?? $voucherReservationOptions) as $reservationOption): ?>
+                                                                                        <option value="<?= escape((string) $reservationOption['id']) ?>" data-reservation-price="<?= escape((string) ($reservationOption['reservation_price_value'] ?? number_format((float) ($reservationOption['reservation_price'] ?? 0), 2, '.', ''))) ?>" data-search="<?= escape((string) ($reservationOption['reservation_search'] ?? '')) ?>">
+                                                                                            <?= escape((string) ($reservationOption['reservation_label'] ?? '')) ?>
                                                                                         </option>
                                                                                     <?php endforeach; ?>
                                                                                 </select>
@@ -268,24 +236,9 @@
                                                                                     <span><?= escape(formatCzechDateTime((string) ($transaction['created_at'] ?? ''))) ?></span>
                                                                                 </div>
                                                                                 <?php if ((int) ($transaction['rezervace_id'] ?? 0) > 0): ?>
-                                                                                    <?php
-                                                                                    $txReservationId = (int) $transaction['rezervace_id'];
-                                                                                    $reservationInfo = $voucherReservationLookup[$txReservationId] ?? null;
-                                                                                    $reservationLabel = '';
-                                                                                    if (is_array($reservationInfo)) {
-                                                                                        $labelParts = [];
-                                                                                        if ((string) ($reservationInfo['datum_cas'] ?? '') !== '') {
-                                                                                            $labelParts[] = formatCzechDateTime((string) $reservationInfo['datum_cas']);
-                                                                                        }
-                                                                                        if ((string) ($reservationInfo['jmeno'] ?? '') !== '') {
-                                                                                            $labelParts[] = (string) $reservationInfo['jmeno'];
-                                                                                        }
-                                                                                        $reservationLabel = implode(' • ', $labelParts);
-                                                                                    }
-                                                                                    ?>
                                                                                     <span class="voucher-transaction-reservation">
                                                                                         Rezervace:
-                                                                                        <?= escape($reservationLabel !== '' ? $reservationLabel : ('#' . (string) $txReservationId)) ?>
+                                                                                        <?= escape((string) ($transaction['reservation_label'] ?? ('#' . (string) ((int) ($transaction['rezervace_id'] ?? 0))))) ?>
                                                                                     </span>
                                                                                 <?php endif; ?>
                                                                                 <?php if (trim((string) ($transaction['poznamka'] ?? '')) !== ''): ?>
