@@ -4,15 +4,20 @@ declare(strict_types=1);
 namespace PPStudio\Service;
 
 use mysqli;
+use PPStudio\Infrastructure\Storage\UploadStorage;
 use Throwable;
 
 final class AdminAvailabilityMutationService
 {
+    private ?ImageUploadService $imageUploadService;
+
     public function __construct(
         private mysqli $connection,
         private array $siteSettings,
-        private string $projectRoot
+        private string $projectRoot,
+        ?ImageUploadService $imageUploadService = null
     ) {
+        $this->imageUploadService = $imageUploadService;
     }
 
     public function saveAvailabilityGrid(array $post): array
@@ -247,7 +252,7 @@ final class AdminAvailabilityMutationService
             return $this->error('Vyberte prosím obrázek pozadí.');
         }
 
-        $backgroundPath = \storeUploadedImage($backgroundFile, $this->projectRoot . '/uploads', $backgroundError);
+        $backgroundPath = $this->imageUploadService()->storeImage($backgroundFile, $this->projectRoot . '/uploads', $backgroundError);
         if ($backgroundPath === null) {
             return $this->error(
                 $backgroundError !== null && $backgroundError !== ''
@@ -317,5 +322,15 @@ final class AdminAvailabilityMutationService
             'error' => $message,
             'data' => $data,
         ];
+    }
+
+    private function imageUploadService(): ImageUploadService
+    {
+        if (! $this->imageUploadService instanceof ImageUploadService) {
+            $storage = new UploadStorage();
+            $this->imageUploadService = new ImageUploadService($storage, new CertificatePreviewService($storage));
+        }
+
+        return $this->imageUploadService;
     }
 }

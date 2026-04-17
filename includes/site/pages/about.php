@@ -1,6 +1,16 @@
 <?php
-require_once __DIR__ . '/../../media.php';
-$certificateItems = loadCertificateUploads(dirname(__DIR__, 3) . '/uploads', '/uploads', 'cert_');
+
+use PPStudio\Infrastructure\Storage\UploadStorage;
+use PPStudio\Service\CertificateMetadataService;
+use PPStudio\Service\CertificatePreviewService;
+use PPStudio\Service\CertificateService;
+
+$uploadStorage = new UploadStorage();
+$certificateItems = (new CertificateService(
+    $uploadStorage,
+    new CertificateMetadataService($uploadStorage),
+    new CertificatePreviewService($uploadStorage)
+))->loadUploads(dirname(__DIR__, 3) . '/uploads', '/uploads', 'cert_');
 ?>
 
 <section class="team" id="team">
