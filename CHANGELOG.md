@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `includes/bootstrap.php` je nově jen tenký entrypoint; fallback autoload a registraci legacy security helperů převzaly OOP třídy `PPStudio\Bootstrap\ProjectAutoloader` a `PPStudio\Bootstrap\LegacyBootstrap`, takže bootstrap logika už neleží inline v include souboru (commit: `this-commit`)
 - [refactor] Admin section šablony byly přesunuty z `includes/admin/sections/` do `src/Http/View/Templates/admin-sections/`; full/lite render mapy už míří jen do `src` a nevyužité legacy sekce `calendar.php` + `integrations.php` byly odstraněny (commit: `this-commit`)
 - [refactor] Antispam a reminder sekce už neobsahují inline prezentační výpočty času/kontextu/paginace; přípravu dat obsluhuje nový `AdminSecurityLogViewPresenter` a odkazy používají `adminBasePath` místo natvrdo zapsaného `/admin.php` (commit: `this-commit`)
 - [refactor] `includes/admin/partials/` už není aktivní render vrstva; sidebar a intro pro full/lite admin byly přesunuty do `src/Http/View/Templates/` a admin controllery teď render konfigurují přímo proti nové view vrstvě v `src/` (commit: `this-commit`)
