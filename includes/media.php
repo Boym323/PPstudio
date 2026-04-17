@@ -7,11 +7,16 @@ use PPStudio\Service\CertificatePreviewService;
 use PPStudio\Service\CertificateService;
 use PPStudio\Service\ImageUploadService;
 use PPStudio\Service\MediaService;
+use PPStudio\Service\UploadValidationService;
 
 function describeUploadError(int $errorCode): string
 {
     $storage = new UploadStorage();
-    $uploadService = new ImageUploadService($storage, new CertificatePreviewService($storage));
+    $uploadService = new ImageUploadService(
+        $storage,
+        new UploadValidationService($storage),
+        new CertificatePreviewService($storage)
+    );
 
     return $uploadService->describeUploadError($errorCode);
 }
@@ -24,7 +29,11 @@ function loadMediaByCategory(mysqli $connection, string $category, int $limit = 
 function storeUploadedImage(array $file, string $targetDir, ?string &$errorMessage = null): ?string
 {
     $storage = new UploadStorage();
-    $uploadService = new ImageUploadService($storage, new CertificatePreviewService($storage));
+    $uploadService = new ImageUploadService(
+        $storage,
+        new UploadValidationService($storage),
+        new CertificatePreviewService($storage)
+    );
 
     return $uploadService->storeImage($file, $targetDir, $errorMessage);
 }
@@ -71,7 +80,11 @@ function createCertificatePreview(string $sourcePath, string $targetDir, string 
 function storeUploadedCertificateFile(array $file, string $targetDir, ?string &$errorMessage = null): ?string
 {
     $storage = new UploadStorage();
-    $uploadService = new ImageUploadService($storage, new CertificatePreviewService($storage));
+    $uploadService = new ImageUploadService(
+        $storage,
+        new UploadValidationService($storage),
+        new CertificatePreviewService($storage)
+    );
 
     return $uploadService->storeCertificateFile($file, $targetDir, $errorMessage);
 }

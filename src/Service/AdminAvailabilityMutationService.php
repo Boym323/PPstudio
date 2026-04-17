@@ -328,7 +328,11 @@ final class AdminAvailabilityMutationService
     {
         if (! $this->imageUploadService instanceof ImageUploadService) {
             $storage = new UploadStorage();
-            $this->imageUploadService = new ImageUploadService($storage, new CertificatePreviewService($storage));
+            $this->imageUploadService = new ImageUploadService(
+                $storage,
+                new UploadValidationService($storage),
+                new CertificatePreviewService($storage)
+            );
         }
 
         return $this->imageUploadService;

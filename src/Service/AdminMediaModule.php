@@ -21,6 +21,8 @@ final class AdminMediaModule
 
     private ?ImageUploadService $imageUploadService = null;
 
+    private ?UploadValidationService $uploadValidationService = null;
+
     private ?CertificateService $certificateService = null;
 
     private ?MediaService $mediaService = null;
@@ -106,7 +108,11 @@ final class AdminMediaModule
     private function imageUploadService(): ImageUploadService
     {
         if (! $this->imageUploadService instanceof ImageUploadService) {
-            $this->imageUploadService = new ImageUploadService($this->storage(), $this->certificatePreviewService());
+            $this->imageUploadService = new ImageUploadService(
+                $this->storage(),
+                $this->uploadValidationService(),
+                $this->certificatePreviewService()
+            );
         }
 
         return $this->imageUploadService;
@@ -119,6 +125,15 @@ final class AdminMediaModule
         }
 
         return $this->certificateMetadataService;
+    }
+
+    private function uploadValidationService(): UploadValidationService
+    {
+        if (! $this->uploadValidationService instanceof UploadValidationService) {
+            $this->uploadValidationService = new UploadValidationService($this->storage());
+        }
+
+        return $this->uploadValidationService;
     }
 
     private function certificatePreviewService(): CertificatePreviewService
