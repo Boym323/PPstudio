@@ -24,7 +24,7 @@ final class SitePageContextBuilder
         $template = (string) ($config['template'] ?? '');
 
         $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
-        $csrfToken = \getCsrfToken();
+        $csrfToken = \ppstudioSecurityFacade()->getCsrfToken();
         $siteSettings = \defaultSiteSettings();
 
         $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
@@ -49,7 +49,7 @@ final class SitePageContextBuilder
 
         $reservationAntispamToken = '';
         if ($activeNav === 'reservation') {
-            $reservationAntispamToken = \reservationAntispamIssueToken();
+            $reservationAntispamToken = \ppstudioSecurityFacade()->reservationAntispamService()->issueToken();
         }
 
         return [

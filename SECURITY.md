@@ -28,5 +28,5 @@ Užitečné informace v reportu:
 ## Implementace
 
 - CSRF tokeny, secure session cookie parametry, request/rate-limit pomocné funkce a audit bezpečnostních událostí jsou zapouzdřené ve třídách v `src/Security/`.
-- Public site lock pro web a reservation antispam (honeypot, jednorázové tokeny, rate-limit a audit log) nově řeší `PublicSiteLockService` a `ReservationAntispamService`.
-- Procedurální funkce v `includes/security.php`, `includes/site_lock.php`, `includes/antispam.php` a `includes/security_events.php` zůstávají dočasně jako kompatibilní wrappery pro starší entrypointy.
+- Public site lock pro web a reservation antispam (honeypot, jednorázové tokeny, rate-limit a audit log) řeší `PublicSiteLockService` a `ReservationAntispamService`.
+- Globální bezpečnostní helpery byly z projektu odstraněné; nové call-sitey mají používat `ppstudioSecurityFacade()` nebo přímé služby v `src/Security/`.

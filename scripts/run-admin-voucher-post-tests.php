@@ -37,7 +37,6 @@ $isChild = in_array('--child', $argvCopy, true);
 
 if ($isChild) {
     ppstudioCliTestBootstrapBase();
-    require dirname(__DIR__) . '/includes/settings.php';
     require dirname(__DIR__) . '/includes/admin/actions/post/helpers.php';
 
     $server = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_SERVER'), true);
@@ -75,7 +74,6 @@ if ($isChild) {
 }
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/settings.php';
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-admin-voucher-post-');
 $voucherVerifySecret = 'admin-voucher-post-' . bin2hex(random_bytes(16));
@@ -96,7 +94,7 @@ $recipientEmail = 'voucher-post-' . $token . '@example.test';
 $note = 'admin voucher post smoke test ' . $token;
 
 try {
-    startSecureSession();
+    ppstudioSecurityFacade()->startSecureSession();
     session_unset();
 
     $createResponse = captureChildResponse(

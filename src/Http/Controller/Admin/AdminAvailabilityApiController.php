@@ -64,7 +64,7 @@ final class AdminAvailabilityApiController
             self::respondWithoutConnection(['success' => false, 'message' => 'Nepodporovaná metoda.'], 405);
         }
 
-        if (! \isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! \ppstudioSecurityFacade()->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Platnost formuláře vypršela.'], 419);
         }
 
@@ -91,7 +91,7 @@ final class AdminAvailabilityApiController
             self::respondWithoutConnection(['success' => false, 'message' => 'Nepodporovaná metoda.'], 405);
         }
 
-        if (! \isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! \ppstudioSecurityFacade()->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Platnost formuláře vypršela.'], 419);
         }
 

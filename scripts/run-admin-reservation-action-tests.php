@@ -71,7 +71,6 @@ if ($isChild) {
 }
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/settings.php';
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-admin-reservation-action-');
 $actionSecret = 'admin-reservation-action-' . bin2hex(random_bytes(16));
@@ -133,10 +132,10 @@ $reservationId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    startSecureSession();
+    ppstudioSecurityFacade()->startSecureSession();
     session_unset();
 
-    $csrfToken = getCsrfToken();
+    $csrfToken = ppstudioSecurityFacade()->getCsrfToken();
     $sessionId = session_id();
     $_SESSION['ppstudio_admin_authenticated'] = true;
     session_write_close();

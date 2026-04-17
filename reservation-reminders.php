@@ -12,9 +12,6 @@ if (PHP_SAPI !== 'cli') {
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
-require __DIR__ . '/includes/security.php';
-require __DIR__ . '/includes/settings.php';
-require __DIR__ . '/includes/security_events.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
 ReservationReminderApplication::create($emailConfig)->handle($argv ?? []);

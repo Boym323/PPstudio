@@ -63,9 +63,8 @@ function childMain(string $scenario): never
 
     if ($scenario === 'lock_page') {
         ppstudioCliTestBootstrapBase();
-        require dirname(__DIR__) . '/includes/site_lock.php';
 
-        ppstudioPublicSiteLockService()->renderPage('Test');
+        ppstudioSecurityFacade()->publicSiteLockService()->renderPage('Test');
     }
 
     if ($scenario === 'reservation_submit') {
@@ -96,8 +95,6 @@ if ($isChild) {
 }
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/site_lock.php';
-require dirname(__DIR__) . '/includes/antispam.php';
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-public-flow-');
 $previousEnv = ppstudioCliTestSetEnv([
@@ -108,19 +105,20 @@ $previousEnv = ppstudioCliTestSetEnv([
 ]);
 
 try {
-    startSecureSession();
+    $securityFacade = ppstudioSecurityFacade();
+    $securityFacade->startSecureSession();
     session_unset();
 
-    $requestSecurity = ppstudioRequestSecurityService();
+    $requestSecurity = $securityFacade->requestSecurityService();
     ppstudioCliTestAssertSame(SCRIPT_PREFIX, '203.0.113.5', $requestSecurity->clientIpAddress(['REMOTE_ADDR' => '203.0.113.5']), 'Client IP ma byt prevzata z requestu.');
     ppstudioCliTestAssertSame(SCRIPT_PREFIX, 'Test UA', $requestSecurity->userAgent(['HTTP_USER_AGENT' => 'Test UA']), 'User agent ma byt prevzat z requestu.');
 
-    $csrfService = ppstudioCsrfService();
+    $csrfService = $securityFacade->csrfService();
     $csrfToken = $csrfService->token();
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $csrfService->isValid($csrfToken), 'CSRF token ma byt validni pro stejnou session.');
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, ! $csrfService->isValid('invalid-token'), 'CSRF token ma odmítnout nespravny token.');
 
-    $antispamService = ppstudioReservationAntispamService();
+    $antispamService = $securityFacade->reservationAntispamService();
     $issuedToken = $antispamService->issueToken(time() - 10);
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $antispamService->consumeToken($issuedToken) !== null, 'Reservation token ma jit jednorazove spotrebovat.');
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $antispamService->consumeToken($issuedToken) === null, 'Reservation token nesmi jit spotrebovat podruhe.');
@@ -131,7 +129,7 @@ try {
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, ! (bool) ($rateLimitSecond['allowed'] ?? true), 'Druhy rate-limit check ma byt blokovany.');
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, (int) ($rateLimitSecond['retry_after'] ?? 0) > 0, 'Rate-limit ma vratit retry_after.');
 
-    $lockService = ppstudioPublicSiteLockService();
+    $lockService = $securityFacade->publicSiteLockService();
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $lockService->enabled(), 'Public lock ma byt zapnuty.');
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, ! $lockService->hasAccess(), 'Nova session nema mit access do public locku.');
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $lockService->passwordMatches('s3cret'), 'Spravne heslo ma projit.');

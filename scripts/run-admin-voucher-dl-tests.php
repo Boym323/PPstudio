@@ -69,7 +69,6 @@ if ($isChild) {
 }
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/settings.php';
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-admin-voucher-dl-');
 $voucherVerifySecret = 'admin-voucher-dl-' . bin2hex(random_bytes(16));
@@ -100,7 +99,7 @@ $voucherId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    startSecureSession();
+    ppstudioSecurityFacade()->startSecureSession();
     session_unset();
     $_SESSION['ppstudio_admin_authenticated'] = true;
     $sessionId = session_id();

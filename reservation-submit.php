@@ -4,17 +4,14 @@ declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
-require __DIR__ . '/includes/security.php';
-require __DIR__ . '/includes/availability.php';
-require __DIR__ . '/includes/settings.php';
 require __DIR__ . '/includes/mailer.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
 
 (new \PPStudio\Http\Controller\ReservationSubmitApplication(
     $emailConfig,
-    ppstudioPublicSiteLockService(),
-    ppstudioCsrfService(),
-    ppstudioReservationAntispamService(),
-    ppstudioRequestSecurityService()
+    ppstudioSecurityFacade()->publicSiteLockService(),
+    ppstudioSecurityFacade()->csrfService(),
+    ppstudioSecurityFacade()->reservationAntispamService(),
+    ppstudioSecurityFacade()->requestSecurityService()
 ))->handle($_SERVER, $_POST);

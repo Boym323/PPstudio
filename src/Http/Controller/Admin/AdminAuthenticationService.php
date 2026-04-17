@@ -19,14 +19,15 @@ final class AdminAuthenticationService
      */
     public function handle(array $adminConfig, array $options): array
     {
-        startSecureSession();
+        $security = \ppstudioSecurityFacade();
+        $security->startSecureSession();
 
         $isAuthenticated = (bool) ($_SESSION[$options['auth_session_key']] ?? false);
         $loginError = '';
         $error = '';
-        $loginIp = getClientIpAddress();
+        $loginIp = $security->getClientIpAddress();
         $loginUsernameInput = trim((string) ($_POST['username'] ?? ''));
-        $loginRateState = ppstudioLoginThrottleState(
+        $loginRateState = $security->loginThrottleState(
             $options['throttle_scope'],
             $loginIp,
             $loginUsernameInput
@@ -34,7 +35,7 @@ final class AdminAuthenticationService
         $isLocked = (bool) ($loginRateState['locked'] ?? false);
         $minutesLeft = (int) ($loginRateState['minutes_left'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
             if (isset($_POST['admin_login'])) {
                 $loginError = 'Platnost přihlášení vypršela. Obnovte stránku a zkuste to znovu.';
             } else {
@@ -54,15 +55,15 @@ final class AdminAuthenticationService
 
             if ($isLocked) {
                 $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za ' . $minutesLeft . ' min.';
-                securityEventLog($options['event_name_prefix'] . '_locked', $options['event_source'], 'warning', [
+                $security->securityEventLogger()->log($options['event_name_prefix'] . '_locked', $options['event_source'], 'warning', [
                     'username' => $username,
                     'minutes_left' => $minutesLeft,
                 ]);
             } elseif ($username === $storedUsername && $passwordMatches) {
                 $_SESSION[$options['auth_session_key']] = true;
                 $_SESSION[$options['username_session_key']] = $username;
-                ppstudioLoginThrottleReset($options['throttle_scope'], $loginIp, $username);
-                securityEventLog($options['event_name_prefix'] . '_success', $options['event_source'], 'info', [
+                $security->loginThrottleReset($options['throttle_scope'], $loginIp, $username);
+                $security->securityEventLogger()->log($options['event_name_prefix'] . '_success', $options['event_source'], 'info', [
                     'username' => $username,
                 ]);
                 session_regenerate_id(true);
@@ -71,20 +72,20 @@ final class AdminAuthenticationService
             }
 
             if ($loginError === '') {
-                $failureState = ppstudioLoginThrottleRegisterFailure($options['throttle_scope'], $loginIp, $username);
+                $failureState = $security->loginThrottleRegisterFailure($options['throttle_scope'], $loginIp, $username);
                 if ((bool) ($failureState['locked'] ?? false)) {
                     $minutesToWait = (int) ($failureState['minutes_left'] ?? 15);
                     $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za 15 min.';
                     if ($minutesToWait > 0) {
                         $loginError = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu za ' . $minutesToWait . ' min.';
                     }
-                    securityEventLog($options['event_name_prefix'] . '_locked', $options['event_source'], 'warning', [
+                    $security->securityEventLogger()->log($options['event_name_prefix'] . '_locked', $options['event_source'], 'warning', [
                         'username' => $username,
                         'minutes_left' => $minutesToWait,
                     ]);
                 } else {
                     $loginError = 'Neplatné přihlašovací údaje.';
-                    securityEventLog($options['event_name_prefix'] . '_failed', $options['event_source'], 'warning', [
+                    $security->securityEventLogger()->log($options['event_name_prefix'] . '_failed', $options['event_source'], 'warning', [
                         'username' => $username,
                         'remaining' => (int) ($failureState['remaining'] ?? 0),
                     ]);
@@ -94,14 +95,14 @@ final class AdminAuthenticationService
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST'
             && isset($_POST['admin_logout'])
-            && isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))
+            && $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))
         ) {
             unset($_SESSION[$options['auth_session_key']], $_SESSION[$options['username_session_key']]);
             header('Location: ' . $options['redirect_path']);
             exit;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
             $_POST = [];
         }
 

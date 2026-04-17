@@ -113,7 +113,7 @@ final class AdminReservationUpdateUseCase
                 $this->notificationService->sendConfirmedEmail($this->siteSettings, $reservationAfterUpdate, [
                     'previous_datetime' => $previousDateTime,
                 ]);
-                \securityEventLog('reservation_admin_rescheduled', 'admin_reservation', 'info', [
+                \ppstudioSecurityFacade()->securityEventLogger()->log('reservation_admin_rescheduled', 'admin_reservation', 'info', [
                     'reservation_id' => $reservationId,
                     'old_datetime' => $previousDateTime,
                     'new_datetime' => $newDateTime,
@@ -122,7 +122,7 @@ final class AdminReservationUpdateUseCase
 
             if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
                 $this->notificationService->sendCancelledEmail($this->siteSettings, $reservationAfterUpdate);
-                \securityEventLog('reservation_admin_cancelled', 'admin_reservation', 'warning', [
+                \ppstudioSecurityFacade()->securityEventLogger()->log('reservation_admin_cancelled', 'admin_reservation', 'warning', [
                     'reservation_id' => $reservationId,
                     'cancelled_by' => $cancelMeta['cancelled_by'],
                     'cancelled_by_user' => $cancelMeta['cancelled_by_user'],

@@ -16,7 +16,7 @@ final class AdminReservationApiController
      */
     public static function handleMutationRequest(array $server, array $post, array $emailConfig): never
     {
-        \startSecureSession();
+        \ppstudioSecurityFacade()->startSecureSession();
         self::sendJsonHeaders();
 
         if (! self::isAuthenticated($_SESSION)) {
@@ -33,7 +33,7 @@ final class AdminReservationApiController
             ], 405);
         }
 
-        if (! \isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! \ppstudioSecurityFacade()->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection([
                 'success' => false,
                 'error' => 'Platnost formuláře vypršela. Obnovte stránku.',

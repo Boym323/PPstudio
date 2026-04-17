@@ -17,7 +17,7 @@ final class AdminAvailabilityStoryController
 
         $isPreview = ($server['REQUEST_METHOD'] ?? 'GET') === 'GET' && isset($get['preview']);
 
-        if (! $isPreview && (($server['REQUEST_METHOD'] ?? 'GET') !== 'POST' || ! \isValidCsrfToken((string) ($post['_csrf'] ?? '')))) {
+        if (! $isPreview && (($server['REQUEST_METHOD'] ?? 'GET') !== 'POST' || ! \ppstudioSecurityFacade()->isValidCsrfToken((string) ($post['_csrf'] ?? '')))) {
             self::respondText('Platnost formuláře vypršela.', 400);
         }
 

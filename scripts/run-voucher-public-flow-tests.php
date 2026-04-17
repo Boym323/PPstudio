@@ -101,7 +101,6 @@ if ($isChild) {
 }
 
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/settings.php';
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-voucher-flow-');
 $voucherVerifySecret = 'voucher-flow-' . bin2hex(random_bytes(16));
@@ -132,11 +131,12 @@ $voucherId = (int) $connection->insert_id;
 $statement->close();
 
 try {
-    startSecureSession();
+    ppstudioSecurityFacade()->startSecureSession();
     session_unset();
 
-    $secret = ppstudioVoucherVerifySecret();
-    $signature = buildVoucherVerifySignature($secret, $voucherId, $code);
+    $security = ppstudioSecurityFacade();
+    $secret = $security->voucherVerifySecret();
+    $signature = $security->buildVoucherVerifySignature($secret, $voucherId, $code);
     ppstudioCliTestAssertTrue(SCRIPT_PREFIX, $signature !== '', 'Podpis poukazu nesmi byt prazdny.');
 
     $viewResponse = captureChildResponse(

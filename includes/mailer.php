@@ -21,7 +21,7 @@ function sendVoucherEmail(
     $voucherValue = formatPrice($voucher['puvodni_hodnota'] ?? null);
     $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
     $expiresAt = $expiresAtRaw !== '' ? formatCzechDate($expiresAtRaw) : 'Bez omezení';
-    $voucherUrl = buildVoucherViewUrl(
+    $voucherUrl = ppstudioSecurityFacade()->buildVoucherViewUrl(
         $siteSettings,
         (int) ($voucher['id'] ?? 0),
         $voucherCode,

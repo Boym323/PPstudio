@@ -12,10 +12,7 @@ const SCRIPT_PREFIX = '[admin-reservation-usecase-tests]';
 
 require_once __DIR__ . '/_test_helpers.php';
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/availability.php';
-require dirname(__DIR__) . '/includes/settings.php';
 require dirname(__DIR__) . '/includes/mailer.php';
-require_once dirname(__DIR__) . '/includes/security_events.php';
 
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\AvailabilityRepository;

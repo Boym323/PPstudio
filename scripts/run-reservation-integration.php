@@ -10,7 +10,6 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/_test_helpers.php';
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/availability.php';
 
 const SCRIPT_PREFIX = '[reservation-integration]';
 
@@ -137,16 +136,17 @@ function cleanupFixture(mysqli $connection, string $token, ?int $serviceId, ?int
  */
 function runBasicFlow(mysqli $connection, int $serviceId, string $date, string $token): array
 {
-    $times = getAvailableTimesForDate($connection, $serviceId, $date);
+    $availabilityFacade = ppstudioAvailabilityFacade();
+    $times = $availabilityFacade->getAvailableTimesForDate($connection, $serviceId, $date);
     assertOrFail(count($times) > 0, 'Ocekavan alespon jeden volny slot v prvnim okne.');
 
     $slot = (string) ($times[0]['value'] ?? '');
     assertOrFail($slot !== '', 'Prvni volny slot nema hodnotu value.');
     $slotDateTime = $date . ' ' . $slot . ':00';
 
-    assertOrFail(isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Slot ma byt validni pred rezervaci.');
+    assertOrFail($availabilityFacade->isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Slot ma byt validni pred rezervaci.');
 
-    $firstReservation = createReservationWithLock(
+    $firstReservation = $availabilityFacade->createReservationWithLock(
         $connection,
         'IT Basic One',
         'it-basic-1@example.test',
@@ -159,9 +159,9 @@ function runBasicFlow(mysqli $connection, int $serviceId, string $date, string $
     );
     assertOrFail(($firstReservation['status'] ?? '') === 'ok', 'Prvni rezervace v basic flow ma projit.');
 
-    assertOrFail(! isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Slot ma byt po rezervaci nevalidni.');
+    assertOrFail(! $availabilityFacade->isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Slot ma byt po rezervaci nevalidni.');
 
-    $collisionReservation = createReservationWithLock(
+    $collisionReservation = $availabilityFacade->createReservationWithLock(
         $connection,
         'IT Basic Two',
         'it-basic-2@example.test',
@@ -174,7 +174,7 @@ function runBasicFlow(mysqli $connection, int $serviceId, string $date, string $
     );
     assertOrFail(($collisionReservation['status'] ?? '') === 'slot_unavailable', 'Kolizni rezervace ma byt odmitnuta.');
 
-    $outsideReservation = createReservationWithLock(
+    $outsideReservation = $availabilityFacade->createReservationWithLock(
         $connection,
         'IT Basic Three',
         'it-basic-3@example.test',
@@ -245,7 +245,8 @@ function launchWorker(string $token, int $serviceId, string $dateTime, string $s
 
 function runConcurrencyFlow(mysqli $connection, int $serviceId, string $date, string $token): array
 {
-    $times = getAvailableTimesForDate($connection, $serviceId, $date);
+    $availabilityFacade = ppstudioAvailabilityFacade();
+    $times = $availabilityFacade->getAvailableTimesForDate($connection, $serviceId, $date);
     $slot = '';
 
     foreach ($times as $candidate) {
@@ -258,7 +259,7 @@ function runConcurrencyFlow(mysqli $connection, int $serviceId, string $date, st
 
     assertOrFail($slot !== '', 'Nenasel se volny slot ve druhem okne (14:00-16:00).');
     $slotDateTime = $date . ' ' . $slot . ':00';
-    assertOrFail(isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Paralelni slot ma byt pred testem validni.');
+    assertOrFail($availabilityFacade->isValidReservationSlot($connection, $serviceId, $slotDateTime), 'Paralelni slot ma byt pred testem validni.');
 
     $startAt = microtime(true) + 2.0;
 
@@ -292,12 +293,13 @@ function runWorkerMode(array $options): never
     $connection = connectDb();
 
     try {
+        $availabilityFacade = ppstudioAvailabilityFacade();
         while (microtime(true) < $startAt) {
             usleep(1000);
         }
 
         $pid = getmypid() ?: 0;
-        $result = createReservationWithLock(
+        $result = $availabilityFacade->createReservationWithLock(
             $connection,
             'IT Parallel Worker',
             'it-parallel-' . $pid . '@example.test',
