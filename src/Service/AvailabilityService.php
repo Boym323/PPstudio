@@ -10,6 +10,8 @@ use PPStudio\Domain\ServiceItem;
 use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
 use PPStudio\Repository\ServiceRepository;
+use PPStudio\Support\DateHelper;
+use PPStudio\Support\FormatHelper;
 
 final class AvailabilityService
 {
@@ -45,7 +47,7 @@ final class AvailabilityService
      */
     public function getAvailabilityWindowObjects(string $date): array
     {
-        $bounds = self::sqlDayBounds($date);
+        $bounds = DateHelper::sqlDayBounds($date);
         if ($bounds === null) {
             return [];
         }
@@ -69,7 +71,7 @@ final class AvailabilityService
      */
     public function getBookedSlots(string $date): array
     {
-        $bounds = self::sqlDayBounds($date);
+        $bounds = DateHelper::sqlDayBounds($date);
         if ($bounds === null) {
             return [];
         }
@@ -147,7 +149,7 @@ final class AvailabilityService
             if ($times !== []) {
                 $days[] = [
                     'value' => $date,
-                    'label' => self::formatCzechDate($date),
+                    'label' => FormatHelper::formatCzechDate($date),
                 ];
             }
         }
@@ -252,29 +254,7 @@ final class AvailabilityService
 
     public static function sqlDayBounds(string $date): ?array
     {
-        $dayStart = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-        if (! $dayStart) {
-            return null;
-        }
-
-        $dayStart = $dayStart->setTime(0, 0, 0);
-        $dayEnd = $dayStart->modify('+1 day');
-
-        return [
-            'start' => $dayStart->format('Y-m-d H:i:s'),
-            'end' => $dayEnd->format('Y-m-d H:i:s'),
-        ];
-    }
-
-    private static function formatCzechDate(string $date): string
-    {
-        $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        if (! $dateObject) {
-            return $date;
-        }
-
-        return $dateObject->format('d.m.Y');
+        return DateHelper::sqlDayBounds($date);
     }
 
     /**
@@ -283,7 +263,7 @@ final class AvailabilityService
      */
     private function buildAvailableTimesForDate(ServiceItem $service, string $date, array $windows, array $bookedSlots): array
     {
-        $dayBounds = self::sqlDayBounds($date);
+        $dayBounds = DateHelper::sqlDayBounds($date);
         if ($dayBounds === null) {
             return [];
         }

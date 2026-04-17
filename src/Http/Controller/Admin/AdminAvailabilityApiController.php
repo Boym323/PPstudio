@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
-use DateTimeImmutable;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Service\AdminAvailabilityMutationService;
 use PPStudio\Service\AvailabilityModule;
+use PPStudio\Support\DateHelper;
 
 final class AdminAvailabilityApiController
 {
@@ -26,7 +26,7 @@ final class AdminAvailabilityApiController
             self::respondWithoutConnection(['error' => 'Neplatná služba.'], 422);
         }
 
-        if ($date !== '' && ! self::isValidDate($date)) {
+        if ($date !== '' && ! DateHelper::isValidDate($date)) {
             self::respondWithoutConnection(['error' => 'Neplatný formát data.'], 422);
         }
 
@@ -110,16 +110,6 @@ final class AdminAvailabilityApiController
     {
         return (bool) ($session['ppstudio_admin_authenticated'] ?? false)
             || (bool) ($session['ppstudio_admin_lite_authenticated'] ?? false);
-    }
-
-    private static function isValidDate(string $date): bool
-    {
-        $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-        $errors = DateTimeImmutable::getLastErrors();
-
-        return $dateObject instanceof DateTimeImmutable
-            && $dateObject->format('Y-m-d') === $date
-            && ($errors === false || ((int) $errors['warning_count'] === 0 && (int) $errors['error_count'] === 0));
     }
 
     private static function respondMutationResult(array $result, mysqli $connection): never

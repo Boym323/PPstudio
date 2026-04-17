@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Sjednocené date helpery teď obsluhují validaci `Y-m-d` i formátování/kalendářní metadata pro availability vrstvu; `AdminAvailabilityReadService`, `AvailabilityService` a availability API controllery už nedrží vlastní duplicitní implementace a public site context znovu používá jednu sdílenou instanci `SecurityFacade` místo opakovaného vytváření (commit: `this-commit`)
 - [refactor] Z `includes/bootstrap.php` byly odstraněny globální service locatory pro security a site settings; call-sitey teď vytvářejí `SecurityFacade` a `SiteSettingsService` přímo, takže bootstrap už dělá jen autoload (commit: `this-commit`)
 - [refactor] Z repozitáře zmizela globální helper vrstva z `includes/functions.php`; call-sitey teď používají přímo namespaced helper třídy v `src/Support/` a `includes/functions.php` zůstává jen jako bootstrap kompatibilní include (commit: `this-commit`)
 - [refactor] Availability vrstva je teď bez globálních helperů `ppstudioAvailabilityFacade()` a bez `includes/admin/availability_story.php`; public/admin endpointy i CLI testy používají přímo `AvailabilityFacade` a `AvailabilityStoryService` (commit: `this-commit`)

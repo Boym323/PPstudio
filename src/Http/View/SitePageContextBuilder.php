@@ -22,9 +22,10 @@ final class SitePageContextBuilder
         $description = (string) ($config['description'] ?? 'PP Studio - kosmetické studio');
         $activeNav = (string) ($config['active_nav'] ?? 'home');
         $template = (string) ($config['template'] ?? '');
+        $security = new \PPStudio\Security\SecurityFacade();
 
         $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
-        $csrfToken = (new \PPStudio\Security\SecurityFacade())->getCsrfToken();
+        $csrfToken = $security->getCsrfToken();
         $siteSettings = \defaultSiteSettings();
 
         $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
@@ -49,7 +50,7 @@ final class SitePageContextBuilder
 
         $reservationAntispamToken = '';
         if ($activeNav === 'reservation') {
-            $reservationAntispamToken = (new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->issueToken();
+            $reservationAntispamToken = $security->reservationAntispamService()->issueToken();
         }
 
         return [

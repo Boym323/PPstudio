@@ -8,6 +8,16 @@ use DateTimeZone;
 
 final class DateHelper
 {
+    public static function isValidDate(string $date): bool
+    {
+        $dateObject = self::parseDate($date);
+        $errors = DateTimeImmutable::getLastErrors();
+
+        return $dateObject instanceof DateTimeImmutable
+            && $dateObject->format('Y-m-d') === $date
+            && ($errors === false || ((int) $errors['warning_count'] === 0 && (int) $errors['error_count'] === 0));
+    }
+
     public static function isWeekendDate(string $date): bool
     {
         $dateObject = self::parseDate($date);

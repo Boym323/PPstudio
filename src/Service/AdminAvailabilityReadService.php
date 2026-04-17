@@ -4,9 +4,10 @@ declare(strict_types=1);
 namespace PPStudio\Service;
 
 use DateTimeImmutable;
-use DateTimeZone;
 use mysqli;
 use mysqli_result;
+use PPStudio\Support\DateHelper;
+use PPStudio\Support\FormatHelper;
 
 final class AdminAvailabilityReadService
 {
@@ -60,7 +61,7 @@ final class AdminAvailabilityReadService
 
             $formattedRows[] = [
                 'id' => (int) ($row['id'] ?? 0),
-                'date_label' => self::formatCzechDate(substr($startAt, 0, 10)),
+                'date_label' => FormatHelper::formatCzechDate(substr($startAt, 0, 10)),
                 'time_label' => substr($startAt, 11, 5) . ' - ' . substr($endAt, 11, 5),
                 'note' => (string) ($row['poznamka'] ?? ''),
             ];
@@ -90,9 +91,9 @@ final class AdminAvailabilityReadService
         $plannerBookedWindows = [];
         $plannerStartDate = (new DateTimeImmutable('monday this week'))->modify(sprintf('%+d weeks', $plannerWeekOffset));
         $plannerEndDate = $plannerStartDate->modify('+' . ($plannerDayRange - 1) . ' days');
-        $plannerWeekLabel = self::formatCzechDate($plannerStartDate->format('Y-m-d'))
+        $plannerWeekLabel = FormatHelper::formatCzechDate($plannerStartDate->format('Y-m-d'))
             . ' - '
-            . self::formatCzechDate($plannerEndDate->format('Y-m-d'));
+            . FormatHelper::formatCzechDate($plannerEndDate->format('Y-m-d'));
         $plannerToday = (new DateTimeImmutable('today'))->format('Y-m-d');
 
         for ($i = 0; $i < $plannerDayRange; $i++) {
@@ -105,9 +106,9 @@ final class AdminAvailabilityReadService
         ));
 
         foreach ($plannerDays as $plannerDay) {
-            $holidayName = self::getCzechHolidayName($plannerDay);
+            $holidayName = DateHelper::getCzechHolidayName($plannerDay);
             $plannerDayMeta[$plannerDay] = [
-                'is_weekend' => self::isWeekendDate($plannerDay),
+                'is_weekend' => DateHelper::isWeekendDate($plannerDay),
                 'holiday_name' => $holidayName,
                 'is_holiday' => $holidayName !== null,
             ];
@@ -174,72 +175,5 @@ final class AdminAvailabilityReadService
             'plannerSlots' => $plannerSlots,
             'plannerInitialWindows' => $plannerInitialWindows,
         ];
-    }
-
-    private static function formatCzechDate(string $date): string
-    {
-        $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        if (! $dateObject instanceof DateTimeImmutable) {
-            return $date;
-        }
-
-        return $dateObject->format('d.m.Y');
-    }
-
-    private static function isWeekendDate(string $date): bool
-    {
-        $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        if (! $dateObject instanceof DateTimeImmutable) {
-            return false;
-        }
-
-        return (int) $dateObject->format('N') >= 6;
-    }
-
-    private static function getCzechHolidayName(string $date): ?string
-    {
-        $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        if (! $dateObject instanceof DateTimeImmutable) {
-            return null;
-        }
-
-        $year = (int) $dateObject->format('Y');
-        $fixed = [
-            $year . '-01-01' => 'Nový rok / Den obnovy samostatného českého státu',
-            $year . '-05-01' => 'Svátek práce',
-            $year . '-05-08' => 'Den vítězství',
-            $year . '-07-05' => 'Den slovanských věrozvěstů Cyrila a Metoděje',
-            $year . '-07-06' => 'Den upálení mistra Jana Husa',
-            $year . '-09-28' => 'Den české státnosti',
-            $year . '-10-28' => 'Den vzniku samostatného československého státu',
-            $year . '-11-17' => 'Den boje za svobodu a demokracii',
-            $year . '-12-24' => 'Štědrý den',
-            $year . '-12-25' => '1. svátek vánoční',
-            $year . '-12-26' => '2. svátek vánoční',
-        ];
-
-        if (isset($fixed[$date])) {
-            return $fixed[$date];
-        }
-
-        $easterTimestamp = easter_date($year);
-        $easterSunday = (new DateTimeImmutable('@' . $easterTimestamp))
-            ->setTimezone(new DateTimeZone(date_default_timezone_get() ?: 'Europe/Prague'))
-            ->setTime(0, 0);
-        $goodFriday = $easterSunday->modify('-2 days')->format('Y-m-d');
-        $easterMonday = $easterSunday->modify('+1 day')->format('Y-m-d');
-
-        if ($date === $goodFriday) {
-            return 'Velký pátek';
-        }
-
-        if ($date === $easterMonday) {
-            return 'Velikonoční pondělí';
-        }
-
-        return null;
     }
 }

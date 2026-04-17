@@ -9,6 +9,7 @@ use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
 use PPStudio\Repository\ServiceRepository;
 use PPStudio\Service\AvailabilityService;
+use PPStudio\Support\DateHelper;
 
 final class ApiAvailabilityController
 {
@@ -47,7 +48,7 @@ final class ApiAvailabilityController
             self::respondWithoutConnection(['error' => 'Neplatna sluzba.'], 422);
         }
 
-        if ($date !== '' && ! self::isValidDate($date)) {
+        if ($date !== '' && ! DateHelper::isValidDate($date)) {
             self::respondWithoutConnection(['error' => 'Neplatny format data.'], 422);
         }
 
@@ -81,16 +82,6 @@ final class ApiAvailabilityController
         echo json_encode($payload, JSON_UNESCAPED_UNICODE);
         $this->connection->close();
         exit;
-    }
-
-    private static function isValidDate(string $date): bool
-    {
-        $dateObject = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
-        $errors = \DateTimeImmutable::getLastErrors();
-
-        return $dateObject instanceof \DateTimeImmutable
-            && $dateObject->format('Y-m-d') === $date
-            && ($errors === false || ((int) $errors['warning_count'] === 0 && (int) $errors['error_count'] === 0));
     }
 
     private static function sendJsonHeaders(): void
