@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Service\MailerIntegrationService;
 use PPStudio\Http\Controller\Admin\AdminSecurityLogDataLoader;
 use PPStudio\Http\Controller\Admin\AdminSettingsPostActionHandler;
 use PPStudio\Repository\SiteSettingsRepository;
-use PPStudio\Service\MailerIntegrationService;
 use PPStudio\Service\SiteSettingsService;
 
 final class AdminApplication
@@ -375,9 +375,7 @@ final class AdminApplication
             $reminderLogFilters = $reminderData['reminder_log_filters'];
             $reminderLogPagination = $reminderData['reminder_log_pagination'];
 
-            foreach (AdminServiceController::formDataFiles($projectRoot) as $adminServiceFormDataFile) {
-                include $adminServiceFormDataFile;
-            }
+            include $projectRoot . '/includes/admin/actions/load/service_forms.php';
             include $projectRoot . '/includes/admin/actions/post_actions.php';
             include $projectRoot . '/includes/admin/actions/load_data.php';
         } else {

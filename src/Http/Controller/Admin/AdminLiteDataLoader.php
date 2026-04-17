@@ -38,9 +38,7 @@ final class AdminLiteDataLoader
     {
         extract($state, EXTR_OVERWRITE);
 
-        foreach (AdminServiceController::formDataFiles($this->projectRoot) as $adminServiceFormDataFile) {
-            include $adminServiceFormDataFile;
-        }
+        include $this->projectRoot . '/includes/admin/actions/load/service_forms.php';
 
         return $this->captureDefinedState(get_defined_vars());
     }
