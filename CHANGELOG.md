@@ -11,6 +11,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [docs] Upraven `README.md` a `docs/CONFIGURATION.md`, aby odpovídaly současnému stavu po odstranění starých include wrapperů; `includes/settings.php` už není v dokumentaci a popis OOP přechodu je přesnější (commit: `this-commit`)
+- [refactor] `includes/mailer.php` byl odstraněn i s posledními include závislostmi v entrypointech a testech; všude zůstalo jen přímé OOP volání `PPStudio\Service\MailerIntegrationService` (commit: `this-commit`)
+- [refactor] E-mailové helpery z `includes/mailer.php` byly přesunuty do nové OOP služby `PPStudio\Service\MailerIntegrationService`; wrappery zůstaly jako BC vrstva, zatímco voucher send flow, sdílený kalendář a ICS feed teď používají přímé service volání (commit: `this-commit`)
 - [refactor] `includes/settings.php` byl odstraněn a `ppstudioSiteSettingsService()` / `loadSiteSettings()` / `saveSiteSetting()` se přesunuly do `includes/bootstrap.php`; všechny entrypointy a testy teď používají stejné bootstrapované helpery bez další přechodové vrstvy (commit: `this-commit`)
 - [refactor] `includes/availability.php` a `includes/site_lock.php` byly odstraněné a jejich helpery se přesunuly přímo do `includes/bootstrap.php`; entrypointy, admin API, public API i testy teď sahají na `ppstudioAvailabilityFacade()` a `requirePublicSiteAccessOr*()` bez přechodových include souborů (commit: `this-commit`)
 - [refactor] `includes/security.php` byl odstraněn a všechny entrypointy, API skripty, public flow i test helpery teď berou `ppstudioSecurityFacade()` přímo z `includes/bootstrap.php`; zůstaly už jen OOP fasády a žádné staré security include entrypointy (commit: `this-commit`)

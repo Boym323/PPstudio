@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Service\MailerIntegrationService;
 
 final class AdminLiteApplication
 {
@@ -23,7 +24,11 @@ final class AdminLiteApplication
         $this->authenticationService = new AdminAuthenticationService();
         $this->viewStateFactory = new AdminLiteViewStateFactory();
         $this->postActionHandler = new AdminLitePostActionHandler($projectRoot, $this->viewStateFactory);
-        $this->dataLoader = new AdminLiteDataLoader($projectRoot, $this->emailConfig, $this->viewStateFactory);
+        $this->dataLoader = new AdminLiteDataLoader(
+            $projectRoot,
+            new MailerIntegrationService($this->emailConfig),
+            $this->viewStateFactory
+        );
     }
 
     public function handle(): never

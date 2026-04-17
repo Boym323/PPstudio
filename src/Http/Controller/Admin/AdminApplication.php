@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Service\MailerIntegrationService;
 
 final class AdminApplication
 {
@@ -280,7 +281,8 @@ final class AdminApplication
 
         if ($connection instanceof \mysqli) {
             $siteSettings = loadSiteSettings($connection);
-            $subscriptionCalendarUrl = buildSubscriptionCalendarUrl($this->emailConfig, $siteSettings);
+            $subscriptionCalendarUrl = (new MailerIntegrationService($this->emailConfig))
+                ->buildSubscriptionCalendarUrl($siteSettings);
 
             foreach (AdminServiceController::formDataFiles($projectRoot) as $adminServiceFormDataFile) {
                 include $adminServiceFormDataFile;

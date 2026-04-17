@@ -7,13 +7,9 @@ use PPStudio\Repository\VoucherRepository;
 
 final class AdminVoucherEmailSendUseCase
 {
-    /**
-     * @param array<string, mixed> $emailConfig
-     * @param array<string, mixed> $siteSettings
-     */
     public function __construct(
         private VoucherRepository $voucherRepository,
-        private array $emailConfig,
+        private MailerIntegrationService $mailerIntegrationService,
         private array $siteSettings
     ) {
     }
@@ -51,10 +47,10 @@ final class AdminVoucherEmailSendUseCase
         if ($effectiveStatus !== 'aktivni') {
             return $this->result('', 'E-mailem lze odeslat jen aktivní poukaz.', $voucherForm, $voucherBatchForm);
         }
-        if (! ($this->emailConfig['enabled'] ?? false)) {
+        if (! $this->mailerIntegrationService->isEnabled()) {
             return $this->result('', 'E-mailové odesílání není v nastavení aktivní.', $voucherForm, $voucherBatchForm);
         }
-        if (! \sendVoucherEmail($this->emailConfig, $this->siteSettings, $voucher, $recipientEmail)) {
+        if (! $this->mailerIntegrationService->sendVoucherEmail($this->siteSettings, $voucher, $recipientEmail)) {
             return $this->result('', 'Poukaz se nepodařilo odeslat e-mailem.', $voucherForm, $voucherBatchForm);
         }
 

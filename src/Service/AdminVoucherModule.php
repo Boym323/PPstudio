@@ -18,6 +18,8 @@ final class AdminVoucherModule
 
     private ?VoucherRepository $voucherRepository = null;
 
+    private ?MailerIntegrationService $mailerIntegrationService = null;
+
     public function __construct(
         private mysqli $connection,
         private array $emailConfig = [],
@@ -56,7 +58,7 @@ final class AdminVoucherModule
         $this->postActionHandler = new AdminVoucherPostActionHandler(
             new AdminVoucherBatchGenerateUseCase($this->voucherRepository()),
             new AdminVoucherCreateUseCase($this->voucherRepository()),
-            new AdminVoucherEmailSendUseCase($this->voucherRepository(), $this->emailConfig, $this->siteSettings),
+            new AdminVoucherEmailSendUseCase($this->voucherRepository(), $this->mailerIntegrationService(), $this->siteSettings),
             new AdminVoucherRedeemUseCase($this->connection, $this->voucherRepository())
         );
 
@@ -72,5 +74,16 @@ final class AdminVoucherModule
         $this->voucherRepository = new VoucherRepository($this->connection);
 
         return $this->voucherRepository;
+    }
+
+    public function mailerIntegrationService(): MailerIntegrationService
+    {
+        if ($this->mailerIntegrationService instanceof MailerIntegrationService) {
+            return $this->mailerIntegrationService;
+        }
+
+        $this->mailerIntegrationService = new MailerIntegrationService($this->emailConfig);
+
+        return $this->mailerIntegrationService;
     }
 }

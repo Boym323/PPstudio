@@ -12,7 +12,6 @@ const SCRIPT_PREFIX = '[admin-voucher-usecase-tests]';
 
 require_once __DIR__ . '/_test_helpers.php';
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/mailer.php';
 require dirname(__DIR__) . '/includes/admin/actions/post/helpers.php';
 
 use PPStudio\Database\DatabaseFactory;
@@ -20,6 +19,7 @@ use PPStudio\Repository\VoucherRepository;
 use PPStudio\Service\AdminVoucherBatchGenerateUseCase;
 use PPStudio\Service\AdminVoucherEmailSendUseCase;
 use PPStudio\Service\AdminVoucherRedeemUseCase;
+use PPStudio\Service\MailerIntegrationService;
 
 function connectVoucherDb(): mysqli
 {
@@ -140,7 +140,11 @@ $createdVoucherIds = [];
 
 try {
     $batchUseCase = new AdminVoucherBatchGenerateUseCase($repository);
-    $emailUseCase = new AdminVoucherEmailSendUseCase($repository, ['enabled' => false], []);
+    $emailUseCase = new AdminVoucherEmailSendUseCase(
+        $repository,
+        new MailerIntegrationService(['enabled' => false]),
+        []
+    );
     $redeemUseCase = new AdminVoucherRedeemUseCase($connection, $repository);
 
     $batchPrefix = 'TST' . strtoupper(bin2hex(random_bytes(2)));

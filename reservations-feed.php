@@ -4,7 +4,6 @@ declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
-require __DIR__ . '/includes/mailer.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
 
@@ -28,5 +27,5 @@ $siteSettings = loadSiteSettings($connection);
 header('Content-Type: text/calendar; charset=utf-8');
 header('Content-Disposition: inline; filename="reservations-feed.ics"');
 
-echo buildReservationsFeedIcal($connection, $siteSettings);
+echo (new \PPStudio\Service\MailerIntegrationService($emailConfig))->buildReservationsFeedIcal($connection, $siteSettings);
 $connection->close();

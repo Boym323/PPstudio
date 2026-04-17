@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Service\MailerIntegrationService;
+
 final class AdminLiteDataLoader
 {
     public function __construct(
         private string $projectRoot,
-        private array $emailConfig,
+        private MailerIntegrationService $mailerIntegrationService,
         private AdminLiteViewStateFactory $viewStateFactory,
     ) {
     }
@@ -22,7 +24,7 @@ final class AdminLiteDataLoader
         extract($state, EXTR_OVERWRITE);
 
         $siteSettings = loadSiteSettings($connection);
-        $subscriptionCalendarUrl = buildSubscriptionCalendarUrl($this->emailConfig, $siteSettings);
+        $subscriptionCalendarUrl = $this->mailerIntegrationService->buildSubscriptionCalendarUrl($siteSettings);
 
         return $this->captureDefinedState(get_defined_vars());
     }

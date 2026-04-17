@@ -99,8 +99,8 @@ patří jen do této infrastrukturní connection třídy.
 
 Postupně převáděná business logika se dělí na repozitáře v `src/Repository/`
 pro čisté databázové dotazy a služby v `src/Service/` pro výpočty, validace a
-orchestrace. Původní procedurální funkce v `includes/` mohou dočasně zůstat jako
-kompatibilní wrappery nad novými třídami.
+orchestrace. Starší procedurální helpery zůstávají jen tam, kde je to stále
+užitečné pro kompatibilitu, jinak patří nová logika přímo do `src/`.
 
 Společné technické helpery jsou postupně rozdělované do `src/Support/`
 (`ViewHelper`, `FormatHelper`, `DateHelper`, `ReservationStatusHelper`,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 require __DIR__ . '/../../includes/bootstrap.php';
 require __DIR__ . '/../../config/app.php';
 require __DIR__ . '/../../includes/functions.php';
-require __DIR__ . '/../../includes/mailer.php';
 
 $emailConfig = require __DIR__ . '/../../config/email.php';
 \PPStudio\Http\Controller\Admin\AdminReservationApiController::handleMutationRequest(

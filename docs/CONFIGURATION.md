@@ -90,7 +90,7 @@ Poznámka: fallbacky pro chybějící DB hodnoty vrací `defaultSiteSettings()` 
 - `config/admin.php`: přihlášení do plného adminu.
 - `config/admin_lite.php`: přihlášení do user adminu.
 - `config/email.php`: SMTP a e-mailové klíče.
-- `includes/settings.php`: čtení/zápis `nastaveni`.
+- `includes/bootstrap.php`: bootstrapované helpery pro čtení/zápis `nastaveni` a další sdílené facety.
 - `reservation-reminders.php`: CLI runner pro automatické reminder e-maily rezervací.
 - `reservation_reminder_logs` (DB tabulka): audit běhů runneru `reservation-reminders.php` se souhrnným jedním záznamem za běh (`run_finished` nebo `run_failed`).
 - `database/run_db_maintenance.php`: CLI runner pro databázovou maintenance migraci a ověření stavu DB po nasazení.
