@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Admin rezervace mají tenčí adapter vrstvu: rozhodování POST akcí a načtení listu se přesunulo z include souborů do OOP tříd `AdminReservationPostActionHandler` a `AdminReservationDataLoader`, zatímco admin šablona i stávající proměnné zůstaly kompatibilní (commit: `this-commit`)
+- [refactor] Rezervační submit flow byl rozdělen na samostatnou `ReservationSubmitContextFactory`; `ReservationSubmitService` už neskládá DB/repository stack přímo v business metodě a dostává připravený context přes DI, což je bezpečný první krok k dalšímu OOP rozkladu (commit: `this-commit`)
 - [refactor] Společný CLI bootstrap blok pro smoke a integrační testy byl vytáhnut do `scripts/_test_helpers.php` jako `ppstudioCliTestBootstrapBase()`, takže testovací skripty už sdílí i základní include/setup vrstvu (commit: `this-commit`)
 - [refactor] Integrační skript `scripts/run-reservation-integration.php` byl přepojen na sdílené CLI helpery v `scripts/_test_helpers.php`, takže reservation testy teď používají jednotný scaffolding pro fail/assert a child-process capture (commit: `this-commit`)
 - [refactor] Reservation smoke test `scripts/run-reservation-public-flow-tests.php` byl přepojen na sdílené CLI helpery v `scripts/_test_helpers.php`, takže stejný assert/env/capture scaffolding teď používají rezervace i voucher testy (commit: `this-commit`)

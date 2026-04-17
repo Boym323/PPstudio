@@ -3,25 +3,21 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
-use mysqli;
-use PPStudio\Database\DatabaseFactory;
 use PPStudio\Http\Request\ReservationSubmitRequest;
-use PPStudio\Repository\AvailabilityRepository;
-use PPStudio\Repository\ReservationRepository;
-use PPStudio\Repository\SiteSettingsRepository;
-use PPStudio\Repository\ServiceRepository;
 
 final class ReservationSubmitService
 {
-    public function __construct(private ReservationNotificationService $notificationService)
+    public function __construct(
+        private ReservationSubmitContextFactory $contextFactory,
+        private ReservationNotificationService $notificationService
+    )
     {
     }
 
     public function submit(ReservationSubmitRequest $request): array
     {
-        $connection = DatabaseFactory::tryConnect();
-
-        if (! $connection instanceof mysqli) {
+        $context = $this->contextFactory->create();
+        if (! $context instanceof ReservationSubmitContext) {
             return [
                 'status' => 'db',
                 'success' => false,
@@ -31,8 +27,7 @@ final class ReservationSubmitService
 
         try {
             $dateTime = $request->dateTime();
-            $siteSettings = new SiteSettingsService(new SiteSettingsRepository($connection), \defaultSiteSettings())->load();
-            $reservationInsert = $this->reservationService($connection)->createReservationWithLock(
+            $reservationInsert = $context->reservationService->createReservationWithLock(
                 $request->name,
                 $request->email,
                 $request->phone,
@@ -73,7 +68,7 @@ final class ReservationSubmitService
                 'service_duration' => (int) ($serviceData['doba_trvani'] ?? 60),
             ];
 
-            $this->notificationService->notifyReservationSubmitted($siteSettings, $reservation);
+            $this->notificationService->notifyReservationSubmitted($context->siteSettings, $reservation);
 
             return [
                 'status' => 'success',
@@ -88,23 +83,7 @@ final class ReservationSubmitService
                 ],
             ];
         } finally {
-            $connection->close();
+            $context->connection->close();
         }
-    }
-
-    private function reservationService(mysqli $connection): ReservationService
-    {
-        $serviceRepository = new ServiceRepository($connection);
-        $availabilityRepository = new AvailabilityRepository($connection);
-        $reservationRepository = new ReservationRepository($connection);
-        $availabilityService = new AvailabilityService($serviceRepository, $availabilityRepository, $reservationRepository);
-
-        return new ReservationService(
-            $connection,
-            $serviceRepository,
-            $availabilityRepository,
-            $reservationRepository,
-            $availabilityService
-        );
     }
 }

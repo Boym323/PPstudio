@@ -9,6 +9,7 @@ use PPStudio\Security\RequestSecurityService;
 use PPStudio\Security\ReservationAntispamService;
 use PPStudio\Security\SessionService;
 use PPStudio\Service\ReservationNotificationService;
+use PPStudio\Service\ReservationSubmitContextFactory;
 use PPStudio\Service\ReservationSubmitService;
 
 final class ReservationSubmitApplication
@@ -32,6 +33,7 @@ final class ReservationSubmitApplication
 
         $controller = new ReservationController(
             new ReservationSubmitService(
+                new ReservationSubmitContextFactory(),
                 new ReservationNotificationService($this->emailConfig)
             ),
             $this->publicSiteLockService,
