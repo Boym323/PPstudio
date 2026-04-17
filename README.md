@@ -43,6 +43,8 @@ Detailnější dokumentace:
    - `php scripts/run-admin-voucher-post-tests.php`
 12. Pro smoke test admin voucher use-case větví:
    - `php scripts/run-admin-voucher-usecase-tests.php`
+13. Pro golden-master regression test renderu availability story/feed obrázků:
+   - `php scripts/run-availability-story-render-regression-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 
