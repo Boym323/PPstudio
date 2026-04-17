@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Http\Request\AdminPostActionRequest;
 use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Service\AdminAvailabilityMutationService;
 use PPStudio\Service\AdminMediaModule;
@@ -24,15 +25,21 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    public function handle(array $state, \mysqli $connection): array
+    public function handle(
+        array $state,
+        \mysqli $connection,
+        ?AdminPostActionRequest $request = null
+    ): array
     {
-        $state = $this->handleSettings($state, $connection);
-        $state = $this->handleVoucherActions($state, $connection);
-        $state = $this->handleServiceActions($state, $connection);
-        $state = $this->handleAvailabilityActions($state, $connection);
-        $state = $this->handleReservationActions($state, $connection);
+        $request = $request ?? AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
 
-        return $this->handleMediaActions($state, $connection);
+        $state = $this->handleSettings($state, $connection, $request);
+        $state = $this->handleVoucherActions($state, $connection, $request);
+        $state = $this->handleServiceActions($state, $connection, $request);
+        $state = $this->handleAvailabilityActions($state, $connection, $request);
+        $state = $this->handleReservationActions($state, $connection, $request);
+
+        return $this->handleMediaActions($state, $connection, $request);
     }
 
     /**
@@ -55,7 +62,11 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleSettings(array $state, \mysqli $connection): array
+    private function handleSettings(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
         $settingsPostState = (new AdminSettingsPostActionHandler(
             new SiteSettingsService(
@@ -63,8 +74,8 @@ final class AdminPostActionHandler
                 defaultSiteSettings()
             )
         ))->handle(
-            $_SERVER,
-            $_POST,
+            $request->server(),
+            $request->post(),
             is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : [],
             is_array($state['studioSettingFields'] ?? null) ? $state['studioSettingFields'] : [],
             [
@@ -92,15 +103,19 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleVoucherActions(array $state, \mysqli $connection): array
+    private function handleVoucherActions(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
         $voucherPostResult = (new AdminVoucherModule(
             $connection,
             $this->emailConfig,
             is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : []
         ))->postActionHandler()->handle(
-            $_SERVER,
-            $_POST,
+            $request->server(),
+            $request->post(),
             is_array($state['voucherForm'] ?? null) ? $state['voucherForm'] : [],
             is_array($state['voucherBatchForm'] ?? null) ? $state['voucherBatchForm'] : []
         );
@@ -122,13 +137,17 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleServiceActions(array $state, \mysqli $connection): array
+    private function handleServiceActions(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
         $servicePostState = (new AdminServicePostActionHandler(
             new AdminServiceMutationService($connection)
         ))->handle(
-            $_SERVER,
-            $_POST,
+            $request->server(),
+            $request->post(),
             is_array($state['serviceForm'] ?? null) ? $state['serviceForm'] : [],
             is_array($state['categoryForm'] ?? null) ? $state['categoryForm'] : []
         );
@@ -154,60 +173,28 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleAvailabilityActions(array $state, \mysqli $connection): array
+    private function handleAvailabilityActions(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            return $state;
+        $availabilityPostState = (new AdminAvailabilityPostActionHandler(
+            new AdminAvailabilityMutationService(
+                $connection,
+                is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : [],
+                $this->projectRoot
+            )
+        ))->handle($request, is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : []);
+
+        if (is_array($availabilityPostState['site_settings'] ?? null)) {
+            $state['siteSettings'] = $availabilityPostState['site_settings'];
         }
-
-        $availabilityMutationService = new AdminAvailabilityMutationService(
-            $connection,
-            is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : [],
-            $this->projectRoot
-        );
-
-        if (isset($_POST['save_availability_grid'])) {
-            $saveGridResult = $availabilityMutationService->saveAvailabilityGrid($_POST);
-            if (($saveGridResult['success'] ?? false) === true) {
-                $state['message'] = (string) ($saveGridResult['message'] ?? 'Dostupnost v kalendáři byla uložena.');
-            } else {
-                $state['error'] = (string) ($saveGridResult['error'] ?? 'Kalendář dostupnosti se nepodařilo uložit.');
-            }
+        if ($availabilityPostState['message'] !== '') {
+            $state['message'] = $availabilityPostState['message'];
         }
-
-        if (isset($_POST['delete_window'])) {
-            $deleteWindowResult = $availabilityMutationService->deleteWindow($_POST);
-            if (($deleteWindowResult['success'] ?? false) === true) {
-                $state['message'] = (string) ($deleteWindowResult['message'] ?? 'Volné okno bylo odstraněno.');
-            } else {
-                $state['error'] = (string) ($deleteWindowResult['error'] ?? 'Okno se nepodařilo odstranit.');
-            }
-        }
-
-        if (isset($_POST['save_availability_story_background'])) {
-            $saveBackgroundResult = $availabilityMutationService->saveStoryBackground($_FILES);
-            if (is_array($saveBackgroundResult['data']['site_settings'] ?? null)) {
-                $state['siteSettings'] = $saveBackgroundResult['data']['site_settings'];
-            }
-
-            if (($saveBackgroundResult['success'] ?? false) === true) {
-                $state['message'] = (string) ($saveBackgroundResult['message'] ?? 'Pozadí pro Instagram story bylo uloženo.');
-            } else {
-                $state['error'] = (string) ($saveBackgroundResult['error'] ?? 'Pozadí pro story se nepodařilo uložit.');
-            }
-        }
-
-        if (isset($_POST['delete_availability_story_background'])) {
-            $deleteBackgroundResult = $availabilityMutationService->deleteStoryBackground();
-            if (is_array($deleteBackgroundResult['data']['site_settings'] ?? null)) {
-                $state['siteSettings'] = $deleteBackgroundResult['data']['site_settings'];
-            }
-
-            if (($deleteBackgroundResult['success'] ?? false) === true) {
-                $state['message'] = (string) ($deleteBackgroundResult['message'] ?? 'Pozadí pro Instagram story bylo odstraněno.');
-            } else {
-                $state['error'] = (string) ($deleteBackgroundResult['error'] ?? 'Pozadí pro story se nepodařilo odstranit.');
-            }
+        if ($availabilityPostState['error'] !== '') {
+            $state['error'] = $availabilityPostState['error'];
         }
 
         return $state;
@@ -217,7 +204,11 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleReservationActions(array $state, \mysqli $connection): array
+    private function handleReservationActions(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
         $reservationPostResult = (new AdminReservationPostActionHandler(
             (new AdminReservationModule(
@@ -226,9 +217,9 @@ final class AdminPostActionHandler
                 is_array($state['siteSettings'] ?? null) ? $state['siteSettings'] : []
             ))->mutationService()
         ))->handle(
-            $_SERVER,
-            $_POST,
-            $_SESSION,
+            $request->server(),
+            $request->post(),
+            $request->session(),
             is_array($state['manualReservationForm'] ?? null) ? $state['manualReservationForm'] : []
         );
 
@@ -248,14 +239,18 @@ final class AdminPostActionHandler
      * @param array<string, mixed> $state
      * @return array<string, mixed>
      */
-    private function handleMediaActions(array $state, \mysqli $connection): array
+    private function handleMediaActions(
+        array $state,
+        \mysqli $connection,
+        AdminPostActionRequest $request
+    ): array
     {
         $mediaPostResult = (new AdminMediaModule($connection, $this->projectRoot))
             ->postActionHandler()
             ->handle(
-                $_SERVER,
-                $_POST,
-                $_FILES,
+                $request->server(),
+                $request->post(),
+                $request->files(),
                 (string) ($state['message'] ?? ''),
                 (string) ($state['error'] ?? ''),
                 (string) ($state['mediaFeedback'] ?? ''),

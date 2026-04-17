@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Http\Request\AdminPostActionRequest;
+
 final class AdminLitePostActionHandler
 {
     private AdminPostActionHandler $adminPostActionHandler;
@@ -24,8 +26,10 @@ final class AdminLitePostActionHandler
      * @param \mysqli $connection
      * @return array<string, mixed>
      */
-    public function handle(array $state, \mysqli $connection): array
+    public function handle(array $state, \mysqli $connection, ?AdminPostActionRequest $request = null): array
     {
+        $request = $request ?? AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
+
         $liteDisallowedPostActionKeys = [
             'save_settings',
             'save_integrations',
@@ -38,7 +42,7 @@ final class AdminLitePostActionHandler
 
         $liteBlockedActionRequested = false;
         foreach ($liteDisallowedPostActionKeys as $disallowedKey) {
-            if (isset($_POST[$disallowedKey])) {
+            if ($request->hasPostKey($disallowedKey)) {
                 $liteBlockedActionRequested = true;
                 break;
             }
@@ -51,7 +55,7 @@ final class AdminLitePostActionHandler
         }
 
         return $this->captureDefinedState(
-            $this->adminPostActionHandler->handle($state, $connection)
+            $this->adminPostActionHandler->handle($state, $connection, $request)
         );
     }
 

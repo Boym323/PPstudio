@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Http\Request\AdminPostActionRequest;
 use PPStudio\Service\MailerIntegrationService;
 use PPStudio\Http\View\AdminPageRenderer;
 use PPStudio\Http\View\AdminLoginPageRenderer;
@@ -55,13 +56,14 @@ final class AdminLiteApplication
             $this->renderLogin((string) $authState['login_error']);
         }
 
+        $request = AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
         $viewState = $this->viewStateFactory->create($_GET, (string) $authState['error']);
         $viewState['adminTab'] = $this->resolveAdminTab(
             (string) ($_GET['tab'] ?? 'dashboard'),
             $viewState['allowedAdminTabs']
         );
 
-        if ($this->isPostTooLarge()) {
+        if ($this->isPostTooLarge($request)) {
             $viewState['error'] = 'Odesílaný formulář je příliš velký pro server. Zmenšete prosím obrázek nebo navyšte limit post_max_size v PHP.';
         }
 
@@ -69,7 +71,7 @@ final class AdminLiteApplication
         if ($connection instanceof \mysqli) {
             $viewState = $this->dataLoader->prime($viewState, $connection);
             $viewState = $this->dataLoader->loadFormData($viewState, $connection);
-            $viewState = $this->postActionHandler->handle($viewState, $connection);
+            $viewState = $this->postActionHandler->handle($viewState, $connection, $request);
             $viewState = $this->dataLoader->load($viewState, $connection);
         } else {
             $viewState['error'] = 'Nepodařilo se připojit k databázi. Zkontrolujte `config/database.php`.';
@@ -101,14 +103,14 @@ final class AdminLiteApplication
         return $adminTab;
     }
 
-    private function isPostTooLarge(): bool
+    private function isPostTooLarge(AdminPostActionRequest $request): bool
     {
-        $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        $contentLength = $request->contentLength();
 
-        return $_SERVER['REQUEST_METHOD'] === 'POST'
+        return $request->isPost()
             && $contentLength > 0
-            && $_POST === []
-            && $_FILES === []
+            && $request->post() === []
+            && $request->files() === []
             && $contentLength > $this->iniSizeToBytes((string) ini_get('post_max_size'));
     }
 
