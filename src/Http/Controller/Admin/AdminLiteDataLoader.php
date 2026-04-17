@@ -7,11 +7,20 @@ use PPStudio\Service\MailerIntegrationService;
 
 final class AdminLiteDataLoader
 {
+    private AdminDataLoader $adminDataLoader;
+
     public function __construct(
         private string $projectRoot,
         private MailerIntegrationService $mailerIntegrationService,
         private AdminLiteViewStateFactory $viewStateFactory,
+        private array $emailConfig = [],
     ) {
+        $this->adminDataLoader = new AdminDataLoader(
+            $this->projectRoot,
+            $this->mailerIntegrationService,
+            new AdminViewStateFactory(),
+            $this->emailConfig
+        );
     }
 
     /**
@@ -21,12 +30,9 @@ final class AdminLiteDataLoader
      */
     public function prime(array $state, \mysqli $connection): array
     {
-        extract($state, EXTR_OVERWRITE);
-
-        $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
-        $subscriptionCalendarUrl = $this->mailerIntegrationService->buildSubscriptionCalendarUrl($siteSettings);
-
-        return $this->captureDefinedState(get_defined_vars());
+        return $this->captureDefinedState(
+            $this->adminDataLoader->prime($state, $connection)
+        );
     }
 
     /**
@@ -36,11 +42,9 @@ final class AdminLiteDataLoader
      */
     public function loadFormData(array $state, \mysqli $connection): array
     {
-        extract($state, EXTR_OVERWRITE);
-
-        include $this->projectRoot . '/includes/admin/actions/load/service_forms.php';
-
-        return $this->captureDefinedState(get_defined_vars());
+        return $this->captureDefinedState(
+            $this->adminDataLoader->loadFormData($state, $connection)
+        );
     }
 
     /**
@@ -50,10 +54,9 @@ final class AdminLiteDataLoader
      */
     public function load(array $state, \mysqli $connection): array
     {
-        extract($state, EXTR_OVERWRITE);
-        include $this->projectRoot . '/includes/admin/actions/load_data.php';
-
-        return $this->captureDefinedState(get_defined_vars());
+        return $this->captureDefinedState(
+            $this->adminDataLoader->load($state, $connection)
+        );
     }
 
     /**

@@ -10,6 +10,8 @@ use PPStudio\Repository\VoucherRepository;
 
 final class AdminVoucherModule
 {
+    private ?AdminVoucherHelper $voucherHelper = null;
+
     private ?AdminVoucherCatalogService $catalogService = null;
 
     private ?AdminVoucherDataLoader $dataLoader = null;
@@ -56,10 +58,15 @@ final class AdminVoucherModule
         }
 
         $this->postActionHandler = new AdminVoucherPostActionHandler(
-            new AdminVoucherBatchGenerateUseCase($this->voucherRepository()),
-            new AdminVoucherCreateUseCase($this->voucherRepository()),
-            new AdminVoucherEmailSendUseCase($this->voucherRepository(), $this->mailerIntegrationService(), $this->siteSettings),
-            new AdminVoucherRedeemUseCase($this->connection, $this->voucherRepository())
+            new AdminVoucherBatchGenerateUseCase($this->voucherRepository(), $this->voucherHelper()),
+            new AdminVoucherCreateUseCase($this->voucherRepository(), $this->voucherHelper()),
+            new AdminVoucherEmailSendUseCase(
+                $this->voucherRepository(),
+                $this->mailerIntegrationService(),
+                $this->siteSettings,
+                $this->voucherHelper()
+            ),
+            new AdminVoucherRedeemUseCase($this->connection, $this->voucherRepository(), $this->voucherHelper())
         );
 
         return $this->postActionHandler;
@@ -85,5 +92,16 @@ final class AdminVoucherModule
         $this->mailerIntegrationService = new MailerIntegrationService($this->emailConfig);
 
         return $this->mailerIntegrationService;
+    }
+
+    private function voucherHelper(): AdminVoucherHelper
+    {
+        if ($this->voucherHelper instanceof AdminVoucherHelper) {
+            return $this->voucherHelper;
+        }
+
+        $this->voucherHelper = new AdminVoucherHelper();
+
+        return $this->voucherHelper;
     }
 }

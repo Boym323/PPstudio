@@ -1,10 +1,12 @@
+<?php
+declare(strict_types=1);
+?>
 <!DOCTYPE html>
 <html lang="cs" class="admin-html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Přihlášení do administrace | <?= \PPStudio\Support\ViewHelper::escape(defaultSiteName()) ?></title>
-    <?php $adminCssVersion = (string) (@filemtime(__DIR__ . '/../../../assets/css/admin.css') ?: time()); ?>
+    <title><?= \PPStudio\Support\ViewHelper::escape($pageTitle) ?> | <?= \PPStudio\Support\ViewHelper::escape(\defaultSiteName()) ?></title>
     <link rel="stylesheet" href="/assets/css/admin.css?v=<?= \PPStudio\Support\ViewHelper::escape($adminCssVersion) ?>">
 </head>
 <body>
@@ -12,13 +14,13 @@
         <main class="admin-shell">
             <div class="container admin-login-wrap">
                 <div class="admin-card">
-                    <p class="eyebrow">Administrace</p>
-                    <h1>Přihlášení do správy studia</h1>
+                    <p class="eyebrow"><?= \PPStudio\Support\ViewHelper::escape($eyebrow) ?></p>
+                    <h1><?= \PPStudio\Support\ViewHelper::escape($heading) ?></h1>
                     <?php if ($loginError !== ''): ?>
                         <div class="alert alert-error"><?= \PPStudio\Support\ViewHelper::escape($loginError) ?></div>
                     <?php endif; ?>
                     <form method="post" class="admin-form">
-                        <?= csrfInputField() ?>
+                        <?= \csrfInputField() ?>
                         <label>
                             <span>Uživatelské jméno</span>
                             <input type="text" name="username" required>

@@ -7,8 +7,11 @@ use PPStudio\Repository\VoucherRepository;
 
 final class AdminVoucherBatchGenerateUseCase
 {
-    public function __construct(private VoucherRepository $voucherRepository)
-    {
+    public function __construct(
+        private VoucherRepository $voucherRepository,
+        private ?AdminVoucherHelper $voucherHelper = null
+    ) {
+        $this->voucherHelper = $this->voucherHelper ?? new AdminVoucherHelper();
     }
 
     /**
@@ -52,7 +55,7 @@ final class AdminVoucherBatchGenerateUseCase
 
         while ($generated < $count && $attempts < $maxAttempts) {
             $attempts++;
-            $code = \generateVoucherCode((string) $voucherBatchForm['prefix']);
+            $code = $this->voucherHelper->generateCode((string) $voucherBatchForm['prefix']);
             $expiresAtNullable = $expiresAt !== '' ? $expiresAt : null;
             $recipientName = (string) $voucherBatchForm['recipient_name'];
             $note = (string) $voucherBatchForm['note'];

@@ -11,8 +11,10 @@ use Throwable;
 final class AdminServiceMutationService
 {
     public function __construct(
-        private mysqli $connection
+        private mysqli $connection,
+        private ?ServicePriceHistorySynchronizer $servicePriceHistorySynchronizer = null
     ) {
+        $this->servicePriceHistorySynchronizer = $this->servicePriceHistorySynchronizer ?? new ServicePriceHistorySynchronizer();
     }
 
     public function saveCategory(array $post): array
@@ -306,7 +308,7 @@ final class AdminServiceMutationService
 
             $savedServiceId = $serviceId > 0 ? $serviceId : (int) $this->connection->insert_id;
             if ($serviceId <= 0 || $priceChanged) {
-                \syncServicePriceHistory($this->connection, $savedServiceId, $normalizedPrice);
+                $this->servicePriceHistorySynchronizer->sync($this->connection, $savedServiceId, $normalizedPrice);
             }
 
             $this->connection->commit();

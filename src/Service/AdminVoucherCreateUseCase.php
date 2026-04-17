@@ -7,8 +7,11 @@ use PPStudio\Repository\VoucherRepository;
 
 final class AdminVoucherCreateUseCase
 {
-    public function __construct(private VoucherRepository $voucherRepository)
-    {
+    public function __construct(
+        private VoucherRepository $voucherRepository,
+        private ?AdminVoucherHelper $voucherHelper = null
+    ) {
+        $this->voucherHelper = $this->voucherHelper ?? new AdminVoucherHelper();
     }
 
     /**
@@ -24,7 +27,7 @@ final class AdminVoucherCreateUseCase
             'value' => trim((string) ($post['voucher_value'] ?? '')),
             'expires_at' => trim((string) ($post['voucher_expires_at'] ?? '')),
             'recipient_name' => trim((string) ($post['voucher_recipient_name'] ?? '')),
-            'recipient_email' => \normalizeVoucherRecipientEmail((string) ($post['voucher_recipient_email'] ?? '')),
+            'recipient_email' => $this->voucherHelper->normalizeRecipientEmail((string) ($post['voucher_recipient_email'] ?? '')),
             'note' => trim((string) ($post['voucher_note'] ?? '')),
         ];
 
@@ -33,7 +36,9 @@ final class AdminVoucherCreateUseCase
         }
 
         $value = (float) str_replace(',', '.', (string) $voucherForm['value']);
-        $code = $voucherForm['code'] !== '' ? strtoupper((string) $voucherForm['code']) : \generateVoucherCode('PP' . date('y'));
+        $code = $voucherForm['code'] !== ''
+            ? strtoupper((string) $voucherForm['code'])
+            : $this->voucherHelper->generateCode('PP' . date('y'));
         $code = preg_replace('/[^A-Z0-9\-]/', '', $code) ?? '';
         $expiresAt = (string) $voucherForm['expires_at'];
         $recipientEmail = (string) $voucherForm['recipient_email'];

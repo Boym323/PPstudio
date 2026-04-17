@@ -10,8 +10,10 @@ final class AdminVoucherEmailSendUseCase
     public function __construct(
         private VoucherRepository $voucherRepository,
         private MailerIntegrationService $mailerIntegrationService,
-        private array $siteSettings
+        private array $siteSettings,
+        private ?AdminVoucherHelper $voucherHelper = null
     ) {
+        $this->voucherHelper = $this->voucherHelper ?? new AdminVoucherHelper();
     }
 
     /**
@@ -23,7 +25,7 @@ final class AdminVoucherEmailSendUseCase
     public function handle(array $post, array $voucherForm, array $voucherBatchForm): array
     {
         $voucherId = (int) ($post['voucher_id'] ?? 0);
-        $recipientEmail = \normalizeVoucherRecipientEmail((string) ($post['voucher_recipient_email'] ?? ''));
+        $recipientEmail = $this->voucherHelper->normalizeRecipientEmail((string) ($post['voucher_recipient_email'] ?? ''));
 
         if (! $this->voucherRepository->isVoucherModuleReady()) {
             return $this->result('', 'Modul poukazů není v databázi dostupný.', $voucherForm, $voucherBatchForm);
@@ -42,7 +44,7 @@ final class AdminVoucherEmailSendUseCase
         }
 
         $voucher['recipient_email'] = $recipientEmail;
-        $effectiveStatus = \voucherEffectiveStatus($voucher);
+        $effectiveStatus = $this->voucherHelper->effectiveStatus($voucher);
 
         if ($effectiveStatus !== 'aktivni') {
             return $this->result('', 'E-mailem lze odeslat jen aktivní poukaz.', $voucherForm, $voucherBatchForm);

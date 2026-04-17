@@ -2,27 +2,16 @@
 declare(strict_types=1);
 
 $adminRoot = dirname(__DIR__, 3);
+$__ppstudioAdminPostHandler = new \PPStudio\Http\Controller\Admin\AdminPostActionHandler(
+    $adminRoot,
+    new \PPStudio\Http\Controller\Admin\AdminViewStateFactory(),
+    is_array($emailConfig ?? null) ? $emailConfig : []
+);
+$__ppstudioAdminState = $__ppstudioAdminPostHandler->handle(
+    $__ppstudioAdminPostHandler->captureDefinedState(get_defined_vars()),
+    $connection
+);
 
-require $adminRoot . '/includes/admin/actions/post/helpers.php';
+extract($__ppstudioAdminState, EXTR_OVERWRITE);
 
-foreach (
-    array_merge(
-        [
-            $adminRoot . '/includes/admin/actions/post/vouchers.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/post/services.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/post/availability.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/post/reservations.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/post/media.php',
-        ]
-    ) as $adminPostActionFile
-) {
-    require $adminPostActionFile;
-}
+unset($__ppstudioAdminPostHandler, $__ppstudioAdminState, $adminRoot);

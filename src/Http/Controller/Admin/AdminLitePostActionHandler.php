@@ -5,10 +5,18 @@ namespace PPStudio\Http\Controller\Admin;
 
 final class AdminLitePostActionHandler
 {
+    private AdminPostActionHandler $adminPostActionHandler;
+
     public function __construct(
         private string $projectRoot,
         private AdminLiteViewStateFactory $viewStateFactory,
+        private array $emailConfig = [],
     ) {
+        $this->adminPostActionHandler = new AdminPostActionHandler(
+            $this->projectRoot,
+            new AdminViewStateFactory(),
+            $this->emailConfig
+        );
     }
 
     /**
@@ -18,8 +26,6 @@ final class AdminLitePostActionHandler
      */
     public function handle(array $state, \mysqli $connection): array
     {
-        extract($state, EXTR_OVERWRITE);
-
         $liteDisallowedPostActionKeys = [
             'save_settings',
             'save_integrations',
@@ -39,12 +45,14 @@ final class AdminLitePostActionHandler
         }
 
         if ($liteBlockedActionRequested) {
-            $error = 'Tato akce není v uživatelském rozhraní povolená.';
-        } else {
-            include $this->projectRoot . '/includes/admin/actions/post_actions.php';
+            $state['error'] = 'Tato akce není v uživatelském rozhraní povolená.';
+
+            return $this->captureDefinedState($state);
         }
 
-        return $this->captureDefinedState(get_defined_vars());
+        return $this->captureDefinedState(
+            $this->adminPostActionHandler->handle($state, $connection)
+        );
     }
 
     /**

@@ -6,7 +6,7 @@
                     </div>
 
                     <article class="admin-card">
-                        <form method="get" action="/admin.php" class="admin-form admin-form-grid reservations-filter-form">
+                        <form method="get" action="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>" class="admin-form admin-form-grid reservations-filter-form">
                             <input type="hidden" name="tab" value="antispam-log">
                             <label>
                                 Vyhledat
@@ -30,7 +30,7 @@
                             </label>
                             <div class="table-actions">
                                 <button class="button button-primary button-small" type="submit">Použít filtr</button>
-                                <a class="button button-secondary button-small" href="/admin.php?tab=antispam-log#antispam-log">Reset</a>
+                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=antispam-log#antispam-log">Reset</a>
                             </div>
                         </form>
                         <p class="form-hint">
@@ -55,41 +55,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if ($antispamRows === []): ?>
+                                <?php if (($antispamRowsPrepared ?? []) === []): ?>
                                     <tr>
                                         <td colspan="5">Zatím nejsou k dispozici žádné antispam události.</td>
                                     </tr>
                                 <?php else: ?>
-                                    <?php foreach ($antispamRows as $row): ?>
-                                        <?php
-                                        $timeLabel = (string) ($row['time'] ?? '');
-                                        $timeTimestamp = strtotime($timeLabel);
-                                        if ($timeTimestamp !== false) {
-                                            $timeLabel = date('d.m.Y H:i:s', $timeTimestamp);
-                                        }
-                                        $sourceKey = (string) ($row['source'] ?? '');
-                                        $sourceLabel = match ($sourceKey) {
-                                            'reservation_form' => 'Rezervační formulář',
-                                            'admin_login' => 'Admin přihlášení',
-                                            'admin_lite_login' => 'User admin přihlášení',
-                                            'reservation_action' => 'Akce rezervace',
-                                            default => ($sourceKey !== '' ? $sourceKey : 'Neznámá sekce'),
-                                        };
-                                        $uaText = trim((string) ($row['ua'] ?? ''));
-                                        $contextText = trim((string) ($row['context'] ?? ''));
-                                        $contextPreview = 'Bez doplňujícího kontextu';
-                                        if ($contextText !== '') {
-                                            if (function_exists('mb_strimwidth')) {
-                                                $contextPreview = mb_strimwidth($contextText, 0, 180, '…', 'UTF-8');
-                                            } else {
-                                                $contextPreview = strlen($contextText) > 180 ? substr($contextText, 0, 177) . '...' : $contextText;
-                                            }
-                                        }
-                                        ?>
+                                    <?php foreach (($antispamRowsPrepared ?? []) as $row): ?>
                                         <tr class="antispam-log-row">
-                                            <td data-label="Čas" class="antispam-time"><?= \PPStudio\Support\ViewHelper::escape($timeLabel) ?></td>
+                                            <td data-label="Čas" class="antispam-time"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['time_label'] ?? '')) ?></td>
                                             <td data-label="Důvod"><span class="antispam-reason-badge"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['reason'] ?? '')) ?></span></td>
-                                            <td data-label="Sekce"><?= \PPStudio\Support\ViewHelper::escape($sourceLabel) ?></td>
+                                            <td data-label="Sekce"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['source_label'] ?? '')) ?></td>
                                             <td data-label="IP" class="antispam-ip"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['ip'] ?? '')) ?></td>
                                             <td data-label="Akce" class="antispam-summary-actions">
                                                 <button class="button button-secondary button-small" type="button" data-antispam-detail-toggle data-open-label="Detail" data-close-label="Skrýt detail" aria-expanded="false">Detail</button>
@@ -101,18 +76,18 @@
                                                     <div class="antispam-detail-block">
                                                         <h3>Souhrn události</h3>
                                                         <div class="antispam-detail-list">
-                                                            <div><strong>Čas</strong><span><?= \PPStudio\Support\ViewHelper::escape($timeLabel) ?></span></div>
+                                                            <div><strong>Čas</strong><span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['time_label'] ?? '')) ?></span></div>
                                                             <div><strong>Důvod</strong><span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['reason'] ?? '')) ?></span></div>
-                                                            <div><strong>Sekce</strong><span><?= \PPStudio\Support\ViewHelper::escape($sourceLabel) ?></span></div>
+                                                            <div><strong>Sekce</strong><span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['source_label'] ?? '')) ?></span></div>
                                                             <div><strong>IP adresa</strong><span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['ip'] ?? '')) ?></span></div>
                                                         </div>
                                                     </div>
                                                     <div class="antispam-detail-block">
                                                         <h3>Kontext</h3>
                                                         <div class="antispam-detail-notes">
-                                                            <div><strong>Krátký přehled</strong><span><?= \PPStudio\Support\ViewHelper::escape($contextPreview) ?></span></div>
-                                                            <div><strong>User-Agent</strong><span class="antispam-ua"><?= \PPStudio\Support\ViewHelper::escape($uaText !== '' ? $uaText : 'Neuvedeno') ?></span></div>
-                                                            <div><strong>Plný kontext</strong><span class="antispam-context"><?= \PPStudio\Support\ViewHelper::escape($contextText !== '' ? $contextText : 'Neuvedeno') ?></span></div>
+                                                            <div><strong>Krátký přehled</strong><span><?= \PPStudio\Support\ViewHelper::escape((string) ($row['context_preview'] ?? 'Bez doplňujícího kontextu')) ?></span></div>
+                                                            <div><strong>User-Agent</strong><span class="antispam-ua"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['ua_text'] ?? 'Neuvedeno')) ?></span></div>
+                                                            <div><strong>Plný kontext</strong><span class="antispam-context"><?= \PPStudio\Support\ViewHelper::escape((string) ($row['context_text'] ?? 'Neuvedeno')) ?></span></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -123,27 +98,19 @@
                             </tbody>
                         </table>
                     </article>
-                    <?php if (($antispamPagination['total_pages'] ?? 1) > 1): ?>
+                    <?php if (((int) ($antispamPaginationView['total_pages'] ?? 1)) > 1): ?>
                         <div class="table-actions reservations-pagination">
-                            <?php
-                            $antispamBaseParams = [
-                                'tab' => 'antispam-log',
-                                'antispam_q' => $antispamFilters['q'],
-                                'antispam_reason' => $antispamFilters['reason'],
-                                'antispam_limit' => (string) $antispamFilters['limit'],
-                            ];
-                            $antispamPrevPage = max(1, $antispamFilters['page'] - 1);
-                            $antispamNextPage = min($antispamPagination['total_pages'], $antispamFilters['page'] + 1);
-                            ?>
-                            <a class="button button-secondary button-small<?= $antispamFilters['page'] <= 1 ? ' is-disabled' : '' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamPrevPage])) ?>#antispam-log">Předchozí</a>
-                            <?php for ($pageNumber = 1; $pageNumber <= $antispamPagination['total_pages']; $pageNumber++): ?>
-                                <?php if ($pageNumber === 1 || $pageNumber === $antispamPagination['total_pages'] || abs($pageNumber - $antispamFilters['page']) <= 1): ?>
-                                    <a class="button button-small <?= $pageNumber === $antispamFilters['page'] ? 'button-primary' : 'button-secondary' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $pageNumber])) ?>#antispam-log"><?= \PPStudio\Support\ViewHelper::escape((string) $pageNumber) ?></a>
-                                <?php elseif ($pageNumber === 2 || $pageNumber === $antispamPagination['total_pages'] - 1): ?>
+                            <a class="button button-secondary button-small<?= ((int) ($antispamPaginationView['current_page'] ?? 1)) <= 1 ? ' is-disabled' : '' ?>" href="<?= \PPStudio\Support\ViewHelper::escape((string) ($antispamPaginationView['prev_url'] ?? '')) ?>">Předchozí</a>
+                            <?php foreach (($antispamPaginationView['pages'] ?? []) as $pageData): ?>
+                                <?php if (($pageData['type'] ?? '') === 'separator'): ?>
                                     <span class="pagination-separator">…</span>
+                                    <?php continue; ?>
                                 <?php endif; ?>
-                            <?php endfor; ?>
-                            <a class="button button-secondary button-small<?= $antispamFilters['page'] >= $antispamPagination['total_pages'] ? ' is-disabled' : '' ?>" href="/admin.php?<?= \PPStudio\Support\ViewHelper::escape(http_build_query($antispamBaseParams + ['antispam_page' => (string) $antispamNextPage])) ?>#antispam-log">Další</a>
+                                <?php if (($pageData['type'] ?? '') === 'page'): ?>
+                                    <a class="button button-small <?= ($pageData['active'] ?? false) ? 'button-primary' : 'button-secondary' ?>" href="<?= \PPStudio\Support\ViewHelper::escape((string) ($pageData['url'] ?? '')) ?>"><?= \PPStudio\Support\ViewHelper::escape((string) ($pageData['number'] ?? '')) ?></a>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <a class="button button-secondary button-small<?= ((int) ($antispamPaginationView['current_page'] ?? 1)) >= ((int) ($antispamPaginationView['total_pages'] ?? 1)) ? ' is-disabled' : '' ?>" href="<?= \PPStudio\Support\ViewHelper::escape((string) ($antispamPaginationView['next_url'] ?? '')) ?>">Další</a>
                         </div>
                     <?php endif; ?>
                 </section>

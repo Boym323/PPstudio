@@ -74,8 +74,10 @@ Doporučený cron (např. 1× za hodinu):
 ## Struktura adresářů (orientačně)
 
 - `config/` načtení `.env`, přístupy, e-mail
-- `includes/` PHP logika (web + admin)
+- `includes/` kompatibilní vrstva + legacy části (web pages a některé admin entrypoint wrappery)
 - `api/` API endpointy
+- `src/` OOP aplikační vrstva (`Service/`, `Repository/`, `Http/Controller/`, `Http/View/`)
+- `src/Http/View/Templates/` sdílené šablony pro admin/public render (včetně admin sections layoutu)
 - `database/` SQL + maintenance runner
 - `assets/` statické assety (CSS/JS/fonts/obrázky/favikony)
 - `vendor/` přibalené knihovny (např. PHPMailer)
@@ -106,6 +108,10 @@ Společné technické helpery jsou postupně rozdělované do `src/Support/`
 (`ViewHelper`, `FormatHelper`, `DateHelper`, `ReservationStatusHelper`,
 `ValueHelper`, `OpeningHoursHelper`, `SettingsHelper`, `ContactHelper`),
 zatímco `includes/functions.php` zůstává jen jako kompatibilní mezivrstva.
+
+Admin render vrstva už běží přes `src/Http/View/` (page/login renderer a šablony
+v `src/Http/View/Templates/`), zatímco historické cesty v `includes/admin/`
+jsou postupně ztenčované na BC vrstvu.
 
 Podrobnější pravidla pro postupný OOP/OOM přechod, dokumentaci a changelog jsou
 v `docs/DEVELOPMENT.md`. Krátké pokyny pro AI asistenty jsou také v `AGENTS.md`.

@@ -2,31 +2,17 @@
 declare(strict_types=1);
 
 $adminRoot = dirname(__DIR__, 3);
+$__ppstudioAdminDataLoader = new \PPStudio\Http\Controller\Admin\AdminDataLoader(
+    $adminRoot,
+    new \PPStudio\Service\MailerIntegrationService(is_array($emailConfig ?? null) ? $emailConfig : []),
+    new \PPStudio\Http\Controller\Admin\AdminViewStateFactory(),
+    is_array($emailConfig ?? null) ? $emailConfig : []
+);
+$__ppstudioAdminState = $__ppstudioAdminDataLoader->load(
+    $__ppstudioAdminDataLoader->captureDefinedState(get_defined_vars()),
+    $connection
+);
 
-foreach (
-    array_merge(
-        [
-            $adminRoot . '/includes/admin/actions/load/services.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/availability.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/reservations.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/dashboard.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/media.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/availability_planner.php',
-        ],
-        [
-            $adminRoot . '/includes/admin/actions/load/vouchers.php',
-        ]
-    ) as $adminDataFile
-) {
-    require $adminDataFile;
-}
+extract($__ppstudioAdminState, EXTR_OVERWRITE);
+
+unset($__ppstudioAdminDataLoader, $__ppstudioAdminState, $adminRoot);

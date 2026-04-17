@@ -5,6 +5,8 @@ namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Service\MailerIntegrationService;
+use PPStudio\Http\View\AdminPageRenderer;
+use PPStudio\Http\View\AdminLoginPageRenderer;
 
 final class AdminLiteApplication
 {
@@ -16,6 +18,10 @@ final class AdminLiteApplication
 
     private AdminLiteDataLoader $dataLoader;
 
+    private AdminPageRenderer $pageRenderer;
+
+    private AdminLoginPageRenderer $loginPageRenderer;
+
     public function __construct(
         private array $adminConfig,
         private array $emailConfig,
@@ -23,12 +29,15 @@ final class AdminLiteApplication
         $projectRoot = $this->projectRoot();
         $this->authenticationService = new AdminAuthenticationService();
         $this->viewStateFactory = new AdminLiteViewStateFactory();
-        $this->postActionHandler = new AdminLitePostActionHandler($projectRoot, $this->viewStateFactory);
+        $this->postActionHandler = new AdminLitePostActionHandler($projectRoot, $this->viewStateFactory, $this->emailConfig);
         $this->dataLoader = new AdminLiteDataLoader(
             $projectRoot,
             new MailerIntegrationService($this->emailConfig),
-            $this->viewStateFactory
+            $this->viewStateFactory,
+            $this->emailConfig
         );
+        $this->pageRenderer = new AdminPageRenderer();
+        $this->loginPageRenderer = new AdminLoginPageRenderer();
     }
 
     public function handle(): never
@@ -123,9 +132,12 @@ final class AdminLiteApplication
 
     private function renderLogin(string $loginError): never
     {
-        $projectRoot = $this->projectRoot();
-        include $projectRoot . '/includes/admin/templates/login_lite.php';
-        exit;
+        $this->loginPageRenderer->render(
+            $loginError,
+            'Přihlášení uživatele',
+            'Uživatelské rozhraní',
+            'Přihlášení do provozní správy'
+        );
     }
 
     /**
@@ -133,7 +145,18 @@ final class AdminLiteApplication
      */
     private function renderApp(array $viewState): void
     {
-        extract($viewState, EXTR_OVERWRITE);
-        include $this->projectRoot() . '/includes/admin/templates/app_lite.php';
+        $projectRoot = $this->projectRoot();
+        $this->pageRenderer->render($viewState, [
+            'pageTitlePrefix' => 'Uživatelský admin',
+            'sidebarTemplate' => $projectRoot . '/src/Http/View/Templates/admin-sidebar-lite.php',
+            'introTemplate' => $projectRoot . '/src/Http/View/Templates/admin-intro-lite.php',
+            'defaultSection' => $projectRoot . '/src/Http/View/Templates/admin-sections/dashboard.php',
+            'sectionByTab' => [
+                'dashboard' => $projectRoot . '/src/Http/View/Templates/admin-sections/dashboard.php',
+                'dostupnost' => $projectRoot . '/src/Http/View/Templates/admin-sections/availability.php',
+                'rezervace-list' => $projectRoot . '/src/Http/View/Templates/admin-sections/reservations.php',
+                'sluzby-admin' => $projectRoot . '/src/Http/View/Templates/admin-sections/services.php',
+            ],
+        ]);
     }
 }

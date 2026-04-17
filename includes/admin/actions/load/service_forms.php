@@ -4,10 +4,9 @@ use PPStudio\Http\Controller\Admin\AdminServiceFormDataLoader;
 use PPStudio\Repository\ServiceRepository;
 use PPStudio\Service\AdminServiceCatalogService;
 
-$serviceFormDataLoader = new AdminServiceFormDataLoader(
+$serviceFormData = (new AdminServiceFormDataLoader(
     new AdminServiceCatalogService(new ServiceRepository($connection))
-);
-$serviceFormData = $serviceFormDataLoader->load(
+))->load(
     isset($_GET['edit_service']) ? (int) $_GET['edit_service'] : null,
     isset($_GET['edit_category']) ? (int) $_GET['edit_category'] : null
 );

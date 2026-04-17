@@ -12,8 +12,10 @@ final class AdminVoucherRedeemUseCase
 {
     public function __construct(
         private mysqli $connection,
-        private VoucherRepository $voucherRepository
+        private VoucherRepository $voucherRepository,
+        private ?AdminVoucherHelper $voucherHelper = null
     ) {
+        $this->voucherHelper = $this->voucherHelper ?? new AdminVoucherHelper();
     }
 
     /**
@@ -45,7 +47,7 @@ final class AdminVoucherRedeemUseCase
                 throw new RuntimeException('Poukaz nebyl nalezen.');
             }
 
-            $effectiveStatus = \voucherEffectiveStatus($voucher);
+            $effectiveStatus = $this->voucherHelper->effectiveStatus($voucher);
             if ($effectiveStatus === 'storno') {
                 throw new RuntimeException('Poukaz je stornovaný.');
             }
