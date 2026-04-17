@@ -124,16 +124,6 @@ function ppstudioLoginRateLimitPath(string $scope): string
     return ppstudioRequestSecurityService()->loginRateLimitPath($scope);
 }
 
-function ppstudioLoadRateLimitMap(string $path): array
-{
-    return ppstudioRequestSecurityService()->loadRateLimitMap($path);
-}
-
-function ppstudioSaveRateLimitMap($handle, array $map): void
-{
-    ppstudioRequestSecurityService()->saveRateLimitMap($handle, $map);
-}
-
 function ppstudioLoginRateLimitKey(string $scope, string $ipAddress, string $username): string
 {
     return ppstudioRequestSecurityService()->loginRateLimitKey($scope, $ipAddress, $username);

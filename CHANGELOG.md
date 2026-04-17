@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `includes/availability.php` a `includes/site_lock.php` byly ztenčené na užší BC vrstvy bez mrtvých aliasů; `includes/settings.php` zůstává kompatibilní wrapper kvůli aktivním admin call-siteům a `includes/availability.php` si nechává jen lehký interní cache helper pro sdílený module stack (commit: `this-commit`)
+- [refactor] Z compatibility vrstev byly odstraněny mrtvé helpery v `includes/mailer.php` a dvojice nepoužívaných rate-limit map wrapperů v `includes/security.php`; aktivní BC wrappery pro dostupnost, nastavení, site lock, CSRF a e-mailové flow zůstaly beze změny (commit: `this-commit`)
 - [refactor] Společné helpery z `includes/functions.php` byly rozdělené do namespaced utilit v `src/Support/`; původní globální funkce zůstaly jako kompatibilní wrappery a nové moduly pokrývají view, formátování, datumy, kontakty, nastavení, stavy rezervací, otevírací hodiny a normalizaci hodnot (commit: `this-commit`)
 - [refactor] `includes/site/pages/about.php` byla ztenčena na čistší markup a certifikátový view-model se přesunul do `PPStudio\Http\View\SiteAboutPageContextBuilder`; loading uploadů, metadata i preview URL jsou teď připravené v OOP vrstvě bez inline výpočtů v šabloně (commit: `this-commit`)
 - [refactor] `includes/site/pages/reviews.php` byl ztenčen na čistší markup a validace Firmy.cz iframe embedu se přesunula do `PPStudio\Http\View\SiteReviewsPageContextBuilder` a `PPStudio\Http\View\SiteTrustedSingleIframeEmbedRenderer`; global helper z `includes/site/render.php` už není potřeba (commit: `this-commit`)

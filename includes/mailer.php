@@ -2,69 +2,6 @@
 declare(strict_types=1);
 
 use PPStudio\Service\Mailer;
-use PPStudio\Service\ReservationNotificationService;
-use PPStudio\Repository\ReservationRepository;
-use PPStudio\Security\ReservationLinkSigner;
-
-function sendReservationReceivedEmail(array $emailConfig, array $siteSettings, array $reservation): bool
-{
-    return (new ReservationNotificationService($emailConfig))->sendReceivedEmail($siteSettings, $reservation);
-}
-
-function sendReservationAdminNotification(array $emailConfig, array $siteSettings, array $reservation): bool
-{
-    return (new ReservationNotificationService($emailConfig))->sendAdminNotification($siteSettings, $reservation);
-}
-
-function sendReservationConfirmedEmail(
-    array $emailConfig,
-    array $siteSettings,
-    array $reservation,
-    array $context = []
-): bool
-{
-    return (new ReservationNotificationService($emailConfig))->sendConfirmedEmail($siteSettings, $reservation, $context);
-}
-
-function sendReservationCancelledEmail(array $emailConfig, array $siteSettings, array $reservation): bool
-{
-    return (new ReservationNotificationService($emailConfig))->sendCancelledEmail($siteSettings, $reservation);
-}
-
-function sendReservationReminderEmail(array $emailConfig, array $siteSettings, array $reservation): bool
-{
-    return (new ReservationNotificationService($emailConfig))->sendReminderEmail($siteSettings, $reservation);
-}
-
-function reservationCustomerActionCutoffSeconds(array $emailConfig): int
-{
-    return (new ReservationLinkSigner($emailConfig))->customerActionCutoffSeconds();
-}
-
-function reservationCustomerActionDeadline(array $emailConfig, array $reservation): int
-{
-    return (new ReservationLinkSigner($emailConfig))->customerActionDeadline($reservation);
-}
-
-function canUseReservationCustomerAction(array $emailConfig, array $reservation): bool
-{
-    return (new ReservationLinkSigner($emailConfig))->canUseCustomerAction($reservation);
-}
-
-function buildReservationCustomerActionUrl(array $emailConfig, array $siteSettings, array $reservation, string $action, string $path): string
-{
-    return (new ReservationLinkSigner($emailConfig))->buildCustomerActionUrl($siteSettings, $reservation, $action, $path);
-}
-
-function buildReservationCustomerCancelUrl(array $emailConfig, array $siteSettings, array $reservation): string
-{
-    return buildReservationCustomerActionUrl($emailConfig, $siteSettings, $reservation, 'cancel', 'reservation-cancel.php');
-}
-
-function buildReservationCustomerRescheduleUrl(array $emailConfig, array $siteSettings, array $reservation): string
-{
-    return buildReservationCustomerActionUrl($emailConfig, $siteSettings, $reservation, 'reschedule', 'reservation-reschedule.php');
-}
 
 function sendVoucherEmail(
     array $emailConfig,
@@ -202,16 +139,6 @@ function buildReservationsFeedIcal(mysqli $connection, array $siteSettings): str
     return $ics . "END:VCALENDAR\r\n";
 }
 
-function buildReservationIcal(array $siteSettings, array $reservation): string
-{
-    return (new ReservationNotificationService([]))->buildReservationIcal($siteSettings, $reservation);
-}
-
-function escapeIcalText(string $value): string
-{
-    return (new ReservationNotificationService([]))->escapeIcalText($value);
-}
-
 function buildSubscriptionCalendarUrl(array $emailConfig, array $siteSettings): string
 {
     $siteUrl = rtrim(setting($siteSettings, 'site_url', ''), '/');
@@ -222,62 +149,4 @@ function buildSubscriptionCalendarUrl(array $emailConfig, array $siteSettings): 
     }
 
     return preg_replace('#^https://#', 'webcal://', $siteUrl) . '/reservations-feed.php?token=' . rawurlencode($token);
-}
-
-function buildReservationActionUrl(array $emailConfig, array $siteSettings, int $reservationId, string $action): string
-{
-    return (new ReservationLinkSigner($emailConfig))->buildAdminActionUrl($siteSettings, $reservationId, $action);
-}
-
-function isValidReservationActionSignature(
-    array $emailConfig,
-    int $reservationId,
-    string $action,
-    int $expiresAt,
-    string $nonce,
-    string $signature
-): bool {
-    return (new ReservationLinkSigner($emailConfig))->isValidActionSignature(
-        $reservationId,
-        $action,
-        $expiresAt,
-        $nonce,
-        $signature
-    );
-}
-
-function reservationActionNonceStoragePath(): string
-{
-    return (new ReservationLinkSigner([]))->nonceStoragePath();
-}
-
-function consumeReservationActionNonce(int $reservationId, string $action, int $expiresAt, string $nonce): bool
-{
-    return (new ReservationLinkSigner([]))->consumeNonce($reservationId, $action, $expiresAt, $nonce);
-}
-
-function getNotificationRecipients(array $emailConfig, array $siteSettings): array
-{
-    return (new ReservationNotificationService($emailConfig))->notificationRecipients($siteSettings);
-}
-
-function buildConfiguredMailer(array $emailConfig): \PHPMailer\PHPMailer\PHPMailer
-{
-    return (new Mailer($emailConfig))->buildConfiguredMailer();
-}
-
-function sendPhpMailerMessage(
-    string $to,
-    string $subject,
-    string $htmlBody,
-    string $textBody,
-    array $emailConfig,
-    ?array $attachment = null
-): bool {
-    return (new Mailer($emailConfig))->send($to, $subject, $htmlBody, $textBody, $attachment);
-}
-
-function loadReservationDetails(mysqli $connection, int $reservationId): ?array
-{
-    return (new ReservationRepository($connection))->findDetailsById($reservationId);
 }
