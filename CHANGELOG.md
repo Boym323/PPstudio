@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Editace služeb v adminu nově prochází přes OOP loader `AdminServiceFormDataLoader`; `includes/admin/actions/load/service_forms.php` je už jen tenký BC wrapper a zůstává zachované plnění `service_form` a `category_form` pro šablonu (commit: `this-commit`)
+- [refactor] Admin modul služeb nově používá OOP load/post handlery v `src/Http/Controller/Admin/`; `includes/admin/actions/load/services.php` a `includes/admin/actions/post/services.php` zůstaly jen jako tenké BC wrappery a zachovávají stejný admin flow i výstupní proměnné (commit: `this-commit`)
 - [fix] Opraveno načítání veřejného webu po odstranění `includes/settings.php`; kompatibilní helpery `ppstudioSiteSettingsService()` / `loadSiteSettings()` / `saveSiteSetting()` jsou znovu dostupné přes `includes/bootstrap.php` a `includes/site/render.php` už nenačítá neexistující soubor (commit: `this-commit`)
 - [refactor] Zbylé path-only admin controller třídy pro služby, dostupnost, rezervace, média, dashboard a vouchery byly odstraněny a jejich include seznamy se přesunuly přímo do orchestrátorů; admin stack je teď bez těchto dispatcher wrapperů (commit: `this-commit`)
 - [refactor] Z repozitáře byly odstraněny poslední BC wrappery a dead-code controllery pro antispam/reminder logy a settings POST workflow; admin teď volá nové OOP loadery a handlery přímo bez mezivrstev (commit: `this-commit`)

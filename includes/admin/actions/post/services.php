@@ -1,47 +1,25 @@
 <?php
 
+use PPStudio\Http\Controller\Admin\AdminServicePostActionHandler;
 use PPStudio\Service\AdminServiceMutationService;
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    return;
+$servicePostActionHandler = new AdminServicePostActionHandler(
+    new AdminServiceMutationService($connection)
+);
+$servicePostState = $servicePostActionHandler->handle($_SERVER, $_POST, $serviceForm, $categoryForm);
+
+if ($servicePostState['message'] !== '') {
+    $message = $servicePostState['message'];
 }
 
-$serviceMutationService = new AdminServiceMutationService($connection);
-
-$applyServiceMutationResult = static function (array $result) use (&$message, &$error, &$serviceForm, &$categoryForm): void {
-    if (is_array($result['data']['service_form'] ?? null)) {
-        $serviceForm = $result['data']['service_form'];
-    }
-
-    if (is_array($result['data']['category_form'] ?? null)) {
-        $categoryForm = $result['data']['category_form'];
-    }
-
-    if (is_string($result['message'] ?? null) && ($result['message'] ?? '') !== '') {
-        $message = (string) $result['message'];
-    }
-
-    if (is_string($result['error'] ?? null) && ($result['error'] ?? '') !== '') {
-        $error = (string) $result['error'];
-    }
-};
-
-if (isset($_POST['save_category'])) {
-    $applyServiceMutationResult($serviceMutationService->saveCategory($_POST));
+if ($servicePostState['error'] !== '') {
+    $error = $servicePostState['error'];
 }
 
-if (isset($_POST['toggle_category_active'])) {
-    $applyServiceMutationResult($serviceMutationService->toggleCategoryActive($_POST));
+if (is_array($servicePostState['service_form'] ?? null)) {
+    $serviceForm = $servicePostState['service_form'];
 }
 
-if (isset($_POST['save_category_order'])) {
-    $applyServiceMutationResult($serviceMutationService->saveCategoryOrder($_POST));
-}
-
-if (isset($_POST['save_service'])) {
-    $applyServiceMutationResult($serviceMutationService->saveService($_POST));
-}
-
-if (isset($_POST['toggle_service_active'])) {
-    $applyServiceMutationResult($serviceMutationService->toggleServiceActive($_POST));
+if (is_array($servicePostState['category_form'] ?? null)) {
+    $categoryForm = $servicePostState['category_form'];
 }
