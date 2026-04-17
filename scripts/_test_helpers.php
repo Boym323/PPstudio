@@ -108,3 +108,13 @@ function ppstudioCliTestRestoreEnv(array $previous): void
         unset($_SERVER[$name]);
     }
 }
+
+function ppstudioCliTestBootstrapBase(): void
+{
+    require dirname(__DIR__) . '/includes/bootstrap.php';
+    require dirname(__DIR__) . '/config/app.php';
+    require dirname(__DIR__) . '/includes/functions.php';
+    require dirname(__DIR__) . '/includes/security.php';
+
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+}

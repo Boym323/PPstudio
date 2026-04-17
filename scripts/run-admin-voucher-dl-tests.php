@@ -66,13 +66,8 @@ if ($isChild) {
     childMain();
 }
 
-require dirname(__DIR__) . '/includes/bootstrap.php';
-require dirname(__DIR__) . '/config/app.php';
-require dirname(__DIR__) . '/includes/functions.php';
-require dirname(__DIR__) . '/includes/security.php';
+ppstudioCliTestBootstrapBase();
 require dirname(__DIR__) . '/includes/settings.php';
-
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $storageDir = ppstudioCliTestTempSecurityStorageDir(SCRIPT_PREFIX, 'ppstudio-admin-voucher-dl-');
 $voucherVerifySecret = 'admin-voucher-dl-' . bin2hex(random_bytes(16));

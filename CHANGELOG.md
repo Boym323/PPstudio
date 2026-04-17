@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Společný CLI bootstrap blok pro smoke a integrační testy byl vytáhnut do `scripts/_test_helpers.php` jako `ppstudioCliTestBootstrapBase()`, takže testovací skripty už sdílí i základní include/setup vrstvu (commit: `this-commit`)
 - [refactor] Integrační skript `scripts/run-reservation-integration.php` byl přepojen na sdílené CLI helpery v `scripts/_test_helpers.php`, takže reservation testy teď používají jednotný scaffolding pro fail/assert a child-process capture (commit: `this-commit`)
 - [refactor] Reservation smoke test `scripts/run-reservation-public-flow-tests.php` byl přepojen na sdílené CLI helpery v `scripts/_test_helpers.php`, takže stejný assert/env/capture scaffolding teď používají rezervace i voucher testy (commit: `this-commit`)
 - [refactor] Společné CLI helpery pro voucher smoke testy byly vytáhnuté do `scripts/_test_helpers.php`, takže public i admin DL test sdílí assert, env a child-process scaffolding bez duplicitního kódu (commit: `this-commit`)

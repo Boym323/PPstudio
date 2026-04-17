@@ -9,13 +9,8 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require_once __DIR__ . '/_test_helpers.php';
-
-require dirname(__DIR__) . '/includes/bootstrap.php';
-require dirname(__DIR__) . '/config/app.php';
-require dirname(__DIR__) . '/includes/functions.php';
+ppstudioCliTestBootstrapBase();
 require dirname(__DIR__) . '/includes/availability.php';
-
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 const SCRIPT_PREFIX = '[reservation-integration]';
 

@@ -62,10 +62,7 @@ function childMain(string $scenario): never
     });
 
     if ($scenario === 'lock_page') {
-        require dirname(__DIR__) . '/includes/bootstrap.php';
-        require dirname(__DIR__) . '/config/app.php';
-        require dirname(__DIR__) . '/includes/functions.php';
-        require dirname(__DIR__) . '/includes/security.php';
+        ppstudioCliTestBootstrapBase();
         require dirname(__DIR__) . '/includes/site_lock.php';
 
         ppstudioPublicSiteLockService()->renderPage('Test');
@@ -98,10 +95,7 @@ if ($isChild) {
     childMain($scenario);
 }
 
-require dirname(__DIR__) . '/includes/bootstrap.php';
-require dirname(__DIR__) . '/config/app.php';
-require dirname(__DIR__) . '/includes/functions.php';
-require dirname(__DIR__) . '/includes/security.php';
+ppstudioCliTestBootstrapBase();
 require dirname(__DIR__) . '/includes/site_lock.php';
 require dirname(__DIR__) . '/includes/antispam.php';
 
