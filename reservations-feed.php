@@ -1,31 +1,13 @@
 <?php
 declare(strict_types=1);
 
+use PPStudio\Http\Controller\ReservationsFeedApplication;
+use PPStudio\Http\Request\ReservationsFeedRequest;
+
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
 require __DIR__ . '/includes/functions.php';
 
 $emailConfig = require __DIR__ . '/config/email.php';
-
-$token = trim((string) ($_GET['token'] ?? ''));
-
-if ($token === '' || $token !== (string) ($emailConfig['calendar_token'] ?? '')) {
-    http_response_code(403);
-    echo 'Forbidden';
-    exit;
-}
-
-$connection = \PPStudio\Database\DatabaseFactory::tryConnect();
-
-if (! $connection instanceof mysqli) {
-    http_response_code(500);
-    echo 'Database unavailable';
-    exit;
-}
-$siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
-
-header('Content-Type: text/calendar; charset=utf-8');
-header('Content-Disposition: inline; filename="reservations-feed.ics"');
-
-echo (new \PPStudio\Service\MailerIntegrationService($emailConfig))->buildReservationsFeedIcal($connection, $siteSettings);
-$connection->close();
+(new ReservationsFeedApplication($emailConfig))
+    ->handle(ReservationsFeedRequest::fromQuery($_GET));
