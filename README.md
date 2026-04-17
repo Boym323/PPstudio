@@ -29,6 +29,8 @@ Detailnější dokumentace:
    - `php scripts/run-reservation-integration.php`
 5. Pro public flow smoke testy rezervačního formuláře, CSRF, antispamu a site locku:
    - `php scripts/run-reservation-public-flow-tests.php`
+6. Pro public flow smoke testy voucher detailu a ověření poukazu:
+   - `php scripts/run-voucher-public-flow-tests.php`
 
 ## Release ZIP pro FTP (tag + balíček)
 

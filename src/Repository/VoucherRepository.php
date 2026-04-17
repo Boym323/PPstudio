@@ -33,4 +33,26 @@ final class VoucherRepository
 
         return is_array($row) ? $row : null;
     }
+
+    public function findPrintById(int $voucherId): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT id, kod, puvodni_hodnota, zustatek, status, issued_at, expires_at, recipient_name, note
+             FROM poukazy
+             WHERE id = ?
+             LIMIT 1'
+        );
+
+        if (! $statement instanceof mysqli_stmt) {
+            return null;
+        }
+
+        $statement->bind_param('i', $voucherId);
+        $statement->execute();
+        $result = $statement->get_result();
+        $row = $result instanceof \mysqli_result ? $result->fetch_assoc() : null;
+        $statement->close();
+
+        return is_array($row) ? $row : null;
+    }
 }
