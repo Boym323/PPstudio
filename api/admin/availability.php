@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use PPStudio\Http\Controller\Admin\AdminAvailabilityApiController;
-
 require __DIR__ . '/../../includes/bootstrap.php';
 require __DIR__ . '/../../config/app.php';
 
-(new \PPStudio\Security\SecurityFacade())->startSecureSession();
-
-AdminAvailabilityApiController::handleRequest($_GET, $_SESSION);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(dirname(__DIR__, 2)))->handleAdminAvailabilityApi($_GET, $_SESSION);

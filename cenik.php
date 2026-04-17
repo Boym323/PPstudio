@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/site/render.php';
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
 
-renderSitePage([
-    'title' => 'Ceník | PP Studio',
-    'description' => 'Aktuální ceník ošetření PP Studia přehledně podle kategorií.',
-    'active_nav' => 'pricing',
-    'template' => __DIR__ . '/includes/site/pages/pricing.php',
-]);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handlePublicPage('pricing');

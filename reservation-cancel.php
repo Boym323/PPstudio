@@ -3,9 +3,5 @@ declare(strict_types=1);
 
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/config/app.php';
-require __DIR__ . '/includes/functions.php';
 
-$emailConfig = require __DIR__ . '/config/email.php';
-
-\PPStudio\Http\Controller\ReservationActionApplication::create($emailConfig)
-    ->handleCustomerCancel($_REQUEST, $_SERVER);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handleReservationCancel($_REQUEST, $_SERVER);

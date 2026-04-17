@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/site/render.php';
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
 
-renderSitePage([
-    'title' => 'O mně | PP Studio',
-    'description' => 'Poznejte příběh a přístup Pavlíny Pomykalové v PP Studiu.',
-    'active_nav' => 'about',
-    'template' => __DIR__ . '/includes/site/pages/about.php',
-]);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handlePublicPage('about');

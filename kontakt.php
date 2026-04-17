@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
 
-header('Location: /rezervace.php', true, 301);
-exit;
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
+
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handleRedirect('/rezervace.php', 301);

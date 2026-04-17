@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/site/render.php';
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
 
-renderSitePage([
-    'title' => 'Recenze klientek | PP Studio',
-    'description' => 'Přečtěte si hodnocení klientek, které navštívily PP Studio.',
-    'active_nav' => 'reviews',
-    'template' => __DIR__ . '/includes/site/pages/reviews.php',
-]);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handlePublicPage('reviews');

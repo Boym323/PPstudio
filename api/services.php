@@ -1,12 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use PPStudio\Http\Controller\ApiServicesController;
-
 require __DIR__ . '/../includes/bootstrap.php';
 require __DIR__ . '/../config/app.php';
-require __DIR__ . '/../includes/functions.php';
 
-requirePublicSiteAccessOrJsonError();
-
-ApiServicesController::handleRequest();
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(dirname(__DIR__)))->handlePublicServicesApi();

@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/site/render.php';
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
 
-renderSitePage([
-    'title' => 'PP Studio - Kosmetický salon Zlín',
-    'description' => 'PP Studio - moderní kosmetický salon ve Zlíně. Profesionální péče o pleť a individuální přístup.',
-    'active_nav' => 'home',
-    'template' => __DIR__ . '/includes/site/pages/home.php',
-]);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handlePublicPage('home');

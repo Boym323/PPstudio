@@ -37,7 +37,6 @@ $isChild = in_array('--child', $argvCopy, true);
 
 if ($isChild) {
     ppstudioCliTestBootstrapBase();
-    require dirname(__DIR__) . '/includes/admin/actions/post/helpers.php';
 
     $server = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_SERVER'), true);
     $post = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_POST'), true);
@@ -56,19 +55,15 @@ if ($isChild) {
     $connection = \PPStudio\Database\DatabaseFactory::connect();
     $emailConfig = is_array($emailConfig ?? null) ? $emailConfig : [];
     $siteSettings = is_array($siteSettings ?? null) ? $siteSettings : [];
-    $message = '';
-    $error = '';
-
-    ob_start();
-    require dirname(__DIR__) . '/includes/admin/actions/post/vouchers.php';
-    ob_end_clean();
+    $voucherModule = new \PPStudio\Service\AdminVoucherModule($connection, $emailConfig, $siteSettings);
+    $voucherPostResult = $voucherModule->postActionHandler()->handle($_SERVER, $_POST, $voucherForm, $voucherBatchForm);
 
     echo json_encode([
         'code' => 200,
-        'message' => $message,
-        'error' => $error,
-        'voucher_form' => $voucherForm,
-        'voucher_batch_form' => $voucherBatchForm,
+        'message' => (string) ($voucherPostResult['message'] ?? ''),
+        'error' => (string) ($voucherPostResult['error'] ?? ''),
+        'voucher_form' => is_array($voucherPostResult['voucher_form'] ?? null) ? $voucherPostResult['voucher_form'] : $voucherForm,
+        'voucher_batch_form' => is_array($voucherPostResult['voucher_batch_form'] ?? null) ? $voucherPostResult['voucher_batch_form'] : $voucherBatchForm,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit(0);
 }

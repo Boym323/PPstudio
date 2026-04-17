@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/includes/site/render.php';
+require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/config/app.php';
 
-renderSitePage([
-    'title' => 'Prostory studia | PP Studio',
-    'description' => 'Prohlédněte si prostory PP Studia.',
-    'active_nav' => 'spaces',
-    'template' => __DIR__ . '/includes/site/pages/spaces.php',
-]);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(__DIR__))->handlePublicPage('spaces');

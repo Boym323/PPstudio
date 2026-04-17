@@ -12,7 +12,6 @@ const SCRIPT_PREFIX = '[admin-voucher-usecase-tests]';
 
 require_once __DIR__ . '/_test_helpers.php';
 ppstudioCliTestBootstrapBase();
-require dirname(__DIR__) . '/includes/admin/actions/post/helpers.php';
 
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\VoucherRepository;

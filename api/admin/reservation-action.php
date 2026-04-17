@@ -3,11 +3,5 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../includes/bootstrap.php';
 require __DIR__ . '/../../config/app.php';
-require __DIR__ . '/../../includes/functions.php';
 
-$emailConfig = require __DIR__ . '/../../config/email.php';
-\PPStudio\Http\Controller\Admin\AdminReservationApiController::handleMutationRequest(
-    $_SERVER,
-    $_POST,
-    $emailConfig
-);
+(new \PPStudio\Http\Controller\HttpEntryPointApplication(dirname(__DIR__, 2)))->handleAdminReservationActionApi($_SERVER, $_POST);
