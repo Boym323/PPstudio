@@ -1,16 +1,6 @@
 <?php
-
-use PPStudio\Infrastructure\Storage\UploadStorage;
-use PPStudio\Service\CertificateMetadataService;
-use PPStudio\Service\CertificatePreviewService;
-use PPStudio\Service\CertificateService;
-
-$uploadStorage = new UploadStorage();
-$certificateItems = (new CertificateService(
-    $uploadStorage,
-    new CertificateMetadataService($uploadStorage),
-    new CertificatePreviewService($uploadStorage)
-))->loadUploads(dirname(__DIR__, 3) . '/uploads', '/uploads', 'cert_');
+$aboutView = (new \PPStudio\Http\View\SiteAboutPageContextBuilder())->build();
+$certificateItems = $aboutView['certificateItems'];
 ?>
 
 <section class="team" id="team">
@@ -67,40 +57,31 @@ $certificateItems = (new CertificateService(
                     <?php if (!empty($certificateItems)): ?>
                         <div class="about-certificates-grid">
                             <?php foreach ($certificateItems as $certificate): ?>
-                                <?php
-                                $uploadedAt = (int) ($certificate['modified_at'] ?? 0);
-                                $uploadedLabel = $uploadedAt > 0 ? date('d.m.Y', $uploadedAt) : '';
-                                $isImageCertificate = !empty($certificate['is_image']);
-                                $certificateType = $isImageCertificate ? 'Obrázkový certifikát' : 'PDF certifikát';
-                                $certificateTitle = trim((string) ($certificate['title'] ?? ''));
-                                $certificateUrl = (string) ($certificate['url'] ?? '');
-                                $certificatePreviewUrl = (string) ($certificate['preview_url'] ?? '');
-                                ?>
                                 <a
                                     class="about-certificate-card"
-                                    href="<?= htmlspecialchars($certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                    href="<?= htmlspecialchars((string) ($certificate['certificate_url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     data-certificate-trigger="1"
-                                    data-certificate-type="<?= $isImageCertificate ? 'image' : 'pdf' ?>"
-                                    data-certificate-url="<?= htmlspecialchars($certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
-                                    data-certificate-title="<?= htmlspecialchars($certificateTitle !== '' ? $certificateTitle : 'Certifikát', ENT_QUOTES, 'UTF-8') ?>"
+                                    data-certificate-type="<?= !empty($certificate['is_image_certificate']) ? 'image' : 'pdf' ?>"
+                                    data-certificate-url="<?= htmlspecialchars((string) ($certificate['certificate_url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    data-certificate-title="<?= htmlspecialchars((string) ($certificate['certificate_title'] ?? 'Certifikát'), ENT_QUOTES, 'UTF-8') ?>"
                                 >
                                     <div class="about-certificate-media">
-                                        <?php if ($isImageCertificate): ?>
+                                        <?php if (!empty($certificate['is_image_certificate'])): ?>
                                             <img
-                                                src="<?= htmlspecialchars($certificatePreviewUrl !== '' ? $certificatePreviewUrl : $certificateUrl, ENT_QUOTES, 'UTF-8') ?>"
-                                                alt="<?= htmlspecialchars((string) ($certificate['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                                src="<?= htmlspecialchars((string) (($certificate['certificate_preview_url'] ?? '') !== '' ? $certificate['certificate_preview_url'] : $certificate['certificate_url']), ENT_QUOTES, 'UTF-8') ?>"
+                                                alt="<?= htmlspecialchars((string) ($certificate['certificate_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
                                                 loading="lazy"
                                             >
                                         <?php else: ?>
                                             <div class="about-certificate-doc">PDF</div>
                                         <?php endif; ?>
                                     </div>
-                                    <span class="about-certificate-title"><?= htmlspecialchars($certificateTitle !== '' ? $certificateTitle : 'Certifikát', ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span class="about-certificate-title"><?= htmlspecialchars((string) ($certificate['certificate_title'] ?? 'Certifikát'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <small class="about-certificate-meta">
-                                        <?= htmlspecialchars($certificateType, ENT_QUOTES, 'UTF-8') ?>
-                                        <?= $uploadedLabel !== '' ? ' • nahráno ' . htmlspecialchars($uploadedLabel, ENT_QUOTES, 'UTF-8') : '' ?>
+                                        <?= htmlspecialchars((string) ($certificate['certificate_type'] ?? 'PDF certifikát'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= !empty($certificate['uploaded_label']) ? ' • nahráno ' . htmlspecialchars((string) $certificate['uploaded_label'], ENT_QUOTES, 'UTF-8') : '' ?>
                                     </small>
                                     <span class="about-certificate-action">Otevřít certifikát</span>
                                 </a>

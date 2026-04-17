@@ -1,12 +1,3 @@
-<?php
-$contactPhone = setting($siteSettings, 'contact_phone', '+420 732 856 036');
-$contactEmail = setting($siteSettings, 'contact_email', 'pavlina@pomykal.cz');
-$contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', '');
-$contactPhoneHref = contactPhoneHref($contactPhone);
-$contactEmailHref = contactEmailHref($contactEmail);
-$contactInstagramHandle = contactInstagramHandle($contactInstagramUrl);
-$contactInstagramDmUrl = contactInstagramDmHref($contactInstagramUrl);
-?>
 <section class="pricing-gallery" id="ceniky" style="padding-top:8.5rem;">
     <div class="container">
         <h1 class="section-title">Náš <span>Ceník</span></h1>

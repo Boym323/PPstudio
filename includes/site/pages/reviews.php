@@ -2,10 +2,13 @@
     <div class="reviews-container">
         <h1 class="reviews-title">Hodnocení našich klientek</h1>
         <p class="reviews-lead">Autentické recenze z Google a možnost přidat vlastní hodnocení na Google i Firmy.cz.</p>
+        <?php
+        $reviewsView = (new \PPStudio\Http\View\SiteReviewsPageContextBuilder())->build($siteSettings);
+        $googleReviewsUrl = $reviewsView['googleReviewsUrl'];
+        $firmyReviewsUrl = $reviewsView['firmyReviewsUrl'];
+        $firmyEmbed = $reviewsView['firmyEmbed'];
+        ?>
         <div class="reviews-links">
-            <?php $googleReviewsUrl = trim(setting($siteSettings, 'google_reviews_url', '')); ?>
-            <?php $firmyReviewsUrl = trim(setting($siteSettings, 'firmy_reviews_url', '')); ?>
-
             <?php if ($googleReviewsUrl !== ''): ?>
                 <a class="review-source-link" href="<?= escape($googleReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Google</a>
             <?php endif; ?>
@@ -13,10 +16,6 @@
                 <a class="review-source-link" href="<?= escape($firmyReviewsUrl) ?>" target="_blank" rel="noreferrer noopener">Přidat recenzi na Firmy.cz</a>
             <?php endif; ?>
         </div>
-
-        <?php
-        $firmyEmbed = trustedSingleIframeEmbed(setting($siteSettings, 'firmy_reviews_embed', ''));
-        ?>
 
         <div class="reviews-embed-grid">
             <article class="review-embed-card review-embed-card-google">

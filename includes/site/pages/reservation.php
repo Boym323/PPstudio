@@ -1,16 +1,3 @@
-<?php
-$contactName = setting($siteSettings, 'contact_name', 'Pavlína Pomykalová');
-$contactPhone = setting($siteSettings, 'contact_phone', '+420 732 856 036');
-$contactEmail = setting($siteSettings, 'contact_email', 'pavlina@pomykal.cz');
-$contactInstagramUrl = setting($siteSettings, 'contact_instagram_url', '');
-$contactIco = setting($siteSettings, 'contact_ico', '234 275 66');
-$contactOpeningHours = setting($siteSettings, 'contact_opening_hours', 'Po-Pá: Dle objednávek');
-$contactAddress = setting($siteSettings, 'contact_address', '');
-$contactPhoneHref = contactPhoneHref($contactPhone);
-$contactEmailHref = contactEmailHref($contactEmail);
-$contactInstagramHandle = contactInstagramHandle($contactInstagramUrl);
-$contactInstagramDmUrl = contactInstagramDmHref($contactInstagramUrl);
-?>
 <section class="contact-section" id="contact" style="padding-top:8.5rem;">
     <div class="contact-container">
         <h1 class="contact-title">Rezervace a kontakt</h1>
@@ -205,20 +192,13 @@ $contactInstagramDmUrl = contactInstagramDmHref($contactInstagramUrl);
                 </details>
             </div>
         </div>
-        <?php
-        $emailUser = $contactEmail;
-        $emailDomain = '';
-        if (str_contains($contactEmail, '@')) {
-            [$emailUser, $emailDomain] = explode('@', $contactEmail, 2);
-        }
-        ?>
         <div class="contact-grid" id="contact-info">
             <div>
                 <div class="contact-box">
                     <strong><?= escape($contactName) ?></strong><br>
                     <i class="fas fa-phone" style="color:#7a5a43; margin-right:6px;"></i> <a href="<?= escape($contactPhoneHref) ?>"><?= escape($contactPhone) ?></a><br>
                     <i class="fas fa-envelope" style="color:#7a5a43; margin-right:6px;"></i>
-                    <a class="email" href="<?= escape($contactEmailHref) ?>" data-user="<?= escape($emailUser) ?>" data-domain="<?= escape($emailDomain) ?>"><?= escape($emailUser) ?> [zavináč] <?= escape($emailDomain) ?></a><br>
+                    <a class="email" href="<?= escape($contactEmailHref) ?>" data-user="<?= escape($contactEmailUser) ?>" data-domain="<?= escape($contactEmailDomain) ?>"><?= escape($contactEmailUser) ?> [zavináč] <?= escape($contactEmailDomain) ?></a><br>
                     <?php if ($contactInstagramUrl !== ''): ?>
                         <i class="fab fa-instagram" style="color:#7a5a43; margin-right:6px;"></i>
                         <a href="<?= escape($contactInstagramUrl) ?>" target="_blank" rel="noreferrer noopener" style="color:#7a5a43;"><?= escape($contactInstagramHandle !== '' ? '@' . $contactInstagramHandle : $contactInstagramUrl) ?></a><br>

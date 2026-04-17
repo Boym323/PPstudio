@@ -1,32 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="cs">
 <head>
-    <?php
-    $cssVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/site.css') ?: time());
-    $jsVersion = (string) (@filemtime(__DIR__ . '/../../assets/js/site.js') ?: time());
-    $resolvedSiteBaseUrl = $siteBaseUrl ?? rtrim((string) ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
-    $schemaAddress = trim(setting($siteSettings ?? [], 'contact_address', ''));
-    $schemaInstagramUrl = setting($siteSettings ?? [], 'contact_instagram_url', '');
-    $schemaPhone = setting($siteSettings ?? [], 'contact_phone', '+420732856036');
-    $schemaData = [
-        '@context' => 'https://schema.org',
-        '@type' => 'BeautySalon',
-        'name' => setting($siteSettings ?? [], 'site_name', defaultSiteName()),
-        'url' => $resolvedSiteBaseUrl,
-        'telephone' => $schemaPhone,
-        'image' => ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/assets/images/Paji.jpeg',
-        'sameAs' => $schemaInstagramUrl !== '' ? [$schemaInstagramUrl] : [],
-    ];
-
-    if ($schemaAddress !== '') {
-        $schemaData['address'] = [
-            '@type' => 'PostalAddress',
-            'streetAddress' => $schemaAddress,
-            'postalCode' => '760 01',
-            'addressCountry' => 'CZ',
-        ];
-    }
-    ?>
     <meta charset="UTF-8">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
@@ -42,12 +16,12 @@
     <title><?= escape($title) ?></title>
     <meta property="og:title" content="<?= escape($title) ?>">
     <meta property="og:description" content="<?= escape($description) ?>">
-    <meta property="og:image" content="<?= escape(($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/assets/images/Paji.jpeg') ?>">
-    <meta property="og:url" content="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
+    <meta property="og:image" content="<?= escape($ogImageUrl) ?>">
+    <meta property="og:url" content="<?= escape($canonicalUrl) ?>">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="cs_CZ">
-    <meta property="og:site_name" content="<?= escape(setting($siteSettings ?? [], 'site_name', defaultSiteName())) ?>">
-    <link rel="canonical" href="<?= escape($canonicalUrl ?? (($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/')) ?>">
+    <meta property="og:site_name" content="<?= escape($siteName) ?>">
+    <link rel="canonical" href="<?= escape($canonicalUrl) ?>">
 
     <script type="application/ld+json">
         <?= json_encode($schemaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
