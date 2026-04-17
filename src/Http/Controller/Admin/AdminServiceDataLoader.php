@@ -18,7 +18,6 @@ final class AdminServiceDataLoader
      * @param array<int, array<string, mixed>> $serviceRows
      * @param array<int, array<string, mixed>> $servicePriceHistoryRows
      * @param array<string, mixed> $categoryForm
-     * @param array<string, mixed> $query
      * @return array{
      *     service_filters?: array<string, mixed>,
      *     service_category_rows?: array<int, array<string, mixed>>,
@@ -39,7 +38,8 @@ final class AdminServiceDataLoader
         array $serviceRows,
         array $servicePriceHistoryRows,
         array $categoryForm,
-        array $query
+        ?int $editCategoryId,
+        string $requestedSection
     ): array {
         $serviceCatalogData = $this->serviceCatalogService->loadData($serviceFilters, $serviceStatusFilterOptions);
         $normalizedServiceFilters = is_array($serviceCatalogData['service_filters'] ?? null)
@@ -57,7 +57,8 @@ final class AdminServiceDataLoader
             $normalizedServicePriceHistoryRows,
             $normalizedServiceFilters,
             $categoryForm,
-            $query
+            $editCategoryId,
+            $requestedSection
         );
 
         return array_replace($serviceCatalogData, $sectionViewData);

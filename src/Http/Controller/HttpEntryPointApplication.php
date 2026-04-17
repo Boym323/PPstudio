@@ -25,7 +25,7 @@ final class HttpEntryPointApplication
     public function handlePublicPage(string $pageKey): never
     {
         $config = $this->sitePageCatalog()->page($this->projectRoot, $pageKey);
-        $this->sitePageRenderer()->render($config);
+        $this->sitePageRenderer()->render($config, $_SERVER, $_GET);
     }
 
     public function handleRedirect(string $location, int $statusCode = 302): never

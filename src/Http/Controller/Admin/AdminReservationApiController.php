@@ -19,7 +19,7 @@ final class AdminReservationApiController
         (new \PPStudio\Security\SecurityFacade())->startSecureSession();
         self::sendJsonHeaders();
 
-        if (! self::isAuthenticated($_SESSION)) {
+        if (! AdminSessionState::isAuthenticated($_SESSION)) {
             self::respondWithoutConnection([
                 'success' => false,
                 'error' => 'Nejste přihlášeni do administrace.',
@@ -67,15 +67,6 @@ final class AdminReservationApiController
         }
 
         self::respond($payload, $httpCode, $connection);
-    }
-
-    /**
-     * @param array<string, mixed> $session
-     */
-    private static function isAuthenticated(array $session): bool
-    {
-        return (bool) ($session['ppstudio_admin_authenticated'] ?? false)
-            || (bool) ($session['ppstudio_admin_lite_authenticated'] ?? false);
     }
 
     /**

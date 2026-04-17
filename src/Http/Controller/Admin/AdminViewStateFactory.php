@@ -12,6 +12,8 @@ final class AdminViewStateFactory
     public function create(array $get, string $error = ''): array
     {
         $plannerWeekOffset = isset($get['planner_week']) ? (int) $get['planner_week'] : 0;
+        $editServiceId = isset($get['edit_service']) ? (int) $get['edit_service'] : 0;
+        $editCategoryId = isset($get['edit_category']) ? (int) $get['edit_category'] : 0;
 
         return [
             'message' => '',
@@ -101,10 +103,14 @@ final class AdminViewStateFactory
                 'nazev' => '',
                 'poradi' => '',
             ],
+            'editServiceId' => $editServiceId,
+            'editCategoryId' => $editCategoryId,
             'activeServicesSection' => 'procedures',
+            'requestedServicesSection' => (string) ($get['service_section'] ?? ''),
             'profileMedia' => [],
             'galleryMedia' => [],
             'certificateFiles' => [],
+            'activeMediaSection' => $this->resolveMediaSection($get['media_section'] ?? null),
             'subscriptionCalendarUrl' => '',
             'manualReservationForm' => [
                 'jmeno' => '',
@@ -263,5 +269,14 @@ final class AdminViewStateFactory
     public function keys(): array
     {
         return array_keys($this->create([]));
+    }
+
+    private function resolveMediaSection(mixed $value): string
+    {
+        $section = is_string($value) ? $value : '';
+
+        return in_array($section, ['profile', 'gallery', 'certificates'], true)
+            ? $section
+            : 'profile';
     }
 }

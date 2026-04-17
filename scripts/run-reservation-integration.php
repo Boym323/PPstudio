@@ -40,6 +40,43 @@ function connectDb(): mysqli
     return \PPStudio\Database\DatabaseFactory::connect();
 }
 
+function findIsolatedFixtureDate(mysqli $connection): string
+{
+    $statement = $connection->prepare(
+        'SELECT COUNT(*) AS total
+         FROM dostupnost
+         WHERE start_at >= ? AND start_at < ?'
+    );
+
+    $startDate = new DateTimeImmutable('+365 days');
+
+    for ($offset = 0; $offset < 180; $offset++) {
+        $currentDate = $startDate->modify('+' . $offset . ' days');
+        $date = $currentDate->format('Y-m-d');
+        $dayStart = $date . ' 00:00:00';
+        $dayEnd = $currentDate->modify('+1 day')->format('Y-m-d') . ' 00:00:00';
+
+        $statement->bind_param('ss', $dayStart, $dayEnd);
+        $statement->execute();
+        $result = $statement->get_result();
+        $row = $result instanceof mysqli_result ? $result->fetch_assoc() : null;
+        $total = (int) ($row['total'] ?? 0);
+        if ($result instanceof mysqli_result) {
+            $result->free();
+        }
+
+        if ($total === 0) {
+            $statement->close();
+
+            return $date;
+        }
+    }
+
+    $statement->close();
+
+    ppstudioCliTestFail(SCRIPT_PREFIX, 'Nepodarilo se najit prazdny den pro integracni fixture.');
+}
+
 /**
  * @return array{category_id:int,service_id:int,availability_ids:int[],date:string}
  */
@@ -63,7 +100,7 @@ function prepareFixture(mysqli $connection, string $token): array
     $serviceId = (int) $connection->insert_id;
     $statement->close();
 
-    $date = (new DateTimeImmutable('+365 days'))->format('Y-m-d');
+    $date = findIsolatedFixtureDate($connection);
     $availabilityIds = [];
 
     $windows = [

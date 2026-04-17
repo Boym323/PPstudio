@@ -31,7 +31,10 @@ final class AdminPostActionHandler
         ?AdminPostActionRequest $request = null
     ): array
     {
-        $request = $request ?? AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
+        $request = $request ?? AdminPostActionRequest::fromHttpGlobals($_SERVER, $_GET, $_POST, $_FILES, $_SESSION);
+        $state['activeMediaSection'] = $this->resolveMediaSection(
+            $request->post()['media_section'] ?? $state['activeMediaSection'] ?? null
+        );
 
         $state = $this->handleSettings($state, $connection, $request);
         $state = $this->handleVoucherActions($state, $connection, $request);
@@ -48,14 +51,7 @@ final class AdminPostActionHandler
      */
     public function captureDefinedState(array $scope): array
     {
-        $state = [];
-        foreach ($this->viewStateFactory->keys() as $key) {
-            if (array_key_exists($key, $scope)) {
-                $state[$key] = $scope[$key];
-            }
-        }
-
-        return $state;
+        return AdminStateSubset::subset($scope, $this->viewStateFactory->keys());
     }
 
     /**
@@ -263,5 +259,14 @@ final class AdminPostActionHandler
         $state['mediaFeedbackType'] = (string) ($mediaPostResult['media_feedback_type'] ?? $state['mediaFeedbackType']);
 
         return $state;
+    }
+
+    private function resolveMediaSection(mixed $value): string
+    {
+        $section = is_string($value) ? $value : '';
+
+        return in_array($section, ['profile', 'gallery', 'certificates'], true)
+            ? $section
+            : 'profile';
     }
 }

@@ -28,7 +28,7 @@ final class AdminLitePostActionHandler
      */
     public function handle(array $state, \mysqli $connection, ?AdminPostActionRequest $request = null): array
     {
-        $request = $request ?? AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
+        $request = $request ?? AdminPostActionRequest::fromHttpGlobals($_SERVER, $_GET, $_POST, $_FILES, $_SESSION);
 
         $liteDisallowedPostActionKeys = [
             'save_settings',
@@ -65,13 +65,6 @@ final class AdminLitePostActionHandler
      */
     private function captureDefinedState(array $scope): array
     {
-        $state = [];
-        foreach ($this->viewStateFactory->keys() as $key) {
-            if (array_key_exists($key, $scope)) {
-                $state[$key] = $scope[$key];
-            }
-        }
-
-        return $state;
+        return AdminStateSubset::subset($scope, $this->viewStateFactory->keys());
     }
 }

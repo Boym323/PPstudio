@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller;
 
+use PPStudio\Http\Controller\Admin\AdminSessionState;
 use PPStudio\Http\View\VoucherAdminDownloadPageRenderer;
 use PPStudio\Security\SessionService;
 use PPStudio\Service\VoucherAdminDownloadService;
@@ -32,7 +33,7 @@ final class VoucherAdminDownloadApplication
     {
         $this->sessionService->start();
 
-        if (! $this->isAuthenticated($_SESSION)) {
+        if (! AdminSessionState::isAuthenticated($_SESSION)) {
             $this->renderer->render([
                 'ok' => false,
                 'mode' => 'plain_text',
@@ -53,14 +54,5 @@ final class VoucherAdminDownloadApplication
 
         $state = $this->voucherAdminDownloadService->loadDownloadState($voucherId);
         $this->renderer->render($state);
-    }
-
-    /**
-     * @param array<string, mixed> $session
-     */
-    private function isAuthenticated(array $session): bool
-    {
-        return (bool) ($session['ppstudio_admin_authenticated'] ?? false)
-            || (bool) ($session['ppstudio_admin_lite_authenticated'] ?? false);
     }
 }

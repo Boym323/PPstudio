@@ -55,8 +55,8 @@ final class AdminDataLoader
         $serviceFormData = (new AdminServiceFormDataLoader(
             new AdminServiceCatalogService(new ServiceRepository($connection))
         ))->load(
-            isset($_GET['edit_service']) ? (int) $_GET['edit_service'] : null,
-            isset($_GET['edit_category']) ? (int) $_GET['edit_category'] : null
+            (int) ($state['editServiceId'] ?? 0) > 0 ? (int) $state['editServiceId'] : null,
+            (int) ($state['editCategoryId'] ?? 0) > 0 ? (int) $state['editCategoryId'] : null
         );
 
         if (is_array($serviceFormData['service_form'] ?? null)) {
@@ -167,14 +167,7 @@ final class AdminDataLoader
      */
     public function captureDefinedState(array $scope): array
     {
-        $state = [];
-        foreach ($this->viewStateFactory->keys() as $key) {
-            if (array_key_exists($key, $scope)) {
-                $state[$key] = $scope[$key];
-            }
-        }
-
-        return $state;
+        return AdminStateSubset::subset($scope, $this->viewStateFactory->keys());
     }
 
     /**
@@ -191,7 +184,8 @@ final class AdminDataLoader
             is_array($state['serviceRows'] ?? null) ? $state['serviceRows'] : [],
             is_array($state['servicePriceHistoryRows'] ?? null) ? $state['servicePriceHistoryRows'] : [],
             is_array($state['categoryForm'] ?? null) ? $state['categoryForm'] : [],
-            $_GET
+            (int) ($state['editCategoryId'] ?? 0) > 0 ? (int) $state['editCategoryId'] : null,
+            (string) ($state['requestedServicesSection'] ?? '')
         );
 
         foreach ([

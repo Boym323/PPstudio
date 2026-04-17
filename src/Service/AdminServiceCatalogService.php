@@ -55,7 +55,8 @@ final class AdminServiceCatalogService
         array $servicePriceHistoryRows,
         array $serviceFilters,
         array $categoryForm,
-        array $query
+        ?int $editCategoryId,
+        string $requestedSection
     ): array {
         $servicePriceHistoryByService = [];
 
@@ -132,7 +133,7 @@ final class AdminServiceCatalogService
             'service_price_changes' => $servicePriceChanges,
             'service_price_changes_total' => count($servicePriceChanges),
             'service_price_changes_preview' => array_slice($servicePriceChanges, 0, 50),
-            'active_services_section' => $this->resolveActiveSection($categoryForm, $query),
+            'active_services_section' => $this->resolveActiveSection($categoryForm, $editCategoryId, $requestedSection),
         ];
     }
 
@@ -171,13 +172,11 @@ final class AdminServiceCatalogService
         return $data;
     }
 
-    private function resolveActiveSection(array $categoryForm, array $query): string
+    private function resolveActiveSection(array $categoryForm, ?int $editCategoryId, string $requestedSection): string
     {
-        if ((int) ($categoryForm['id'] ?? 0) > 0 || isset($query['edit_category'])) {
+        if ((int) ($categoryForm['id'] ?? 0) > 0 || ($editCategoryId ?? 0) > 0) {
             return 'categories';
         }
-
-        $requestedSection = (string) ($query['service_section'] ?? '');
 
         if (in_array($requestedSection, self::ALLOWED_SECTIONS, true)) {
             return $requestedSection;

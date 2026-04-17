@@ -12,7 +12,7 @@ final class AdminAvailabilityStoryController
 {
     public static function handle(array $server, array $get, array $post, array $session): never
     {
-        if (! self::isAuthenticated($session)) {
+        if (! AdminSessionState::isAuthenticated($session)) {
             self::respondText('Přístup odepřen.', 403);
         }
 
@@ -53,12 +53,6 @@ final class AdminAvailabilityStoryController
         imagedestroy($image);
         $connection->close();
         exit;
-    }
-
-    private static function isAuthenticated(array $session): bool
-    {
-        return (bool) ($session['ppstudio_admin_authenticated'] ?? false)
-            || (bool) ($session['ppstudio_admin_lite_authenticated'] ?? false);
     }
 
     private static function respondText(string $message, int $httpCode): never

@@ -50,24 +50,25 @@ final class AdminApplication
             'redirect_path' => 'admin.php',
             'event_source' => 'admin_login',
             'event_name_prefix' => 'admin_login',
-        ]);
+        ], $_SERVER, $_POST, $_SESSION);
 
         if (! $authState['is_authenticated']) {
             $this->renderLogin((string) $authState['login_error']);
         }
 
-        $request = AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
-        $viewState = $this->viewStateFactory->create($_GET, (string) $authState['error']);
+        $request = AdminPostActionRequest::fromHttpGlobals($_SERVER, $_GET, $_POST, $_FILES, $_SESSION);
+        $query = $request->query();
+        $viewState = $this->viewStateFactory->create($query, (string) $authState['error']);
         $viewState['adminTab'] = $this->resolveAdminTab(
-            (string) ($_GET['tab'] ?? 'dashboard'),
+            (string) ($query['tab'] ?? 'dashboard'),
             is_array($viewState['allowedAdminTabs'] ?? null) ? $viewState['allowedAdminTabs'] : []
         );
         $viewState['settingsSection'] = $this->resolveSettingsSection(
-            (string) ($_GET['tab'] ?? 'dashboard'),
-            (string) ($_GET['settings_section'] ?? 'studio')
+            (string) ($query['tab'] ?? 'dashboard'),
+            (string) ($query['settings_section'] ?? 'studio')
         );
 
-        if ($this->isPostTooLarge($request)) {
+        if ($request->isPostTooLarge((string) ini_get('post_max_size'))) {
             $viewState['error'] = 'Odesílaný formulář je příliš velký pro server. Zmenšete prosím obrázek nebo navyšte limit post_max_size v PHP.';
         }
 
@@ -124,17 +125,6 @@ final class AdminApplication
         return $settingsSection;
     }
 
-    private function isPostTooLarge(AdminPostActionRequest $request): bool
-    {
-        $contentLength = $request->contentLength();
-
-        return $request->isPost()
-            && $contentLength > 0
-            && $request->post() === []
-            && $request->files() === []
-            && $contentLength > $this->iniSizeToBytes((string) ini_get('post_max_size'));
-    }
-
     private function projectRoot(): string
     {
         return dirname(__DIR__, 4);
@@ -175,21 +165,4 @@ final class AdminApplication
         ]);
     }
 
-    private function iniSizeToBytes(string $value): int
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return 0;
-        }
-
-        $number = (float) $value;
-        $unit = strtolower(substr($value, -1));
-
-        return match ($unit) {
-            'g' => (int) ($number * 1024 * 1024 * 1024),
-            'm' => (int) ($number * 1024 * 1024),
-            'k' => (int) ($number * 1024),
-            default => (int) $number,
-        };
-    }
 }

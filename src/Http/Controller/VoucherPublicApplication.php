@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller;
 
+use PPStudio\Http\Controller\Admin\AdminSessionState;
 use PPStudio\Http\View\VoucherPublicPageRenderer;
 use PPStudio\Security\RequestSecurityService;
 use PPStudio\Security\SessionService;
@@ -51,7 +52,7 @@ final class VoucherPublicApplication
         $state = $this->voucherPublicService->loadVoucherVerifyState(
             (int) ($query['v'] ?? 0),
             trim((string) ($query['sig'] ?? '')),
-            (bool) ($_SESSION['ppstudio_admin_authenticated'] ?? false) || (bool) ($_SESSION['ppstudio_admin_lite_authenticated'] ?? false)
+            AdminSessionState::isAuthenticated($_SESSION)
         );
 
         $this->renderer->render($state);

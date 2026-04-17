@@ -65,13 +65,6 @@ final class AdminLiteDataLoader
      */
     private function captureDefinedState(array $scope): array
     {
-        $state = [];
-        foreach ($this->viewStateFactory->keys() as $key) {
-            if (array_key_exists($key, $scope)) {
-                $state[$key] = $scope[$key];
-            }
-        }
-
-        return $state;
+        return AdminStateSubset::subset($scope, $this->viewStateFactory->keys());
     }
 }

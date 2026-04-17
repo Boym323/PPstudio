@@ -15,18 +15,21 @@ final class AdminAuthenticationService
      *     event_source:string,
      *     event_name_prefix:string
      * } $options
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $post
+     * @param array<string, mixed> $session
      * @return array{is_authenticated:bool,login_error:string,error:string}
      */
-    public function handle(array $adminConfig, array $options): array
+    public function handle(array $adminConfig, array $options, array $server, array &$post, array &$session): array
     {
         $security = (new \PPStudio\Security\SecurityFacade());
         $security->startSecureSession();
 
-        $isAuthenticated = (bool) ($_SESSION[$options['auth_session_key']] ?? false);
+        $isAuthenticated = (bool) ($session[$options['auth_session_key']] ?? false);
         $loginError = '';
         $error = '';
         $loginIp = $security->getClientIpAddress();
-        $loginUsernameInput = trim((string) ($_POST['username'] ?? ''));
+        $loginUsernameInput = trim((string) ($post['username'] ?? ''));
         $loginRateState = $security->loginThrottleState(
             $options['throttle_scope'],
             $loginIp,
@@ -35,17 +38,17 @@ final class AdminAuthenticationService
         $isLocked = (bool) ($loginRateState['locked'] ?? false);
         $minutesLeft = (int) ($loginRateState['minutes_left'] ?? 0);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-            if (isset($_POST['admin_login'])) {
+        if (($server['REQUEST_METHOD'] ?? 'GET') === 'POST' && ! $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+            if (isset($post['admin_login'])) {
                 $loginError = 'Platnost přihlášení vypršela. Obnovte stránku a zkuste to znovu.';
             } else {
                 $error = 'Platnost formuláře vypršela. Obnovte stránku a akci opakujte.';
             }
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login']) && $loginError === '') {
-            $username = trim((string) ($_POST['username'] ?? ''));
-            $password = (string) ($_POST['password'] ?? '');
+        if (($server['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($post['admin_login']) && $loginError === '') {
+            $username = trim((string) ($post['username'] ?? ''));
+            $password = (string) ($post['password'] ?? '');
             $storedUsername = (string) ($adminConfig['username'] ?? '');
             $storedHash = (string) ($adminConfig['password_hash'] ?? '');
             $legacyPassword = (string) ($adminConfig['password'] ?? '');
@@ -60,8 +63,8 @@ final class AdminAuthenticationService
                     'minutes_left' => $minutesLeft,
                 ]);
             } elseif ($username === $storedUsername && $passwordMatches) {
-                $_SESSION[$options['auth_session_key']] = true;
-                $_SESSION[$options['username_session_key']] = $username;
+                $session[$options['auth_session_key']] = true;
+                $session[$options['username_session_key']] = $username;
                 $security->loginThrottleReset($options['throttle_scope'], $loginIp, $username);
                 $security->securityEventLogger()->log($options['event_name_prefix'] . '_success', $options['event_source'], 'info', [
                     'username' => $username,
@@ -93,20 +96,20 @@ final class AdminAuthenticationService
             }
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST'
-            && isset($_POST['admin_logout'])
-            && $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))
+        if (($server['REQUEST_METHOD'] ?? 'GET') === 'POST'
+            && isset($post['admin_logout'])
+            && $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))
         ) {
-            unset($_SESSION[$options['auth_session_key']], $_SESSION[$options['username_session_key']]);
+            unset($session[$options['auth_session_key']], $session[$options['username_session_key']]);
             header('Location: ' . $options['redirect_path']);
             exit;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $security->isValidCsrfToken((string) ($_POST['_csrf'] ?? ''))) {
-            $_POST = [];
+        if (($server['REQUEST_METHOD'] ?? 'GET') === 'POST' && ! $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+            $post = [];
         }
 
-        if (! $isAuthenticated && isset($_SESSION[$options['auth_session_key']])) {
+        if (! $isAuthenticated && isset($session[$options['auth_session_key']])) {
             $isAuthenticated = true;
         }
 

@@ -6,12 +6,14 @@ namespace PPStudio\Http\Request;
 final class AdminPostActionRequest
 {
     /**
+     * @param array<string, mixed> $query
      * @param array<string, mixed> $server
      * @param array<string, mixed> $post
      * @param array<string, mixed> $files
      * @param array<string, mixed> $session
      */
     public function __construct(
+        private array $query,
         private array $server,
         private array $post,
         private array $files,
@@ -21,13 +23,14 @@ final class AdminPostActionRequest
 
     /**
      * @param array<string, mixed> $server
+     * @param array<string, mixed> $query
      * @param array<string, mixed> $post
      * @param array<string, mixed> $files
      * @param array<string, mixed> $session
      */
-    public static function fromGlobals(array $server, array $post, array $files, array $session): self
+    public static function fromHttpGlobals(array $server, array $query, array $post, array $files, array $session): self
     {
-        return new self($server, $post, $files, $session);
+        return new self($query, $server, $post, $files, $session);
     }
 
     public function isPost(): bool
@@ -45,9 +48,28 @@ final class AdminPostActionRequest
         return (int) ($this->server['CONTENT_LENGTH'] ?? 0);
     }
 
+    public function isPostTooLarge(string $postMaxSize): bool
+    {
+        $contentLength = $this->contentLength();
+
+        return $this->isPost()
+            && $contentLength > 0
+            && $this->post === []
+            && $this->files === []
+            && $contentLength > $this->iniSizeToBytes($postMaxSize);
+    }
+
     public function hasPostKey(string $key): bool
     {
         return isset($this->post[$key]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function query(): array
+    {
+        return $this->query;
     }
 
     /**
@@ -80,5 +102,23 @@ final class AdminPostActionRequest
     public function session(): array
     {
         return $this->session;
+    }
+
+    private function iniSizeToBytes(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 0;
+        }
+
+        $number = (float) $value;
+        $unit = strtolower(substr($value, -1));
+
+        return match ($unit) {
+            'g' => (int) ($number * 1024 * 1024 * 1024),
+            'm' => (int) ($number * 1024 * 1024),
+            'k' => (int) ($number * 1024),
+            default => (int) $number,
+        };
     }
 }

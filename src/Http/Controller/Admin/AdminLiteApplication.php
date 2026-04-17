@@ -50,20 +50,21 @@ final class AdminLiteApplication
             'redirect_path' => 'admin-lite.php',
             'event_source' => 'admin_lite_login',
             'event_name_prefix' => 'admin_lite_login',
-        ]);
+        ], $_SERVER, $_POST, $_SESSION);
 
         if (! $authState['is_authenticated']) {
             $this->renderLogin((string) $authState['login_error']);
         }
 
-        $request = AdminPostActionRequest::fromGlobals($_SERVER, $_POST, $_FILES, $_SESSION);
-        $viewState = $this->viewStateFactory->create($_GET, (string) $authState['error']);
+        $request = AdminPostActionRequest::fromHttpGlobals($_SERVER, $_GET, $_POST, $_FILES, $_SESSION);
+        $query = $request->query();
+        $viewState = $this->viewStateFactory->create($query, (string) $authState['error']);
         $viewState['adminTab'] = $this->resolveAdminTab(
-            (string) ($_GET['tab'] ?? 'dashboard'),
+            (string) ($query['tab'] ?? 'dashboard'),
             $viewState['allowedAdminTabs']
         );
 
-        if ($this->isPostTooLarge($request)) {
+        if ($request->isPostTooLarge((string) ini_get('post_max_size'))) {
             $viewState['error'] = 'Odesílaný formulář je příliš velký pro server. Zmenšete prosím obrázek nebo navyšte limit post_max_size v PHP.';
         }
 
@@ -101,35 +102,6 @@ final class AdminLiteApplication
         }
 
         return $adminTab;
-    }
-
-    private function isPostTooLarge(AdminPostActionRequest $request): bool
-    {
-        $contentLength = $request->contentLength();
-
-        return $request->isPost()
-            && $contentLength > 0
-            && $request->post() === []
-            && $request->files() === []
-            && $contentLength > $this->iniSizeToBytes((string) ini_get('post_max_size'));
-    }
-
-    private function iniSizeToBytes(string $value): int
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return 0;
-        }
-
-        $number = (float) $value;
-        $unit = strtolower(substr($value, -1));
-
-        return match ($unit) {
-            'g' => (int) ($number * 1024 * 1024 * 1024),
-            'm' => (int) ($number * 1024 * 1024),
-            'k' => (int) ($number * 1024),
-            default => (int) $number,
-        };
     }
 
     private function renderLogin(string $loginError): never

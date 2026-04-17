@@ -5,6 +5,7 @@ namespace PPStudio\Service;
 
 use mysqli;
 use mysqli_stmt;
+use PPStudio\Http\Controller\Admin\AdminSessionState;
 use PPStudio\Repository\ReservationRepository;
 
 final class AdminReservationUpdateUseCase
@@ -172,14 +173,7 @@ final class AdminReservationUpdateUseCase
      */
     private function resolveCancelledBy(array $session): array
     {
-        $isAdmin = (bool) ($session['ppstudio_admin_authenticated'] ?? false);
-
-        return [
-            'cancelled_by' => $isAdmin ? 'admin_full' : 'admin_lite',
-            'cancelled_by_user' => $isAdmin
-                ? trim((string) ($session['ppstudio_admin_username'] ?? 'admin'))
-                : trim((string) ($session['ppstudio_admin_lite_username'] ?? 'staff')),
-        ];
+        return AdminSessionState::cancelledBy($session);
     }
 
     private function normalizeDateTimeInput(string $value): string

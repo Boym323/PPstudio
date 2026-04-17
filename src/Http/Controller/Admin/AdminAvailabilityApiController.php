@@ -15,7 +15,7 @@ final class AdminAvailabilityApiController
     {
         self::sendJsonHeaders();
 
-        if (! self::isAuthenticated($session)) {
+        if (! AdminSessionState::isAuthenticated($session)) {
             self::respondWithoutConnection(['error' => 'Nejste přihlášeni do administrace.'], 401);
         }
 
@@ -56,7 +56,7 @@ final class AdminAvailabilityApiController
     {
         self::sendJsonHeaders();
 
-        if (! self::isAuthenticated($session)) {
+        if (! AdminSessionState::isAuthenticated($session)) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Nejste přihlášeni.'], 401);
         }
 
@@ -83,7 +83,7 @@ final class AdminAvailabilityApiController
     {
         self::sendJsonHeaders();
 
-        if (! self::isAuthenticated($session)) {
+        if (! AdminSessionState::isAuthenticated($session)) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Nejste přihlášeni.'], 401);
         }
 
@@ -104,12 +104,6 @@ final class AdminAvailabilityApiController
         $result = $service->deleteWindowDetailed($post);
 
         self::respondMutationResult($result, $connection);
-    }
-
-    private static function isAuthenticated(array $session): bool
-    {
-        return (bool) ($session['ppstudio_admin_authenticated'] ?? false)
-            || (bool) ($session['ppstudio_admin_lite_authenticated'] ?? false);
     }
 
     private static function respondMutationResult(array $result, mysqli $connection): never

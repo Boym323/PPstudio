@@ -18,12 +18,14 @@ final class SitePageRenderer
 
     /**
      * @param array<string, mixed> $config
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $query
      */
-    public function render(array $config): never
+    public function render(array $config, array $server = [], array $query = []): never
     {
         \requirePublicSiteAccessOrPrompt();
 
-        $context = $this->contextBuilder->build($config);
+        $context = $this->contextBuilder->build($config, $server, $query);
         $template = (string) ($context['template'] ?? '');
         if ($template === '' || ! is_file($template)) {
             http_response_code(500);

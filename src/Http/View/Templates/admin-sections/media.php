@@ -1,11 +1,4 @@
-                <?php
-                    $activeMediaSection = 'profile';
-                    if (isset($_POST['media_section']) && in_array((string) $_POST['media_section'], ['profile', 'gallery', 'certificates'], true)) {
-                        $activeMediaSection = (string) $_POST['media_section'];
-                    } elseif (isset($_GET['media_section']) && in_array((string) $_GET['media_section'], ['profile', 'gallery', 'certificates'], true)) {
-                        $activeMediaSection = (string) $_GET['media_section'];
-                    }
-                ?>
+                <?php $activeMediaSection = in_array((string) ($activeMediaSection ?? ''), ['profile', 'gallery', 'certificates'], true) ? (string) $activeMediaSection : 'profile'; ?>
                 <section class="admin-single" id="media" data-media-root>
                     <div class="admin-card media-section-switcher" data-media-section-switcher data-initial-section="<?= \PPStudio\Support\ViewHelper::escape($activeMediaSection) ?>">
                         <p class="eyebrow">Fotky a galerie</p>

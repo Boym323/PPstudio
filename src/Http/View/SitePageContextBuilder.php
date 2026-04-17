@@ -25,29 +25,31 @@ final class SitePageContextBuilder
 
     /**
      * @param array<string, mixed> $config
+     * @param array<string, mixed> $server
+     * @param array<string, mixed> $query
      * @return array<string, mixed>
      */
-    public function build(array $config): array
+    public function build(array $config, array $server = [], array $query = []): array
     {
         $title = (string) ($config['title'] ?? 'PP Studio');
         $description = (string) ($config['description'] ?? 'PP Studio - kosmetické studio');
         $activeNav = (string) ($config['active_nav'] ?? 'home');
         $template = (string) ($config['template'] ?? '');
-        $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
+        $reservationAlertHtml = $this->reservationAlertMarkupFromQuery($query);
         $csrfToken = $this->security->getCsrfToken();
         $siteSettings = $this->siteSettingsLoader->load();
 
         $fallbackSiteUrl = rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
         $siteBaseUrl = rtrim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
         if ($siteBaseUrl === '') {
-            $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+            $host = (string) ($server['HTTP_HOST'] ?? '');
             if ($host !== '') {
-                $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $scheme = (! empty($server['HTTPS']) && $server['HTTPS'] !== 'off') ? 'https' : 'http';
                 $siteBaseUrl = $scheme . '://' . $host;
             }
         }
 
-        $requestPath = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+        $requestPath = (string) parse_url((string) ($server['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
         $requestPath = $requestPath !== '' ? $requestPath : '/';
         $canonicalUrl = $siteBaseUrl . ($requestPath === '/' ? '/' : $requestPath);
 
@@ -78,9 +80,12 @@ final class SitePageContextBuilder
         };
     }
 
-    private function reservationAlertMarkupFromQuery(): string
+    /**
+     * @param array<string, mixed> $query
+     */
+    private function reservationAlertMarkupFromQuery(array $query): string
     {
-        $reservationStatus = (string) ($_GET['reservation'] ?? '');
+        $reservationStatus = (string) ($query['reservation'] ?? '');
         $reservationMessages = [
             'success' => ['type' => 'success', 'text' => 'Rezervace byla odeslána. Děkujeme, brzy se vám ozvu.'],
             'csrf' => ['type' => 'error', 'text' => 'Platnost formuláře vypršela. Obnovte stránku a odešlete rezervaci znovu.'],
