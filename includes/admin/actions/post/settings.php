@@ -1,16 +1,23 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
-    $settingsToSave = [];
-    foreach (array_keys($studioSettingFields) as $settingKey) {
-        $settingsToSave[$settingKey] = trim((string) ($_POST[$settingKey] ?? ''));
-    }
-    $savedAll = ppstudioSiteSettingsService($connection)->saveMany($settingsToSave);
+use PPStudio\Http\Controller\Admin\AdminSettingsPostActionHandler;
+use PPStudio\Repository\SiteSettingsRepository;
+use PPStudio\Service\SiteSettingsService;
 
-    if ($savedAll) {
-        $siteSettings = array_replace($siteSettings, $settingsToSave);
-        $message = 'Nastavení studia bylo uloženo.';
-    } else {
-        $error = 'Nastavení studia se nepodařilo uložit.';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
+    $settingsHandler = new AdminSettingsPostActionHandler(
+        new SiteSettingsService(
+            new SiteSettingsRepository($connection),
+            defaultSiteSettings()
+        )
+    );
+
+    $result = $settingsHandler->saveStudioSettings($siteSettings, $studioSettingFields, $_POST);
+    $siteSettings = $result['siteSettings'];
+    if ($result['message'] !== '') {
+        $message = $result['message'];
+    }
+    if ($result['error'] !== '') {
+        $error = $result['error'];
     }
 }

@@ -4,7 +4,11 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller\Admin;
 
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Http\Controller\Admin\AdminSecurityLogDataLoader;
+use PPStudio\Http\Controller\Admin\AdminSettingsPostActionHandler;
+use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Service\MailerIntegrationService;
+use PPStudio\Service\SiteSettingsService;
 
 final class AdminApplication
 {
@@ -283,6 +287,93 @@ final class AdminApplication
             $siteSettings = loadSiteSettings($connection);
             $subscriptionCalendarUrl = (new MailerIntegrationService($this->emailConfig))
                 ->buildSubscriptionCalendarUrl($siteSettings);
+
+            $securityLogDataLoader = new AdminSecurityLogDataLoader($connection);
+            $settingsPostActionHandler = new AdminSettingsPostActionHandler(
+                new SiteSettingsService(
+                    new SiteSettingsRepository($connection),
+                    defaultSiteSettings()
+                )
+            );
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                if (isset($_POST['save_settings'])) {
+                    $result = $settingsPostActionHandler->saveStudioSettings(
+                        $siteSettings,
+                        $studioSettingFields,
+                        $_POST
+                    );
+                    $siteSettings = $result['siteSettings'];
+                    if ($result['message'] !== '') {
+                        $message = $result['message'];
+                    }
+                    if ($result['error'] !== '') {
+                        $error = $result['error'];
+                    }
+                }
+
+                if (isset($_POST['save_integrations'])) {
+                    $result = $settingsPostActionHandler->saveIntegrations(
+                        $siteSettings,
+                        [
+                            'google_reviews_url',
+                            'firmy_reviews_url',
+                            'firmy_reviews_embed',
+                            'google_place_id',
+                            'google_reviews_language',
+                        ],
+                        $_POST
+                    );
+                    $siteSettings = $result['siteSettings'];
+                    if ($result['message'] !== '') {
+                        $message = $result['message'];
+                    }
+                    if ($result['error'] !== '') {
+                        $error = $result['error'];
+                    }
+                }
+
+                if (isset($_POST['save_email_settings'])) {
+                    $result = $settingsPostActionHandler->saveEmailSettings(
+                        $siteSettings,
+                        ['notification_emails'],
+                        $_POST
+                    );
+                    $siteSettings = $result['siteSettings'];
+                    if ($result['message'] !== '') {
+                        $message = $result['message'];
+                    }
+                    if ($result['error'] !== '') {
+                        $error = $result['error'];
+                    }
+                }
+            }
+
+            $antispamData = $securityLogDataLoader->loadAntispam(
+                $antispamFilters,
+                $antispamReasonOptions,
+                $antispamLimitOptions
+            );
+            $antispamRows = $antispamData['antispam_rows'];
+            $antispamLogStats = $antispamData['antispam_log_stats'];
+            $antispamReasonOptions = $antispamData['antispam_reason_options'];
+            $antispamLimitOptions = $antispamData['antispam_limit_options'];
+            $antispamFilters = $antispamData['antispam_filters'];
+            $antispamPagination = $antispamData['antispam_pagination'];
+
+            $reminderData = $securityLogDataLoader->loadReminderLogs(
+                $reminderLogFilters,
+                $reminderLogEventOptions,
+                $reminderLogSeverityOptions,
+                $reminderLogLimitOptions
+            );
+            $reminderLogRows = $reminderData['reminder_log_rows'];
+            $reminderLogStats = $reminderData['reminder_log_stats'];
+            $reminderLogEventOptions = $reminderData['reminder_log_event_options'];
+            $reminderLogSeverityOptions = $reminderData['reminder_log_severity_options'];
+            $reminderLogLimitOptions = $reminderData['reminder_log_limit_options'];
+            $reminderLogFilters = $reminderData['reminder_log_filters'];
+            $reminderLogPagination = $reminderData['reminder_log_pagination'];
 
             foreach (AdminServiceController::formDataFiles($projectRoot) as $adminServiceFormDataFile) {
                 include $adminServiceFormDataFile;

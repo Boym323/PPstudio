@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `AdminApplication` teď volá loader pro antispam/reminder logy a settings POST workflow přímo přes nové OOP třídy; `includes/admin/actions/load_data.php` a `includes/admin/actions/post_actions.php` už tyto dvě větve nedelegují přes mezivrstvu (commit: `this-commit`)
+- [refactor] Admin antispam/reminder log loadery a settings POST workflow byly přesunuty do nových OOP tříd v `src/Http/Controller/Admin/`; původní include soubory zůstaly jen jako tenké BC wrappery, zatímco šablony i URL zůstaly beze změny (commit: `this-commit`)
 - [docs] Upraven `README.md` a `docs/CONFIGURATION.md`, aby odpovídaly současnému stavu po odstranění starých include wrapperů; `includes/settings.php` už není v dokumentaci a popis OOP přechodu je přesnější (commit: `this-commit`)
 - [refactor] `includes/mailer.php` byl odstraněn i s posledními include závislostmi v entrypointech a testech; všude zůstalo jen přímé OOP volání `PPStudio\Service\MailerIntegrationService` (commit: `this-commit`)
 - [refactor] E-mailové helpery z `includes/mailer.php` byly přesunuty do nové OOP služby `PPStudio\Service\MailerIntegrationService`; wrappery zůstaly jako BC vrstva, zatímco voucher send flow, sdílený kalendář a ICS feed teď používají přímé service volání (commit: `this-commit`)

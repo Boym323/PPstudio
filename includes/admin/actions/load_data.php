@@ -6,7 +6,6 @@ use PPStudio\Http\Controller\Admin\AdminDashboardController;
 use PPStudio\Http\Controller\Admin\AdminMediaController;
 use PPStudio\Http\Controller\Admin\AdminReservationController;
 use PPStudio\Http\Controller\Admin\AdminServiceController;
-use PPStudio\Http\Controller\Admin\AdminSecurityLogController;
 use PPStudio\Http\Controller\Admin\AdminVoucherController;
 
 $adminRoot = dirname(__DIR__, 3);
@@ -15,7 +14,6 @@ foreach (
     array_merge(
         AdminServiceController::dataFiles($adminRoot),
         AdminAvailabilityController::availabilityWindowDataFiles($adminRoot),
-        AdminSecurityLogController::dataFiles($adminRoot),
         AdminReservationController::dataFiles($adminRoot),
         AdminDashboardController::dataFiles($adminRoot),
         AdminMediaController::dataFiles($adminRoot),
