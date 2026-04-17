@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `includes/media.php` se ztenčilo na čisté BC wrappery a veškeré sestavování media/certificate/upload service graphu převzala nová OOP fasáda `PPStudio\Service\MediaFacade`; chování helperů i výstupy zůstaly stejné, ale legacy include už neduplikuje konstrukci služeb (commit: `this-commit`)
 - [refactor] `includes/bootstrap.php` je nově jen tenký entrypoint; fallback autoload a registraci legacy security helperů převzaly OOP třídy `PPStudio\Bootstrap\ProjectAutoloader` a `PPStudio\Bootstrap\LegacyBootstrap`, takže bootstrap logika už neleží inline v include souboru (commit: `this-commit`)
 - [refactor] Admin section šablony byly přesunuty z `includes/admin/sections/` do `src/Http/View/Templates/admin-sections/`; full/lite render mapy už míří jen do `src` a nevyužité legacy sekce `calendar.php` + `integrations.php` byly odstraněny (commit: `this-commit`)
 - [refactor] Antispam a reminder sekce už neobsahují inline prezentační výpočty času/kontextu/paginace; přípravu dat obsluhuje nový `AdminSecurityLogViewPresenter` a odkazy používají `adminBasePath` místo natvrdo zapsaného `/admin.php` (commit: `this-commit`)
