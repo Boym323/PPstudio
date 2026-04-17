@@ -1,10 +1,10 @@
 <?php
 
 use PPStudio\Http\Controller\Admin\AdminReservationDataLoader;
-use PPStudio\Service\AdminReservationService;
+use PPStudio\Service\AdminReservationModule;
 
 $reservationData = (new AdminReservationDataLoader(
-    new AdminReservationService($connection)
+    (new AdminReservationModule($connection))->adminReservationService()
 ))->load(
     $reservationFilters,
     $reservationStatusFilterOptions,

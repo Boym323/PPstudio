@@ -11,6 +11,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [test] Přidán CLI smoke test `scripts/run-admin-reservation-action-tests.php`, který nad dočasnou rezervací ověřuje admin AJAX delete větev v `api/admin/reservation-action.php` včetně autentizace, CSRF a skutečného smazání řádku z DB (commit: `this-commit`)
+- [refactor] Rezervační admin modul má nově sdílený assembler `AdminReservationModule`, který na jednom místě skládá list service, mutation service, reservation service a notifikace; include adaptéry i AJAX controller už nepřipravují reservation stack ručně (commit: `this-commit`)
+- [refactor] `api/admin/reservation-action.php` je nově tenký wrapper nad OOP vrstvou `AdminReservationApiController`; autentizace, CSRF, DB napojení a JSON odpověď se přesunuly do `src/`, zatímco endpoint i payload zůstaly kompatibilní (commit: `this-commit`)
+- [refactor] `AdminReservationMutationService` byla rozdělena na tři menší use-case bloky `AdminReservationUpdateUseCase`, `AdminManualReservationCreateUseCase` a `AdminReservationDeleteUseCase`; původní service zůstala jako kompatibilní fasáda pro admin i AJAX call-sitey (commit: `this-commit`)
 - [refactor] Admin rezervace mají tenčí adapter vrstvu: rozhodování POST akcí a načtení listu se přesunulo z include souborů do OOP tříd `AdminReservationPostActionHandler` a `AdminReservationDataLoader`, zatímco admin šablona i stávající proměnné zůstaly kompatibilní (commit: `this-commit`)
 - [refactor] Rezervační submit flow byl rozdělen na samostatnou `ReservationSubmitContextFactory`; `ReservationSubmitService` už neskládá DB/repository stack přímo v business metodě a dostává připravený context přes DI, což je bezpečný první krok k dalšímu OOP rozkladu (commit: `this-commit`)
 - [refactor] Společný CLI bootstrap blok pro smoke a integrační testy byl vytáhnut do `scripts/_test_helpers.php` jako `ppstudioCliTestBootstrapBase()`, takže testovací skripty už sdílí i základní include/setup vrstvu (commit: `this-commit`)
