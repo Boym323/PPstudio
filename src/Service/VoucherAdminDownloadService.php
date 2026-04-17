@@ -41,7 +41,7 @@ final class VoucherAdminDownloadService
         $expiresLabel = $expiresAt !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAt) : 'Bez omezení';
         $issuedLabel = \PPStudio\Support\FormatHelper::formatCzechDateTime((string) ($voucher['issued_at'] ?? ''));
         $note = trim((string) ($voucher['note'] ?? ''));
-        $verifyUrl = \(new \PPStudio\Security\SecurityFacade())->buildVoucherVerifyUrl($siteSettings, $voucherId, $code, $this->requestSecurityService->voucherVerifySecret());
+        $verifyUrl = (new \PPStudio\Security\SecurityFacade())->buildVoucherVerifyUrl($siteSettings, $voucherId, $code, $this->requestSecurityService->voucherVerifySecret());
         $qrPayload = $verifyUrl !== '' ? $verifyUrl : implode("\n", [
             'PP Studio - darkovy poukaz',
             'Kod: ' . $code,

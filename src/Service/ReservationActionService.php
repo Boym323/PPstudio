@@ -30,7 +30,7 @@ final class ReservationActionService
             || ! $this->linkSigner->isValidActionSignature($link['id'], $link['action'], $link['exp'], $link['nonce'], $link['sig'])
             || ! $this->linkSigner->consumeNonce($link['id'], $link['action'], $link['exp'], $link['nonce'])
         ) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_invalid_link', 'reservation_action', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_invalid_link', 'reservation_action', 'warning', [
                 'reservation_id' => $link['id'],
                 'action' => $link['action'],
                 'expires_at' => $link['exp'],
@@ -56,13 +56,13 @@ final class ReservationActionService
                 if ($link['action'] === 'confirm' && (string) ($reservationBefore['stav'] ?? '') !== 'potvrzena') {
                     $this->notificationService->sendConfirmedEmail($siteSettings, $reservationAfter);
                     $message = 'Rezervace byla potvrzena a klientce odešel potvrzovací e-mail.';
-                    \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_confirmed', 'reservation_action', 'info', [
+                    (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_confirmed', 'reservation_action', 'info', [
                         'reservation_id' => $link['id'],
                     ]);
                 } elseif ($link['action'] === 'cancel' && (string) ($reservationBefore['stav'] ?? '') !== 'zrusena') {
                     $this->notificationService->sendCancelledEmail($siteSettings, $reservationAfter);
                     $message = 'Rezervace byla zrušena a klientce odešlo oznámení.';
-                    \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_cancelled', 'reservation_action', 'warning', [
+                    (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_action_cancelled', 'reservation_action', 'warning', [
                         'reservation_id' => $link['id'],
                     ]);
                 } else {
@@ -81,7 +81,7 @@ final class ReservationActionService
         $link = $this->linkInput($request);
 
         if ($link['action'] !== 'cancel' || ! $this->linkSigner->isValidActionSignature($link['id'], $link['action'], $link['exp'], $link['nonce'], $link['sig'])) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancel_invalid_link', 'reservation_cancel', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancel_invalid_link', 'reservation_cancel', 'warning', [
                 'reservation_id' => $link['id'],
             ]);
 
@@ -99,7 +99,7 @@ final class ReservationActionService
         $statusBefore = (string) ($reservation['stav'] ?? '');
 
         if (! $this->linkSigner->canUseCustomerAction($reservation)) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancel_cutoff_reached', 'reservation_cancel', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancel_cutoff_reached', 'reservation_cancel', 'warning', [
                 'reservation_id' => $link['id'],
                 'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
             ]);
@@ -152,7 +152,7 @@ final class ReservationActionService
             $this->notificationService->sendCancelledEmail($context['site_settings'], $reservationAfter);
         }
 
-        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancelled', 'reservation_cancel', 'warning', [
+        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_cancelled', 'reservation_cancel', 'warning', [
             'reservation_id' => $link['id'],
         ]);
         $connection->close();
@@ -167,7 +167,7 @@ final class ReservationActionService
         $link = $this->linkInput($request);
 
         if ($link['action'] !== 'reschedule' || ! $this->linkSigner->isValidActionSignature($link['id'], $link['action'], $link['exp'], $link['nonce'], $link['sig'])) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_reschedule_invalid_link', 'reservation_reschedule', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_reschedule_invalid_link', 'reservation_reschedule', 'warning', [
                 'reservation_id' => $link['id'],
             ]);
 
@@ -194,7 +194,7 @@ final class ReservationActionService
         $statusBefore = (string) ($reservation['stav'] ?? '');
 
         if (! $this->linkSigner->canUseCustomerAction($reservation)) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_reschedule_cutoff_reached', 'reservation_reschedule', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_reschedule_cutoff_reached', 'reservation_reschedule', 'warning', [
                 'reservation_id' => $link['id'],
                 'reservation_datetime' => (string) ($reservation['datum_cas'] ?? ''),
             ]);
@@ -276,7 +276,7 @@ final class ReservationActionService
             $reservation = $reservationAfter;
         }
 
-        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_rescheduled', 'reservation_reschedule', 'info', [
+        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_customer_rescheduled', 'reservation_reschedule', 'info', [
             'reservation_id' => $link['id'],
             'old_datetime' => $oldDateTime,
             'new_datetime' => $newDateTime,

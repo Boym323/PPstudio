@@ -26,7 +26,7 @@ final class VoucherPublicService
         $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -47,7 +47,7 @@ final class VoucherPublicService
         $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
         $expiresLabel = $expiresAtRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAtRaw) : 'Bez omezení';
         $valueLabel = \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null);
-        $security = \(new \PPStudio\Security\SecurityFacade());
+        $security = (new \PPStudio\Security\SecurityFacade());
         $voucherUrl = $security->buildVoucherViewUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $verifyUrl = $security->buildVoucherVerifyUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $qrPayload = $voucherUrl !== '' ? $voucherUrl : implode("\n", [
@@ -58,7 +58,7 @@ final class VoucherPublicService
         ]);
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($qrPayload);
 
-        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
+        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
         ]);
@@ -88,7 +88,7 @@ final class VoucherPublicService
         $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
+            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -107,7 +107,7 @@ final class VoucherPublicService
         $status = $this->effectiveStatus($voucher);
         $expiresAt = trim((string) ($voucher['expires_at'] ?? ''));
 
-        \(new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
+        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
             'privileged_view' => $isPrivileged ? 1 : 0,

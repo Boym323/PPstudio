@@ -42,7 +42,7 @@ final class MailerIntegrationService
         $voucherValue = \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null);
         $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
         $expiresAt = $expiresAtRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAtRaw) : 'Bez omezení';
-        $voucherUrl = \(new \PPStudio\Security\SecurityFacade())->buildVoucherViewUrl(
+        $voucherUrl = (new \PPStudio\Security\SecurityFacade())->buildVoucherViewUrl(
             $siteSettings,
             (int) ($voucher['id'] ?? 0),
             $voucherCode,

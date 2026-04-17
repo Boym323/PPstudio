@@ -56,7 +56,7 @@ final class AdminSecurityLogDataLoader
             $stats['source'] = 'file_fallback';
             $stats['coverage'] = 'reservation_form_only';
 
-            $logPath = \(new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->logPath();
+            $logPath = (new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->logPath();
             if (is_file($logPath) && is_readable($logPath)) {
                 $lines = @file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
                 if (is_array($lines)) {

@@ -24,7 +24,7 @@ final class ApiGoogleReviewsController
             return null;
         }
 
-        $siteSettings = \(new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
+        $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
         $connection->close();
 
         return new self(

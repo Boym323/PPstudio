@@ -24,12 +24,12 @@ final class SitePageContextBuilder
         $template = (string) ($config['template'] ?? '');
 
         $reservationAlertHtml = $this->reservationAlertMarkupFromQuery();
-        $csrfToken = \(new \PPStudio\Security\SecurityFacade())->getCsrfToken();
+        $csrfToken = (new \PPStudio\Security\SecurityFacade())->getCsrfToken();
         $siteSettings = \defaultSiteSettings();
 
         $connection = \PPStudio\Database\DatabaseFactory::tryConnect();
         if ($connection instanceof \mysqli) {
-            $siteSettings = \(new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
+            $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
             $connection->close();
         }
 
@@ -49,7 +49,7 @@ final class SitePageContextBuilder
 
         $reservationAntispamToken = '';
         if ($activeNav === 'reservation') {
-            $reservationAntispamToken = \(new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->issueToken();
+            $reservationAntispamToken = (new \PPStudio\Security\SecurityFacade())->reservationAntispamService()->issueToken();
         }
 
         return [
