@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Security;
 
+use PPStudio\Config\AppConfig;
+
 final class PublicSiteLockService
 {
     private const SESSION_KEY = 'ppstudio_public_lock_passed';
@@ -16,7 +18,7 @@ final class PublicSiteLockService
 
     public function enabled(): bool
     {
-        $value = strtolower(trim((string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_PUBLIC_LOCK_ENABLED', '0') : '0')));
+        $value = strtolower(trim((string) AppConfig::instance()->env('PPSTUDIO_PUBLIC_LOCK_ENABLED', '0')));
 
         return in_array($value, ['1', 'true', 'yes', 'on'], true);
     }
@@ -49,12 +51,12 @@ final class PublicSiteLockService
             return false;
         }
 
-        $hash = trim((string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_PUBLIC_LOCK_PASSWORD_HASH', '') : ''));
+        $hash = trim((string) AppConfig::instance()->env('PPSTUDIO_PUBLIC_LOCK_PASSWORD_HASH', ''));
         if ($hash !== '') {
             return password_verify($password, $hash);
         }
 
-        $plain = (string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_PUBLIC_LOCK_PASSWORD', '') : '');
+        $plain = (string) AppConfig::instance()->env('PPSTUDIO_PUBLIC_LOCK_PASSWORD', '');
 
         return $plain !== '' && hash_equals($plain, $password);
     }
@@ -75,7 +77,7 @@ final class PublicSiteLockService
      */
     public function renderPage(string $errorMessage = '', ?array $server = null): never
     {
-        $siteName = \defaultSiteName();
+        $siteName = AppConfig::instance()->defaultSiteName();
         $csrf = $this->csrfService->token();
         $currentUrl = $this->currentUrl($server);
         $instagramUrl = 'https://www.instagram.com/ppstudio.cz/';

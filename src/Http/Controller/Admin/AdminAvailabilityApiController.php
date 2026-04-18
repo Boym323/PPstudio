@@ -5,6 +5,7 @@ namespace PPStudio\Http\Controller\Admin;
 
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Security\SecurityFacade;
 use PPStudio\Service\AdminAvailabilityMutationService;
 use PPStudio\Service\AvailabilityModule;
 use PPStudio\Support\DateHelper;
@@ -54,6 +55,7 @@ final class AdminAvailabilityApiController
 
     public static function handlePlannerSaveRequest(array $server, array $session, array $post, string $projectRoot): never
     {
+        $security = new SecurityFacade();
         self::sendJsonHeaders();
 
         if (! AdminSessionState::isAuthenticated($session)) {
@@ -64,7 +66,7 @@ final class AdminAvailabilityApiController
             self::respondWithoutConnection(['success' => false, 'message' => 'Nepodporovaná metoda.'], 405);
         }
 
-        if (! (new \PPStudio\Security\SecurityFacade())->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Platnost formuláře vypršela.'], 419);
         }
 
@@ -81,6 +83,7 @@ final class AdminAvailabilityApiController
 
     public static function handleWindowDeleteRequest(array $server, array $session, array $post, string $projectRoot): never
     {
+        $security = new SecurityFacade();
         self::sendJsonHeaders();
 
         if (! AdminSessionState::isAuthenticated($session)) {
@@ -91,7 +94,7 @@ final class AdminAvailabilityApiController
             self::respondWithoutConnection(['success' => false, 'message' => 'Nepodporovaná metoda.'], 405);
         }
 
-        if (! (new \PPStudio\Security\SecurityFacade())->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection(['success' => false, 'message' => 'Platnost formuláře vypršela.'], 419);
         }
 

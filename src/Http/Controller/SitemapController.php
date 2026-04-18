@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\SiteSettingsRepository;
@@ -35,14 +36,14 @@ final class SitemapController
      */
     private function resolveSiteUrl(array $server): string
     {
-        $siteUrl = rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
+        $siteUrl = rtrim((string) AppConfig::instance()->env('PPSTUDIO_SITE_URL', ''), '/');
 
         $connection = DatabaseFactory::tryConnect();
         if ($connection instanceof mysqli) {
             try {
                 $siteSettings = (new SiteSettingsService(
                     new SiteSettingsRepository($connection),
-                    \defaultSiteSettings()
+                    AppConfig::instance()->defaultSiteSettings()
                 ))->load();
                 $siteUrl = rtrim(SettingsHelper::setting($siteSettings, 'site_url', $siteUrl), '/');
             } finally {

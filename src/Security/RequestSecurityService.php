@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Security;
 
+use PPStudio\Config\AppConfig;
+
 final class RequestSecurityService
 {
     private ?string $resolvedStorageDir = null;
@@ -38,7 +40,7 @@ final class RequestSecurityService
             return $this->resolvedStorageDir;
         }
 
-        $configured = trim((string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_SECURITY_STORAGE', '') : ''));
+        $configured = trim((string) AppConfig::instance()->env('PPSTUDIO_SECURITY_STORAGE', ''));
         $candidates = [];
         if ($configured !== '') {
             $candidates[] = $configured;
@@ -200,12 +202,12 @@ final class RequestSecurityService
 
     public function voucherVerifySecret(): string
     {
-        $secret = trim((string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_VOUCHER_VERIFY_SECRET', '') : ''));
+        $secret = trim((string) AppConfig::instance()->env('PPSTUDIO_VOUCHER_VERIFY_SECRET', ''));
         if ($secret !== '') {
             return $secret;
         }
 
-        return trim((string) (\function_exists('ppstudioEnv') ? \ppstudioEnv('PPSTUDIO_ACTION_SECRET', '') : ''));
+        return trim((string) AppConfig::instance()->env('PPSTUDIO_ACTION_SECRET', ''));
     }
 
     public function buildVoucherVerifySignature(string $secret, int $voucherId, string $voucherCode): string

@@ -7,6 +7,7 @@ use mysqli;
 use mysqli_stmt;
 use PPStudio\Http\Controller\Admin\AdminSessionState;
 use PPStudio\Repository\ReservationRepository;
+use PPStudio\Security\SecurityFacade;
 
 final class AdminReservationUpdateUseCase
 {
@@ -15,8 +16,10 @@ final class AdminReservationUpdateUseCase
         private array $siteSettings,
         private ReservationRepository $reservationRepository,
         private ReservationService $reservationService,
-        private ReservationNotificationService $notificationService
+        private ReservationNotificationService $notificationService,
+        private ?SecurityFacade $securityFacade = null
     ) {
+        $this->securityFacade ??= new SecurityFacade();
     }
 
     public function handle(array $post, array $session): array
@@ -114,7 +117,7 @@ final class AdminReservationUpdateUseCase
                 $this->notificationService->sendConfirmedEmail($this->siteSettings, $reservationAfterUpdate, [
                     'previous_datetime' => $previousDateTime,
                 ]);
-                (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_admin_rescheduled', 'admin_reservation', 'info', [
+                $this->securityFacade->securityEventLogger()->log('reservation_admin_rescheduled', 'admin_reservation', 'info', [
                     'reservation_id' => $reservationId,
                     'old_datetime' => $previousDateTime,
                     'new_datetime' => $newDateTime,
@@ -123,7 +126,7 @@ final class AdminReservationUpdateUseCase
 
             if ($previousStatus !== 'zrusena' && $newStatus === 'zrusena') {
                 $this->notificationService->sendCancelledEmail($this->siteSettings, $reservationAfterUpdate);
-                (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('reservation_admin_cancelled', 'admin_reservation', 'warning', [
+                $this->securityFacade->securityEventLogger()->log('reservation_admin_cancelled', 'admin_reservation', 'warning', [
                     'reservation_id' => $reservationId,
                     'cancelled_by' => $cancelMeta['cancelled_by'],
                     'cancelled_by_user' => $cancelMeta['cancelled_by_user'],

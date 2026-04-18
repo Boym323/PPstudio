@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\SiteSettingsRepository;
 
@@ -13,7 +14,7 @@ final class SiteSettingsLoader
      */
     public function load(): array
     {
-        $appConfig = \ppstudioAppConfig();
+        $appConfig = AppConfig::instance();
         $siteSettings = $appConfig->defaultSiteSettings();
         $connection = DatabaseFactory::tryConnect();
 

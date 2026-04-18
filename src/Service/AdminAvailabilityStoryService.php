@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
 use DateTimeImmutable;
 use mysqli;
 use PPStudio\Repository\SiteSettingsRepository;
@@ -323,7 +324,7 @@ final class AdminAvailabilityStoryService
         if ($backgroundSetting === '' && $loadBackgroundFromSettings) {
             $settings = (new SiteSettingsService(
                 new SiteSettingsRepository($this->connection),
-                \defaultSiteSettings()
+                AppConfig::instance()->defaultSiteSettings()
             ))->load();
             $backgroundSetting = trim((string) ($settings['availability_story_background'] ?? ''));
         }

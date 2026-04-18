@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
+
 final class GoogleReviewsService
 {
     public function __construct(private GoogleReviewsCache $cache)
@@ -11,7 +13,7 @@ final class GoogleReviewsService
 
     public function loadPayload(array $siteSettings): array
     {
-        $apiKey = trim((string) \ppstudioEnv('PPSTUDIO_GOOGLE_PLACES_API_KEY', ''));
+        $apiKey = trim((string) AppConfig::instance()->env('PPSTUDIO_GOOGLE_PLACES_API_KEY', ''));
         $placeId = trim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_place_id', ''));
         $language = trim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'google_reviews_language', 'cs'));
         if ($language === '') {

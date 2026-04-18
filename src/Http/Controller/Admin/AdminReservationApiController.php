@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Security\SecurityFacade;
 use PPStudio\Service\AdminReservationModule;
 
 final class AdminReservationApiController
@@ -16,7 +18,8 @@ final class AdminReservationApiController
      */
     public static function handleMutationRequest(array $server, array $post, array $emailConfig): never
     {
-        (new \PPStudio\Security\SecurityFacade())->startSecureSession();
+        $security = new SecurityFacade();
+        $security->startSecureSession();
         self::sendJsonHeaders();
 
         if (! AdminSessionState::isAuthenticated($_SESSION)) {
@@ -33,7 +36,7 @@ final class AdminReservationApiController
             ], 405);
         }
 
-        if (! (new \PPStudio\Security\SecurityFacade())->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
+        if (! $security->isValidCsrfToken((string) ($post['_csrf'] ?? ''))) {
             self::respondWithoutConnection([
                 'success' => false,
                 'error' => 'Platnost formuláře vypršela. Obnovte stránku.',
@@ -48,7 +51,7 @@ final class AdminReservationApiController
             ], 500);
         }
 
-        $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), defaultSiteSettings()))->load();
+        $siteSettings = (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($connection), AppConfig::instance()->defaultSiteSettings()))->load();
         $mutationService = (new AdminReservationModule($connection, $emailConfig, $siteSettings))->mutationService();
         $result = isset($post['delete_reservation'])
             ? $mutationService->deleteReservation($post)

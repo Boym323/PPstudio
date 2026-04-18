@@ -3,8 +3,16 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Security\SecurityFacade;
+
 final class AdminAuthenticationService
 {
+    public function __construct(
+        private ?SecurityFacade $security = null
+    ) {
+        $this->security ??= new SecurityFacade();
+    }
+
     /**
      * @param array<string, mixed> $adminConfig
      * @param array{
@@ -22,7 +30,7 @@ final class AdminAuthenticationService
      */
     public function handle(array $adminConfig, array $options, array $server, array &$post, array &$session): array
     {
-        $security = (new \PPStudio\Security\SecurityFacade());
+        $security = $this->security;
         $security->startSecureSession();
 
         $isAuthenticated = (bool) ($session[$options['auth_session_key']] ?? false);

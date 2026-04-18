@@ -5,6 +5,7 @@ namespace PPStudio\Http\Controller\Admin;
 
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Security\SecurityFacade;
 use PPStudio\Service\AdminAvailabilityStoryService;
 use PPStudio\Service\AvailabilityStoryService;
 
@@ -12,13 +13,15 @@ final class AdminAvailabilityStoryController
 {
     public static function handle(array $server, array $get, array $post, array $session): never
     {
+        $security = new SecurityFacade();
+
         if (! AdminSessionState::isAuthenticated($session)) {
             self::respondText('Přístup odepřen.', 403);
         }
 
         $isPreview = ($server['REQUEST_METHOD'] ?? 'GET') === 'GET' && isset($get['preview']);
 
-        if (! $isPreview && (($server['REQUEST_METHOD'] ?? 'GET') !== 'POST' || ! (new \PPStudio\Security\SecurityFacade())->isValidCsrfToken((string) ($post['_csrf'] ?? '')))) {
+        if (! $isPreview && (($server['REQUEST_METHOD'] ?? 'GET') !== 'POST' || ! $security->isValidCsrfToken((string) ($post['_csrf'] ?? '')))) {
             self::respondText('Platnost formuláře vypršela.', 400);
         }
 

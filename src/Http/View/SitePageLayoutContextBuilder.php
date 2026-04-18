@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\View;
 
+use PPStudio\Config\AppConfig;
+
 final class SitePageLayoutContextBuilder
 {
     /**
@@ -12,13 +14,13 @@ final class SitePageLayoutContextBuilder
     public function build(array $context): array
     {
         $siteSettings = is_array($context['siteSettings'] ?? null) ? $context['siteSettings'] : [];
-        $resolvedSiteBaseUrl = (string) ($context['siteBaseUrl'] ?? rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/'));
+        $resolvedSiteBaseUrl = (string) ($context['siteBaseUrl'] ?? rtrim((string) AppConfig::instance()->env('PPSTUDIO_SITE_URL', ''), '/'));
         $canonicalUrl = (string) ($context['canonicalUrl'] ?? ($resolvedSiteBaseUrl !== '' ? $resolvedSiteBaseUrl : '') . '/');
 
         $schemaAddress = trim(\PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_address', ''));
         $schemaInstagramUrl = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_instagram_url', '');
         $schemaPhone = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'contact_phone', '+420732856036');
-        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', AppConfig::instance()->defaultSiteName());
         $schemaData = [
             '@context' => 'https://schema.org',
             '@type' => 'BeautySalon',

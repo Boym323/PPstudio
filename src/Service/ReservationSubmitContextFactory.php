@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\AvailabilityRepository;
@@ -24,7 +25,7 @@ final class ReservationSubmitContextFactory
             $this->createReservationService($connection),
             (new SiteSettingsService(
                 new SiteSettingsRepository($connection),
-                \defaultSiteSettings()
+                AppConfig::instance()->defaultSiteSettings()
             ))->load()
         );
     }

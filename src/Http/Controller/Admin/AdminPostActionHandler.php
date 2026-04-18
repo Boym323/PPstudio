@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Config\AppConfig;
 use PPStudio\Http\Request\AdminPostActionRequest;
 use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Service\AdminAvailabilityMutationService;
@@ -67,7 +68,7 @@ final class AdminPostActionHandler
         $settingsPostState = (new AdminSettingsPostActionHandler(
             new SiteSettingsService(
                 new SiteSettingsRepository($connection),
-                defaultSiteSettings()
+                AppConfig::instance()->defaultSiteSettings()
             )
         ))->handle(
             $request->server(),

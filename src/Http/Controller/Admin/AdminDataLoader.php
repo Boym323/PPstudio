@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Config\AppConfig;
 use PPStudio\Repository\AvailabilityRepository;
 use PPStudio\Repository\ReservationRepository;
 use PPStudio\Repository\ServiceRepository;
@@ -37,7 +38,7 @@ final class AdminDataLoader
     {
         $siteSettings = (new SiteSettingsService(
             new SiteSettingsRepository($connection),
-            defaultSiteSettings()
+            AppConfig::instance()->defaultSiteSettings()
         ))->load();
 
         $state['siteSettings'] = $siteSettings;

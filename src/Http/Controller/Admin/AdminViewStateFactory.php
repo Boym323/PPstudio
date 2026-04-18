@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Admin;
 
+use PPStudio\Config\AppConfig;
+
 final class AdminViewStateFactory
 {
     /**
@@ -18,7 +20,7 @@ final class AdminViewStateFactory
         return [
             'message' => '',
             'error' => $error,
-            'siteSettings' => defaultSiteSettings(),
+            'siteSettings' => AppConfig::instance()->defaultSiteSettings(),
             'availabilityRows' => [],
             'storyDefaultFrom' => '',
             'storyDefaultTo' => '',

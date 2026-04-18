@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use PPStudio\Infrastructure\Storage\UploadStorage;
 use Throwable;
@@ -262,7 +263,7 @@ final class AdminAvailabilityMutationService
         }
 
         $previousBackground = trim((string) ($this->siteSettings['availability_story_background'] ?? ''));
-        if (! (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($this->connection), defaultSiteSettings()))->save('availability_story_background', $backgroundPath)) {
+        if (! (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($this->connection), AppConfig::instance()->defaultSiteSettings()))->save('availability_story_background', $backgroundPath)) {
             return $this->error('Pozadí pro story se nepodařilo uložit do nastavení.');
         }
 
@@ -285,7 +286,7 @@ final class AdminAvailabilityMutationService
     {
         $previousBackground = trim((string) ($this->siteSettings['availability_story_background'] ?? ''));
 
-        if (! (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($this->connection), defaultSiteSettings()))->save('availability_story_background', '')) {
+        if (! (new \PPStudio\Service\SiteSettingsService(new \PPStudio\Repository\SiteSettingsRepository($this->connection), AppConfig::instance()->defaultSiteSettings()))->save('availability_story_background', '')) {
             return $this->error('Pozadí pro story se nepodařilo odstranit.');
         }
 

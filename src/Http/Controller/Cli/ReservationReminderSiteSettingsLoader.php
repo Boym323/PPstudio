@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller\Cli;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use mysqli_result;
 use PDO;
@@ -14,7 +15,7 @@ final class ReservationReminderSiteSettingsLoader
      */
     public function load(mysqli|PDO $connection): array
     {
-        $settings = \ppstudioAppConfig()->defaultSiteSettings();
+        $settings = AppConfig::instance()->defaultSiteSettings();
 
         if ($connection instanceof mysqli) {
             $query = $connection->query('SELECT setting_key, setting_value FROM nastaveni');

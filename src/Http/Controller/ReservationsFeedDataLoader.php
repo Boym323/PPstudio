@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\Controller;
 
+use PPStudio\Config\AppConfig;
 use mysqli;
 use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Service\MailerIntegrationService;
@@ -18,7 +19,7 @@ final class ReservationsFeedDataLoader
     {
         $siteSettings = (new SiteSettingsService(
             new SiteSettingsRepository($connection),
-            defaultSiteSettings()
+            AppConfig::instance()->defaultSiteSettings()
         ))->load();
 
         return [

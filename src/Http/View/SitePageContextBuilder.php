@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace PPStudio\Http\View;
 
+use PPStudio\Config\AppConfig;
 use PPStudio\Security\SecurityFacade;
 use PPStudio\Service\SiteSettingsLoader;
 
@@ -39,7 +40,7 @@ final class SitePageContextBuilder
         $csrfToken = $this->security->getCsrfToken();
         $siteSettings = $this->siteSettingsLoader->load();
 
-        $fallbackSiteUrl = rtrim((string) \ppstudioEnv('PPSTUDIO_SITE_URL', ''), '/');
+        $fallbackSiteUrl = rtrim((string) AppConfig::instance()->env('PPSTUDIO_SITE_URL', ''), '/');
         $siteBaseUrl = rtrim((string) \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_url', $fallbackSiteUrl), '/');
         if ($siteBaseUrl === '') {
             $host = (string) ($server['HTTP_HOST'] ?? '');

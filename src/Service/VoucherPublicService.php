@@ -3,15 +3,20 @@ declare(strict_types=1);
 
 namespace PPStudio\Service;
 
+use PPStudio\Config\AppConfig;
 use PPStudio\Database\DatabaseFactory;
 use PPStudio\Repository\SiteSettingsRepository;
 use PPStudio\Repository\VoucherRepository;
 use PPStudio\Security\RequestSecurityService;
+use PPStudio\Security\SecurityFacade;
 
 final class VoucherPublicService
 {
-    public function __construct(private RequestSecurityService $requestSecurityService)
-    {
+    public function __construct(
+        private RequestSecurityService $requestSecurityService,
+        private ?SecurityFacade $securityFacade = null
+    ) {
+        $this->securityFacade ??= new SecurityFacade();
     }
 
     public function loadVoucherViewState(int $voucherId, string $signature): array
@@ -23,10 +28,10 @@ final class VoucherPublicService
 
         $voucher = is_array($context['voucher'] ?? null) ? $context['voucher'] : null;
         $siteSettings = is_array($context['site_settings'] ?? null) ? $context['site_settings'] : [];
-        $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
+        $siteName = (string) ($context['site_name'] ?? AppConfig::instance()->defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
+            $this->securityFacade->securityEventLogger()->log('voucher_view_invalid', 'voucher_view', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -47,7 +52,7 @@ final class VoucherPublicService
         $expiresAtRaw = trim((string) ($voucher['expires_at'] ?? ''));
         $expiresLabel = $expiresAtRaw !== '' ? \PPStudio\Support\FormatHelper::formatCzechDate($expiresAtRaw) : 'Bez omezení';
         $valueLabel = \PPStudio\Support\FormatHelper::formatPrice($voucher['puvodni_hodnota'] ?? null);
-        $security = (new \PPStudio\Security\SecurityFacade());
+        $security = $this->securityFacade;
         $voucherUrl = $security->buildVoucherViewUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $verifyUrl = $security->buildVoucherVerifyUrl($siteSettings, (int) ($voucher['id'] ?? 0), (string) ($voucher['kod'] ?? ''), $this->requestSecurityService->voucherVerifySecret());
         $qrPayload = $voucherUrl !== '' ? $voucherUrl : implode("\n", [
@@ -58,7 +63,7 @@ final class VoucherPublicService
         ]);
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . rawurlencode($qrPayload);
 
-        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
+        $this->securityFacade->securityEventLogger()->log('voucher_view_ok', 'voucher_view', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
         ]);
@@ -85,10 +90,10 @@ final class VoucherPublicService
         }
 
         $voucher = is_array($context['voucher'] ?? null) ? $context['voucher'] : null;
-        $siteName = (string) ($context['site_name'] ?? \defaultSiteName());
+        $siteName = (string) ($context['site_name'] ?? AppConfig::instance()->defaultSiteName());
 
         if (! $this->isValidVoucherSignature($voucher, $signature)) {
-            (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
+            $this->securityFacade->securityEventLogger()->log('voucher_verify_invalid', 'voucher_verify', 'warning', [
                 'voucher_id' => $voucherId,
             ]);
 
@@ -107,7 +112,7 @@ final class VoucherPublicService
         $status = $this->effectiveStatus($voucher);
         $expiresAt = trim((string) ($voucher['expires_at'] ?? ''));
 
-        (new \PPStudio\Security\SecurityFacade())->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
+        $this->securityFacade->securityEventLogger()->log('voucher_verify_ok', 'voucher_verify', 'info', [
             'voucher_id' => (int) ($voucher['id'] ?? 0),
             'status' => $status,
             'privileged_view' => $isPrivileged ? 1 : 0,
@@ -142,9 +147,9 @@ final class VoucherPublicService
 
         $siteSettings = (new SiteSettingsService(
             new SiteSettingsRepository($connection),
-            \defaultSiteSettings()
+            AppConfig::instance()->defaultSiteSettings()
         ))->load();
-        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', \defaultSiteName());
+        $siteName = \PPStudio\Support\SettingsHelper::setting($siteSettings, 'site_name', AppConfig::instance()->defaultSiteName());
         $voucher = (new VoucherRepository($connection))->findPublicById($voucherId);
         $connection->close();
 
