@@ -141,7 +141,8 @@ final class HttpEntryPointApplication
     public function handleAdminAvailabilityStory(array $server, array $get, array $post, array $session): never
     {
         AdminSessionBootstrap::start();
-        AdminAvailabilityStoryController::handle($server, $get, $post, $session);
+        $activeSession = is_array($_SESSION ?? null) ? $_SESSION : $session;
+        AdminAvailabilityStoryController::handle($server, $get, $post, $activeSession);
     }
 
     /**
@@ -151,7 +152,8 @@ final class HttpEntryPointApplication
     public function handleAdminAvailabilityApi(array $query, array $session): never
     {
         AdminSessionBootstrap::start();
-        AdminAvailabilityApiController::handleRequest($query, $session);
+        $activeSession = is_array($_SESSION ?? null) ? $_SESSION : $session;
+        AdminAvailabilityApiController::handleRequest($query, $activeSession);
     }
 
     /**
@@ -162,7 +164,8 @@ final class HttpEntryPointApplication
     public function handleAdminAvailabilityPlannerApi(array $server, array $session, array $post): never
     {
         AdminSessionBootstrap::start();
-        AdminAvailabilityApiController::handlePlannerSaveRequest($server, $session, $post, $this->projectRoot);
+        $activeSession = is_array($_SESSION ?? null) ? $_SESSION : $session;
+        AdminAvailabilityApiController::handlePlannerSaveRequest($server, $activeSession, $post, $this->projectRoot);
     }
 
     /**
@@ -173,7 +176,8 @@ final class HttpEntryPointApplication
     public function handleAdminAvailabilityWindowApi(array $server, array $session, array $post): never
     {
         AdminSessionBootstrap::start();
-        AdminAvailabilityApiController::handleWindowDeleteRequest($server, $session, $post, $this->projectRoot);
+        $activeSession = is_array($_SESSION ?? null) ? $_SESSION : $session;
+        AdminAvailabilityApiController::handleWindowDeleteRequest($server, $activeSession, $post, $this->projectRoot);
     }
 
     /**

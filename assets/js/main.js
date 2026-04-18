@@ -237,7 +237,7 @@ function setupAvailabilityPlanner() {
                 : 'Bez neuložených změn.';
         }
         if (undoButton) undoButton.disabled = undoStack.length === 0;
-        if (saveButton) saveButton.disabled = !isDirty;
+        if (saveButton) saveButton.disabled = isSubmitting;
         resetButtons.forEach((button) => {
             button.disabled = !isDirty;
         });

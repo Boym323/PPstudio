@@ -2704,7 +2704,7 @@ body.is-sorting-categories {
 
 .availability-save-actions {
     margin-top: 0.45rem;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 .availability-save-actions-sticky {

@@ -16,8 +16,19 @@ final class AdminReservationActionTestRunner
     ) {
     }
 
-    public function run(): int
+    /**
+     * @param array<int, string> $argv
+     */
+    public function run(array $argv): int
     {
+        $argvCopy = $argv;
+        array_shift($argvCopy);
+        $isChild = in_array('--child', $argvCopy, true);
+
+        if ($isChild) {
+            return $this->runChild();
+        }
+
         ppstudioCliTestBootstrapBase();
 
         $storageDir = ppstudioCliTestTempSecurityStorageDir($this->scriptPrefix, 'ppstudio-admin-reservation-action-');
@@ -63,7 +74,7 @@ final class AdminReservationActionTestRunner
         $servicePrice = 1234.0;
         $serviceDuration = 60;
         $statement->bind_param(
-            'ssssssidiss',
+            'sssssidiss',
             $name,
             $email,
             $phone,
@@ -204,5 +215,45 @@ final class AdminReservationActionTestRunner
         ]);
 
         return ppstudioCliTestCaptureJsonChildResponse($this->scriptPrefix, $command, $childEnv, dirname(__DIR__, 2));
+    }
+
+    private function runChild(): int
+    {
+        $sessionId = trim((string) getenv('PPSTUDIO_ADMIN_RESERVATION_ACTION_SESSION_ID'));
+        if ($sessionId !== '') {
+            session_id($sessionId);
+        }
+
+        $server = json_decode((string) getenv('PPSTUDIO_ADMIN_RESERVATION_ACTION_SERVER'), true);
+        $post = json_decode((string) getenv('PPSTUDIO_ADMIN_RESERVATION_ACTION_POST'), true);
+        $server = is_array($server) ? $server : [];
+        $post = is_array($post) ? $post : [];
+        $_SERVER = array_merge($_SERVER, $server);
+        $_POST = $post;
+        $_REQUEST = array_merge($_GET, $_POST);
+
+        if ($sessionId !== '') {
+            session_start();
+            $_SESSION['ppstudio_admin_authenticated'] = true;
+            $_SESSION['ppstudio_admin_username'] = 'admin-action-test';
+        }
+
+        ob_start();
+        register_shutdown_function(static function (): void {
+            $body = ob_get_clean();
+            $code = (int) http_response_code();
+            if ($code <= 0) {
+                $code = 200;
+            }
+
+            echo json_encode([
+                'code' => $code,
+                'body' => is_string($body) ? $body : '',
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        });
+
+        require dirname(__DIR__, 2) . '/api/admin/reservation-action.php';
+
+        return 0;
     }
 }

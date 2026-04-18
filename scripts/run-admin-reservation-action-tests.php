@@ -10,4 +10,4 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/_test_helpers.php';
 
-exit((new \PPStudio\Support\AdminReservationActionTestRunner('[admin-reservation-action-tests]'))->run());
+exit((new \PPStudio\Support\AdminReservationActionTestRunner('[admin-reservation-action-tests]'))->run($argv));
