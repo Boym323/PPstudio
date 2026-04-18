@@ -19,7 +19,7 @@ final class AdminReservationApiController
     public static function handleMutationRequest(array $server, array $post, array $emailConfig): never
     {
         $security = new SecurityFacade();
-        $security->startSecureSession();
+        AdminSessionBootstrap::start();
         self::sendJsonHeaders();
 
         if (! AdminSessionState::isAuthenticated($_SESSION)) {

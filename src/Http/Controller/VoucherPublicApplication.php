@@ -4,24 +4,22 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller;
 
 use PPStudio\Http\Controller\Admin\AdminSessionState;
+use PPStudio\Http\Controller\Admin\AdminSessionBootstrap;
 use PPStudio\Http\View\VoucherPublicPageRenderer;
 use PPStudio\Security\RequestSecurityService;
-use PPStudio\Security\SessionService;
 use PPStudio\Service\VoucherPublicService;
 
 final class VoucherPublicApplication
 {
     public function __construct(
-        private SessionService $sessionService,
         private VoucherPublicService $voucherPublicService,
         private VoucherPublicPageRenderer $renderer
     ) {
     }
 
-    public static function create(SessionService $sessionService, RequestSecurityService $requestSecurityService): self
+    public static function create(RequestSecurityService $requestSecurityService): self
     {
         return new self(
-            $sessionService,
             new VoucherPublicService($requestSecurityService),
             new VoucherPublicPageRenderer()
         );
@@ -32,7 +30,7 @@ final class VoucherPublicApplication
      */
     public function handleView(array $query): never
     {
-        $this->sessionService->start();
+        AdminSessionBootstrap::start();
 
         $state = $this->voucherPublicService->loadVoucherViewState(
             (int) ($query['v'] ?? 0),
@@ -47,7 +45,7 @@ final class VoucherPublicApplication
      */
     public function handleVerify(array $query): never
     {
-        $this->sessionService->start();
+        AdminSessionBootstrap::start();
 
         $state = $this->voucherPublicService->loadVoucherVerifyState(
             (int) ($query['v'] ?? 0),

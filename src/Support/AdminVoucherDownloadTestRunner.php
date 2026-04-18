@@ -14,8 +14,19 @@ final class AdminVoucherDownloadTestRunner
     ) {
     }
 
-    public function run(): int
+    /**
+     * @param array<int, string> $argv
+     */
+    public function run(array $argv): int
     {
+        $argvCopy = $argv;
+        array_shift($argvCopy);
+        $isChild = in_array('--child', $argvCopy, true);
+
+        if ($isChild) {
+            return $this->runChildFromArgv($argvCopy);
+        }
+
         ppstudioCliTestBootstrapBase();
 
         $storageDir = ppstudioCliTestTempSecurityStorageDir($this->scriptPrefix, 'ppstudio-admin-voucher-dl-');
@@ -112,6 +123,49 @@ final class AdminVoucherDownloadTestRunner
                 @rmdir($storageDir);
             }
         }
+    }
+
+    /**
+     * @param array<int, string> $argvCopy
+     */
+    private function runChildFromArgv(array $argvCopy): int
+    {
+        $sessionId = trim((string) getenv('PPSTUDIO_ADMIN_VOUCHER_DL_SESSION_ID'));
+        if ($sessionId !== '') {
+            session_id($sessionId);
+        }
+
+        $server = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_DL_SERVER'), true);
+        $get = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_DL_GET'), true);
+        $server = is_array($server) ? $server : [];
+        $get = is_array($get) ? $get : [];
+        $_SERVER = array_merge($_SERVER, $server);
+        $_GET = $get;
+        $_REQUEST = array_merge($_GET, $_POST);
+
+        if ($sessionId !== '') {
+            session_start();
+            $_SESSION['ppstudio_admin_authenticated'] = true;
+            $_SESSION['ppstudio_admin_username'] = 'admin-dl-test';
+        }
+
+        ob_start();
+        register_shutdown_function(static function (): void {
+            $body = ob_get_clean();
+            $code = (int) http_response_code();
+            if ($code <= 0) {
+                $code = 200;
+            }
+
+            echo json_encode([
+                'code' => $code,
+                'body' => is_string($body) ? $body : '',
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        });
+
+        require dirname(__DIR__, 2) . '/admin-voucher-dl.php';
+
+        return 0;
     }
 
     private function captureChildResponse(array $server, array $get, array $env): array

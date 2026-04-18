@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace PPStudio\Http\Controller;
 
 use PPStudio\Http\Controller\Admin\AdminSessionState;
+use PPStudio\Http\Controller\Admin\AdminSessionBootstrap;
 use PPStudio\Http\View\VoucherAdminDownloadPageRenderer;
-use PPStudio\Security\SessionService;
 use PPStudio\Service\VoucherAdminDownloadService;
 
 final class VoucherAdminDownloadApplication
 {
     public function __construct(
-        private SessionService $sessionService,
         private VoucherAdminDownloadService $voucherAdminDownloadService,
         private VoucherAdminDownloadPageRenderer $renderer
     ) {
@@ -20,7 +19,6 @@ final class VoucherAdminDownloadApplication
     public static function create(): self
     {
         return new self(
-            new SessionService(),
             new VoucherAdminDownloadService((new \PPStudio\Security\SecurityFacade())->requestSecurityService()),
             new VoucherAdminDownloadPageRenderer()
         );
@@ -31,7 +29,7 @@ final class VoucherAdminDownloadApplication
      */
     public function handle(array $query): never
     {
-        $this->sessionService->start();
+        AdminSessionBootstrap::start();
 
         if (! AdminSessionState::isAuthenticated($_SESSION)) {
             $this->renderer->render([

@@ -43,6 +43,8 @@ final class AdminApplication
 
     public function handle(): never
     {
+        AdminSessionBootstrap::start();
+
         $authState = $this->authenticationService->handle($this->adminConfig, [
             'auth_session_key' => 'ppstudio_admin_authenticated',
             'username_session_key' => 'ppstudio_admin_username',

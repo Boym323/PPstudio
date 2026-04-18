@@ -76,4 +76,9 @@ assertCommandOk('Admin voucher use-case test', [
     __DIR__ . '/run-admin-voucher-usecase-tests.php',
 ]);
 
+assertCommandOk('Admin login page test', [
+    PHP_BINARY,
+    __DIR__ . '/run-admin-login-page-tests.php',
+]);
+
 echo SCRIPT_PREFIX . ' [OK] Admin use-case regression tests passed.' . PHP_EOL;

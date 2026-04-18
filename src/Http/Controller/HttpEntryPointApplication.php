@@ -5,6 +5,7 @@ namespace PPStudio\Http\Controller;
 
 use PPStudio\Http\Controller\Admin\AdminAvailabilityApiController;
 use PPStudio\Http\Controller\Admin\AdminAvailabilityStoryController;
+use PPStudio\Http\Controller\Admin\AdminSessionBootstrap;
 use PPStudio\Http\Controller\Admin\AdminReservationApiController;
 use PPStudio\Http\Request\ReservationsFeedRequest;
 use PPStudio\Http\View\SitePageCatalog;
@@ -139,7 +140,7 @@ final class HttpEntryPointApplication
      */
     public function handleAdminAvailabilityStory(array $server, array $get, array $post, array $session): never
     {
-        $this->securityFacade()->startSecureSession();
+        AdminSessionBootstrap::start();
         AdminAvailabilityStoryController::handle($server, $get, $post, $session);
     }
 
@@ -149,7 +150,7 @@ final class HttpEntryPointApplication
      */
     public function handleAdminAvailabilityApi(array $query, array $session): never
     {
-        $this->securityFacade()->startSecureSession();
+        AdminSessionBootstrap::start();
         AdminAvailabilityApiController::handleRequest($query, $session);
     }
 
@@ -160,7 +161,7 @@ final class HttpEntryPointApplication
      */
     public function handleAdminAvailabilityPlannerApi(array $server, array $session, array $post): never
     {
-        $this->securityFacade()->startSecureSession();
+        AdminSessionBootstrap::start();
         AdminAvailabilityApiController::handlePlannerSaveRequest($server, $session, $post, $this->projectRoot);
     }
 
@@ -171,7 +172,7 @@ final class HttpEntryPointApplication
      */
     public function handleAdminAvailabilityWindowApi(array $server, array $session, array $post): never
     {
-        $this->securityFacade()->startSecureSession();
+        AdminSessionBootstrap::start();
         AdminAvailabilityApiController::handleWindowDeleteRequest($server, $session, $post, $this->projectRoot);
     }
 
@@ -207,7 +208,6 @@ final class HttpEntryPointApplication
     private function voucherPublicApplication(): VoucherPublicApplication
     {
         return VoucherPublicApplication::create(
-            $this->securityFacade()->sessionService(),
             $this->securityFacade()->requestSecurityService()
         );
     }

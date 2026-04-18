@@ -31,7 +31,7 @@ final class AdminAuthenticationService
     public function handle(array $adminConfig, array $options, array $server, array &$post, array &$session): array
     {
         $security = $this->security;
-        $security->startSecureSession();
+        AdminSessionBootstrap::start();
 
         $isAuthenticated = (bool) ($session[$options['auth_session_key']] ?? false);
         $loginError = '';
