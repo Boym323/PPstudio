@@ -11,6 +11,7 @@ use mysqli_result;
 final class MailerIntegrationService
 {
     private Mailer $mailer;
+    private VoucherPdfGenerator $voucherPdfGenerator;
 
     /**
      * @param array<string, mixed> $emailConfig
@@ -18,6 +19,7 @@ final class MailerIntegrationService
     public function __construct(private array $emailConfig)
     {
         $this->mailer = new Mailer($emailConfig);
+        $this->voucherPdfGenerator = new VoucherPdfGenerator();
     }
 
     public function isEnabled(): bool
@@ -90,11 +92,14 @@ final class MailerIntegrationService
         $htmlBody .= '<p>Při návštěvě studia stačí nahlásit kód poukazu.</p>'
             . '<p>' . \PPStudio\Support\ViewHelper::escape($siteName) . '</p>';
 
+        $attachment = $this->voucherPdfGenerator->buildEmailAttachment($siteSettings, $voucher);
+
         return $this->mailer->send(
             $recipientEmail,
             $subject,
             $htmlBody,
-            $textBody
+            $textBody,
+            $attachment
         );
     }
 

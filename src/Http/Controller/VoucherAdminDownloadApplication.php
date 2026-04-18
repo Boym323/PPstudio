@@ -6,13 +6,15 @@ namespace PPStudio\Http\Controller;
 use PPStudio\Http\Controller\Admin\AdminSessionState;
 use PPStudio\Http\Controller\Admin\AdminSessionBootstrap;
 use PPStudio\Http\View\VoucherAdminDownloadPageRenderer;
+use PPStudio\Service\VoucherPdfGenerator;
 use PPStudio\Service\VoucherAdminDownloadService;
 
 final class VoucherAdminDownloadApplication
 {
     public function __construct(
         private VoucherAdminDownloadService $voucherAdminDownloadService,
-        private VoucherAdminDownloadPageRenderer $renderer
+        private VoucherAdminDownloadPageRenderer $renderer,
+        private VoucherPdfGenerator $voucherPdfGenerator
     ) {
     }
 
@@ -20,7 +22,8 @@ final class VoucherAdminDownloadApplication
     {
         return new self(
             new VoucherAdminDownloadService((new \PPStudio\Security\SecurityFacade())->requestSecurityService()),
-            new VoucherAdminDownloadPageRenderer()
+            new VoucherAdminDownloadPageRenderer(),
+            new VoucherPdfGenerator()
         );
     }
 
@@ -51,6 +54,34 @@ final class VoucherAdminDownloadApplication
         }
 
         $state = $this->voucherAdminDownloadService->loadDownloadState($voucherId);
+
+        if (strtolower(trim((string) ($query['download'] ?? ''))) === 'pdf') {
+            $siteSettings = is_array($state['site_settings'] ?? null) ? $state['site_settings'] : [];
+            $voucher = is_array($state['voucher'] ?? null) ? $state['voucher'] : [];
+            $attachment = $this->voucherPdfGenerator->buildEmailAttachment($siteSettings, $voucher);
+
+            if (is_array($attachment) && ($attachment['content'] ?? '') !== '') {
+                $this->renderer->render([
+                    'ok' => true,
+                    'mode' => 'pdf_download',
+                    'http_code' => 200,
+                    'pdf_content' => (string) ($attachment['content'] ?? ''),
+                    'pdf_filename' => (string) ($attachment['filename'] ?? ('voucher-' . $voucherId . '.pdf')),
+                ]);
+            }
+
+            $this->renderer->render([
+                'ok' => false,
+                'mode' => 'message_page',
+                'http_code' => 500,
+                'page_title' => (string) ($state['page_title'] ?? (\defaultSiteName() . ' | DL poukaz')),
+                'site_name' => (string) ($state['site_name'] ?? \defaultSiteName()),
+                'message_heading' => 'Dárkový poukaz',
+                'message' => 'PDF se nepodařilo vygenerovat.',
+                'message_size' => 'normal',
+            ]);
+        }
+
         $this->renderer->render($state);
     }
 }

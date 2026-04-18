@@ -99,6 +99,7 @@ final class AdminVoucherDownloadTestRunner
 
             ppstudioCliTestAssertSame($this->scriptPrefix, 200, (int) ($response['code'] ?? 0), 'admin-voucher-dl ma vratit HTTP 200.');
             ppstudioCliTestAssertContains($this->scriptPrefix, 'Dárkový poukaz', (string) ($response['body'] ?? ''), 'admin-voucher-dl ma obsahovat titul poukazu.');
+            ppstudioCliTestAssertContains($this->scriptPrefix, 'Stáhnout PDF', (string) ($response['body'] ?? ''), 'admin-voucher-dl ma obsahovat akci pro stazeni PDF.');
             ppstudioCliTestAssertContains($this->scriptPrefix, 'Tisk / Uložit jako PDF', (string) ($response['body'] ?? ''), 'admin-voucher-dl ma obsahovat tiskovou akci.');
             ppstudioCliTestAssertContains($this->scriptPrefix, $code, (string) ($response['body'] ?? ''), 'admin-voucher-dl ma zobrazit kod poukazu.');
 

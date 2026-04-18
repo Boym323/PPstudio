@@ -127,6 +127,7 @@ Praktický dopad:
 - V detailu aktivního poukazu lze použít akci `Odeslat e-mailem`:
 - odešle dárkový poukaz na zadaný e-mail,
 - uloží e-mail příjemce i čas posledního odeslání k poukazu.
+- e-mail nově obsahuje i PDF přílohu poukazu (`voucher-*.pdf`) připravenou pro přeposlání nebo tisk bez dalšího kroku.
 - V e-mailu se otevírá veřejná stránka dárkového poukazu:
 - je vhodná pro klientku nebo obdarovanou,
 - nabízí tlačítko `Tisk / Uložit jako PDF`,
@@ -137,6 +138,7 @@ Praktický dopad:
 - DL šablona poukazu:
 - v detailu poukazu tlačítko `DL tisk / PDF`,
 - otevře tiskovou šablonu formátu DL (210 × 99 mm) s QR a údaji poukazu,
+- v horní liště je nově vedle tisku i samostatná akce `Stáhnout PDF` pro přímé serverové stažení,
 - finální PDF se uloží přes systémové `Tisk / Uložit jako PDF`.
 - QR ověření:
 - QR vede na podepsaný odkaz `/voucher/verify?v=...&sig=...`,

@@ -20,6 +20,16 @@ final class VoucherAdminDownloadPageRenderer
             echo (string) ($state['message'] ?? 'Nepodařilo se zpracovat požadavek.');
             exit;
         }
+        if ($mode === 'pdf_download') {
+            $filename = trim((string) ($state['pdf_filename'] ?? 'voucher.pdf'));
+            if ($filename === '') {
+                $filename = 'voucher.pdf';
+            }
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . str_replace('"', '', $filename) . '"');
+            echo (string) ($state['pdf_content'] ?? '');
+            exit;
+        }
 
         if ($mode === 'voucher_dl') {
             $this->renderTemplate('voucher-dl-page', $state);

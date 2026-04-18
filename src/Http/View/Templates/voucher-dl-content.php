@@ -10,8 +10,12 @@ $issuedLabel = (string) ($view['issued_label'] ?? ($issued_label ?? ''));
 $recipient = (string) ($view['recipient'] ?? ($recipient ?? ''));
 $note = (string) ($view['note'] ?? ($note ?? ''));
 $qrUrl = (string) ($view['qr_url'] ?? ($qr_url ?? ''));
+$downloadPdfUrl = (string) ($view['download_pdf_url'] ?? ($download_pdf_url ?? ''));
 ?>
 <div class="screen-tools">
+    <?php if ($downloadPdfUrl !== ''): ?>
+        <a href="<?= \PPStudio\Support\ViewHelper::escape($downloadPdfUrl) ?>">Stáhnout PDF</a>
+    <?php endif; ?>
     <button type="button" onclick="window.print()">Tisk / Uložit jako PDF</button>
     <a href="/admin.php?tab=poukazy#poukazy">Zpět do poukazů</a>
 </div>

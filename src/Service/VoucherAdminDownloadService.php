@@ -55,7 +55,9 @@ final class VoucherAdminDownloadService
             'mode' => 'voucher_dl',
             'page_title' => $siteName . ' | DL poukaz ' . $code,
             'site_name' => $siteName,
+            'site_settings' => $siteSettings,
             'voucher' => $voucher,
+            'voucher_id' => $voucherId,
             'code' => $code,
             'recipient' => $recipient,
             'original_value_label' => \PPStudio\Support\FormatHelper::formatPrice($originalValue),
@@ -64,6 +66,7 @@ final class VoucherAdminDownloadService
             'note' => $note,
             'verify_url' => $verifyUrl,
             'qr_url' => $qrUrl,
+            'download_pdf_url' => '/admin-voucher-dl.php?id=' . $voucherId . '&download=pdf',
         ];
     }
 

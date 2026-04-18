@@ -11,6 +11,10 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-18
 
+- [feat] Odeslání poukazu z adminu teď k e-mailu automaticky přidá i PDF přílohu (`voucher-*.pdf`) generovanou serverově přes `dompdf`; při selhání generování zůstává zachovaný fallback na standardní e-mail s odkazem bez pádu odeslání (commit: `this-commit`)
+- [feat] Admin DL stránka poukazu (`admin-voucher-dl.php`) má nově vedle tisku i akci `Stáhnout PDF`, která vrací přímý serverový PDF download přes `?download=pdf` (commit: `this-commit`)
+- [fix] Serverové generování voucher PDF už používá pevný DL rozměr bez nuceného `landscape` přepnutí a bez dlouhého URL textu v pravém sloupci, takže výstup zůstává na jedné stránce (commit: `this-commit`)
+- [docs] `docs/ADMIN_MANUAL.md` byl doplněn o informaci, že e-mail s poukazem nově obsahuje i PDF přílohu připravenou pro přeposlání/tisk (commit: `this-commit`)
 - [ux] Hero sekce homepage (`includes/site/pages/home.php`) má konkrétnější prodejní copy s lokalitou „ve Zlíně“, výčtem klíčových služeb (lash lifting, laminace obočí, ošetření pleti) a jasnější hlavní CTA „Rezervovat termín ve Zlíně“ pro lepší orientaci i SEO (commit: `this-commit`)
 - [fix] Admin availability API endpointy (`availability`, `availability-planner`, `availability-window`) a `admin-availability-story.php` teď čtou session konzistentně až po `AdminSessionBootstrap::start()`, takže ukládání dostupnosti nepadá na generickou chybu kvůli neaktuální/nezavedené session při AJAX požadavku (commit: `this-commit`)
 - [fix] Admin voucher POST smoke test už správně obsluhuje `--child` režim a nepadá do rekurzivního spouštění skriptu; wrapper zároveň předává `$argv`, takže test znovu běží stabilně bez chyby `Too many connections` (commit: `this-commit`)
