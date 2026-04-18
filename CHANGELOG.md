@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-18
 
+- [fix] V admin sekci dostupnosti je výběr týdne přesunut blíže ke kalendářní mřížce, aby byl ovládací prvek vizuálně a kontextově snáze dostupný (commit: `this-commit`)
+
 - [feat] Odeslání poukazu z adminu teď k e-mailu automaticky přidá i PDF přílohu (`voucher-*.pdf`) generovanou serverově přes `dompdf`; při selhání generování zůstává zachovaný fallback na standardní e-mail s odkazem bez pádu odeslání (commit: `this-commit`)
 - [feat] Admin DL stránka poukazu (`admin-voucher-dl.php`) má nově vedle tisku i akci `Stáhnout PDF`, která vrací přímý serverový PDF download přes `?download=pdf` (commit: `this-commit`)
 - [fix] Serverové generování voucher PDF už používá pevný DL rozměr bez nuceného `landscape` přepnutí a bez dlouhého URL textu v pravém sloupci, takže výstup zůstává na jedné stránce (commit: `this-commit`)

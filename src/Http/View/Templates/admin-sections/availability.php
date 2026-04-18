@@ -3,17 +3,6 @@
                         <p class="eyebrow">Dostupnost</p>
                         <h2>Plánování volných termínů</h2>
                         <p class="form-hint availability-intro">Pro běžnou práci používejte denní režim. Týdenní režim je vhodný pro hromadné úpravy a kontrolu celého týdne.</p>
-                        <div class="availability-toolbar">
-                            <div class="availability-week-summary">
-                                <span class="availability-summary-label">Zobrazený týden</span>
-                                <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
-                            </div>
-                            <div class="table-actions availability-week-actions">
-                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
-                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
-                                <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
-                            </div>
-                        </div>
                         <form method="post" class="admin-form" data-availability-planner-form data-save-endpoint="/api/admin/availability-planner.php">
                             <?= csrfInputField() ?>
                             <input type="hidden" name="planner_start" value="<?= \PPStudio\Support\ViewHelper::escape($plannerDays[0] ?? '') ?>">
@@ -28,6 +17,18 @@
                                 <div class="availability-mode-switch" role="group" aria-label="Režim plánování">
                                     <button class="button button-secondary button-small is-active" type="button" data-planner-mode-trigger="daily">Denní režim</button>
                                     <button class="button button-secondary button-small" type="button" data-planner-mode-trigger="weekly">Týdenní režim</button>
+                                </div>
+                            </div>
+
+                            <div class="availability-toolbar">
+                                <div class="availability-week-summary">
+                                    <span class="availability-summary-label">Zobrazený týden</span>
+                                    <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
+                                </div>
+                                <div class="table-actions availability-week-actions">
+                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
                                 </div>
                             </div>
 
