@@ -20,18 +20,6 @@
                                 </div>
                             </div>
 
-                            <div class="availability-toolbar">
-                                <div class="availability-week-summary">
-                                    <span class="availability-summary-label">Zobrazený týden</span>
-                                    <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
-                                </div>
-                                <div class="table-actions availability-week-actions">
-                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
-                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
-                                    <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
-                                </div>
-                            </div>
-
                             <div class="availability-daily-entry" data-availability-daily-entry>
                                 <p class="eyebrow">Denní režim</p>
                                 <div class="availability-daily-headline">
@@ -225,6 +213,17 @@
                                     <span class="legend-item"><i class="legend-swatch is-past"></i>Minulé</span>
                                     <span class="legend-item"><i class="legend-swatch is-weekend"></i>Víkend</span>
                                     <span class="legend-item"><i class="legend-swatch is-holiday"></i>Svátek</span>
+                                </div>
+                                <div class="availability-toolbar">
+                                    <div class="availability-week-summary">
+                                        <span class="availability-summary-label">Zobrazený týden</span>
+                                        <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
+                                    </div>
+                                    <div class="table-actions availability-week-actions">
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
+                                    </div>
                                 </div>
                                 <div
                                     class="availability-planner"
