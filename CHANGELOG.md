@@ -11,6 +11,9 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Render regression test pro availability story byl přesunut do `PPStudio\Support\AvailabilityStoryRenderRegressionTestRunner`; `scripts/run-availability-story-render-regression-tests.php` je teď tenký wrapper a fixture/background logika zůstala beze změny (commit: `this-commit`)
+- [refactor] Admin voucher DL smoke test byl přesunut do `PPStudio\Support\AdminVoucherDownloadTestRunner`; `scripts/run-admin-voucher-dl-tests.php` už jen startuje namespaced runner, ale auth/session i render kontroly zůstaly stejné (commit: `this-commit`)
+- [refactor] Admin voucher POST smoke test byl přesunut do `PPStudio\Support\AdminVoucherPostTestRunner`; `scripts/run-admin-voucher-post-tests.php` je teď pouze vstupní wrapper a create/redeem scénáře běží beze změny v OOP třídě (commit: `this-commit`)
 - [refactor] Public flow smoke testy pro rezervace a poukazy byly přesunuty do `PPStudio\Support\ReservationPublicFlowTestRunner` a `PPStudio\Support\VoucherPublicFlowTestRunner`; původní skripty jsou teď jen tenké wrappery nad namespaced runnerem a scénáře child režimu zůstaly stejné (commit: `this-commit`)
 - [refactor] Admin reservation action smoke test byl přesunut do `PPStudio\Support\AdminReservationActionTestRunner`; `scripts/run-admin-reservation-action-tests.php` už slouží jen jako tenký CLI vstup bez ztráty původních auth/CSRF/delete kontrol (commit: `this-commit`)
 - [refactor] Rezervační integrační CLI test byl přesunut do `PPStudio\Support\ReservationIntegrationTestRunner`; původní `scripts/run-reservation-integration.php` je teď jen tenký vstup a worker/basic/concurrency flow zůstaly beze změny (commit: `this-commit`)
