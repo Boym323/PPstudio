@@ -3,14 +3,14 @@
         <div class="hero-text hero-text-left">
             <img src="/assets/images/LOGO1.PNG" alt="PP Studio logo" class="hero-logo" loading="eager" decoding="async">
             <h1>PP <span>Studio</span></h1>
-            <p>Vytvořila jsem pro vás prostor, kde se čas na chvíli zastaví. Dopřejte si profesionální péči, harmonickou atmosféru a odejděte odpočatá a sebevědomá.</p>
+            <p>Profesionální kosmetická péče ve Zlíně. Lash lifting, laminace obočí a ošetření pleti v příjemném prostředí s individuálním přístupem.</p>
             <div class="hero-benefits">
                 <span class="hero-benefit">Příjemné prostředí</span>
                 <span class="hero-benefit">Individuální přístup</span>
                 <span class="hero-benefit">Online rezervace 24/7</span>
             </div>
             <div class="hero-cta-group">
-                <a href="/rezervace.php" class="cta-button cta-button-primary">Objednat se online</a>
+                <a href="/rezervace.php" class="cta-button cta-button-primary">Rezervovat termín</a>
                 <a href="/cenik.php" class="cta-button cta-button-ghost">Zobrazit ceník</a>
             </div>
             <p class="hero-cta-note">Rychlé online objednání, potvrzení termínu e-mailem.</p>

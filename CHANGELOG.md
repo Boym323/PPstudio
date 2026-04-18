@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-18
 
+- [ux] Hero sekce homepage (`includes/site/pages/home.php`) má konkrétnější prodejní copy s lokalitou „ve Zlíně“, výčtem klíčových služeb (lash lifting, laminace obočí, ošetření pleti) a jasnější hlavní CTA „Rezervovat termín ve Zlíně“ pro lepší orientaci i SEO (commit: `this-commit`)
 - [fix] Admin availability API endpointy (`availability`, `availability-planner`, `availability-window`) a `admin-availability-story.php` teď čtou session konzistentně až po `AdminSessionBootstrap::start()`, takže ukládání dostupnosti nepadá na generickou chybu kvůli neaktuální/nezavedené session při AJAX požadavku (commit: `this-commit`)
 - [fix] Admin voucher POST smoke test už správně obsluhuje `--child` režim a nepadá do rekurzivního spouštění skriptu; wrapper zároveň předává `$argv`, takže test znovu běží stabilně bez chyby `Too many connections` (commit: `this-commit`)
 - [fix] Opravený admin voucher DL smoke test už správně zpracovává `--child` režim, takže se nespouští rekurzivně sám do sebe a znovu ověřuje reálný `admin-voucher-dl.php` flow (commit: `this-commit`)
