@@ -26,6 +26,17 @@
                                     <strong>Rychlá úprava jednoho dne</strong>
                                     <span>Vyberte den, klepnutím zapínejte nebo vypínejte sloty a případně použijte hromadnou úpravu rozsahu.</span>
                                 </div>
+                                <div class="availability-toolbar availability-week-toolbar">
+                                    <div class="availability-week-summary">
+                                        <span class="availability-summary-label">Zobrazený týden</span>
+                                        <strong><?= \PPStudio\Support\ViewHelper::escape($plannerWeekLabel) ?></strong>
+                                    </div>
+                                    <div class="table-actions availability-week-actions">
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset - 1)) ?>#dostupnost">Předchozí</a>
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=0#dostupnost">Tento týden</a>
+                                        <a class="button button-secondary button-small" href="<?= \PPStudio\Support\ViewHelper::escape($adminBasePath ?? '/admin.php') ?>?tab=dostupnost&amp;planner_week=<?= \PPStudio\Support\ViewHelper::escape((string) ($plannerWeekOffset + 1)) ?>#dostupnost">Další</a>
+                                    </div>
+                                </div>
                                 <div class="admin-form admin-form-grid availability-daily-grid">
                                     <label class="availability-day-select">
                                         <span>Vybraný den</span>
