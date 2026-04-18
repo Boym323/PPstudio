@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Sdílené CLI test helpery a maintenance runner byly přesunuty do OOP tříd `PPStudio\Support\CliTestSupport` a `PPStudio\Support\DatabaseMaintenanceRunner`; `scripts/_test_helpers.php` i `database/run_db_maintenance.php` teď fungují jen jako tenké BC vstupy nad namespaced logikou (commit: `this-commit`)
 - [refactor] `VoucherAdminDownloadPageRenderer` už nerenderuje přes `extract()`; DL/message page teď dostávají explicitní `__view` payload a lokální `site-page` layout umí bezpečně číst jak nový explicitní kontrakt, tak starší proměnné bez změny výstupu (commit: `this-commit`)
 - [refactor] Full i lite admin teď skládají explicitnější request objekt i s query parametry, kontrola přihlášeného admin session je sjednocená v `AdminSessionState` a subset view-state používá sdílený helper místo čtyř duplicitních implementací (commit: `this-commit`)
 - [test] Rezervační integrační runner už nehádá fixní datum `+365 days`, ale vyhledá skutečně prázdný budoucí den bez existující dostupnosti, takže scénář mimo dostupnost zůstává deterministický i při zbytcích starších fixture dat v DB (commit: `this-commit`)
