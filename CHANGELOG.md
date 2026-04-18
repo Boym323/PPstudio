@@ -11,6 +11,8 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] Public flow smoke testy pro rezervace a poukazy byly přesunuty do `PPStudio\Support\ReservationPublicFlowTestRunner` a `PPStudio\Support\VoucherPublicFlowTestRunner`; původní skripty jsou teď jen tenké wrappery nad namespaced runnerem a scénáře child režimu zůstaly stejné (commit: `this-commit`)
+- [refactor] Admin reservation action smoke test byl přesunut do `PPStudio\Support\AdminReservationActionTestRunner`; `scripts/run-admin-reservation-action-tests.php` už slouží jen jako tenký CLI vstup bez ztráty původních auth/CSRF/delete kontrol (commit: `this-commit`)
 - [refactor] Rezervační integrační CLI test byl přesunut do `PPStudio\Support\ReservationIntegrationTestRunner`; původní `scripts/run-reservation-integration.php` je teď jen tenký vstup a worker/basic/concurrency flow zůstaly beze změny (commit: `this-commit`)
 - [refactor] Admin reservation use-case CLI test byl přesunut do `PPStudio\Support\AdminReservationUsecaseTestRunner`; skript `scripts/run-admin-reservation-usecase-tests.php` už jen předává řízení nové třídě, ale fixture setup, cleanup i očekávané stavy zůstaly stejné (commit: `this-commit`)
 - [refactor] Admin voucher use-case CLI test byl přesunut do `PPStudio\Support\AdminVoucherUsecaseTestRunner`; `scripts/run-admin-voucher-usecase-tests.php` je teď tenký wrapper nad namespaced runnerem při zachování batch, e-mail i redeem scénářů (commit: `this-commit`)
