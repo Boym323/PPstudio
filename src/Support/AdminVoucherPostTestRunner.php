@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use mysqli;
 use mysqli_result;
 use PPStudio\Database\DatabaseFactory;
+use PPStudio\Service\AdminVoucherModule;
 use Throwable;
 
 final class AdminVoucherPostTestRunner
@@ -16,8 +17,19 @@ final class AdminVoucherPostTestRunner
     ) {
     }
 
-    public function run(): int
+    /**
+     * @param array<int, string> $argv
+     */
+    public function run(array $argv): int
     {
+        $argvCopy = $argv;
+        array_shift($argvCopy);
+        $isChild = in_array('--child', $argvCopy, true);
+
+        if ($isChild) {
+            return $this->runChild();
+        }
+
         ppstudioCliTestBootstrapBase();
 
         $storageDir = ppstudioCliTestTempSecurityStorageDir($this->scriptPrefix, 'ppstudio-admin-voucher-post-');
@@ -231,5 +243,42 @@ final class AdminVoucherPostTestRunner
         ]);
 
         return ppstudioCliTestCaptureJsonChildResponse($this->scriptPrefix, $command, $childEnv, dirname(__DIR__, 2));
+    }
+
+    private function runChild(): int
+    {
+        ppstudioCliTestBootstrapBase();
+
+        $server = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_SERVER'), true);
+        $post = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_POST'), true);
+        $voucherForm = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_FORM'), true);
+        $voucherBatchForm = json_decode((string) getenv('PPSTUDIO_ADMIN_VOUCHER_POST_BATCH_FORM'), true);
+
+        $server = is_array($server) ? $server : [];
+        $post = is_array($post) ? $post : [];
+        $voucherForm = is_array($voucherForm) ? $voucherForm : [];
+        $voucherBatchForm = is_array($voucherBatchForm) ? $voucherBatchForm : [];
+
+        $_SERVER = array_merge($_SERVER, $server);
+        $_POST = $post;
+        $_REQUEST = array_merge($_GET, $_POST);
+
+        $connection = DatabaseFactory::connect();
+
+        try {
+            $result = (new AdminVoucherModule($connection, [], []))
+                ->postActionHandler()
+                ->handle($_SERVER, $_POST, $voucherForm, $voucherBatchForm);
+
+            echo json_encode([
+                'code' => 200,
+                'message' => (string) ($result['message'] ?? ''),
+                'error' => (string) ($result['error'] ?? ''),
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            return 0;
+        } finally {
+            $connection->close();
+        }
     }
 }

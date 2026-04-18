@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-18
 
+- [fix] Admin voucher POST smoke test už správně obsluhuje `--child` režim a nepadá do rekurzivního spouštění skriptu; wrapper zároveň předává `$argv`, takže test znovu běží stabilně bez chyby `Too many connections` (commit: `this-commit`)
 - [fix] Opravený admin voucher DL smoke test už správně zpracovává `--child` režim, takže se nespouští rekurzivně sám do sebe a znovu ověřuje reálný `admin-voucher-dl.php` flow (commit: `this-commit`)
 - [refactor] Opakované startování session bylo sjednoceno přes `AdminSessionBootstrap`; admin entrypointy a voucher download/public vstupy teď používají jeden helper místo několika přímých `startSecureSession()` volání (commit: `this-commit`)
 - [fix] Full i lite admin teď startují session ještě před autentizací, takže `admin.php` a `admin-lite.php` už nepadnou na `TypeError` při prvním načtení; doplněn i CLI smoke test pro obě přihlašovací stránky (commit: `this-commit`)
