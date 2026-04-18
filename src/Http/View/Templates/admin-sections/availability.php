@@ -50,16 +50,6 @@
                                             <?php endif; ?>
                                         </select>
                                     </label>
-                                    <div class="availability-daily-summary" data-daily-summary>
-                                        <div class="summary-item">
-                                            <span>Den</span>
-                                            <strong data-daily-summary-day><?= \PPStudio\Support\ViewHelper::escape($plannerEditableDays === [] ? 'Žádné budoucí dny' : \PPStudio\Support\FormatHelper::formatCzechDate($plannerEditableDays[0] ?? '')) ?></strong>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Volné sloty</span>
-                                            <strong data-daily-summary-total>0</strong>
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="availability-daily-legend">
                                     <span class="legend-item"><i class="legend-swatch is-active"></i>Dostupné</span>
