@@ -8,6 +8,9 @@ $inline_styles = <<<'CSS'
         .card { background: #fffaf4; border: 1px solid #dcc8b5; border-radius: 20px; padding: 26px; }
 CSS;
 
-$content_template = 'voucher-message-content';
+$__view = array_merge(is_array($__view ?? null) ? $__view : [], [
+    'inline_styles' => $inline_styles,
+    'content_template' => 'voucher-message-content',
+]);
 
 require __DIR__ . '/layouts/site-page.php';

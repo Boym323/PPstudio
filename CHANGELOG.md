@@ -11,6 +11,7 @@ Všechny důležité změny v projektu se evidují v tomto souboru.
 
 ## 2026-04-17
 
+- [refactor] `VoucherAdminDownloadPageRenderer` už nerenderuje přes `extract()`; DL/message page teď dostávají explicitní `__view` payload a lokální `site-page` layout umí bezpečně číst jak nový explicitní kontrakt, tak starší proměnné bez změny výstupu (commit: `this-commit`)
 - [refactor] Full i lite admin teď skládají explicitnější request objekt i s query parametry, kontrola přihlášeného admin session je sjednocená v `AdminSessionState` a subset view-state používá sdílený helper místo čtyř duplicitních implementací (commit: `this-commit`)
 - [test] Rezervační integrační runner už nehádá fixní datum `+365 days`, ale vyhledá skutečně prázdný budoucí den bez existující dostupnosti, takže scénář mimo dostupnost zůstává deterministický i při zbytcích starších fixture dat v DB (commit: `this-commit`)
 - [refactor] Public site page render now receives request server/query data explicitly from `HttpEntryPointApplication` and admin media tab selection is carried in view state instead of reading `$_GET`/`$_POST` directly inside OOP view/template code, reducing hidden coupling without changing output (commit: `this-commit`)

@@ -128,6 +128,9 @@ $inline_styles = <<<'CSS'
         }
 CSS;
 
-$content_template = 'voucher-dl-content';
+$__view = array_merge(is_array($__view ?? null) ? $__view : [], [
+    'inline_styles' => $inline_styles,
+    'content_template' => 'voucher-dl-content',
+]);
 
 require __DIR__ . '/layouts/site-page.php';

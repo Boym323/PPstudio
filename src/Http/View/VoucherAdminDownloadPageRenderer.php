@@ -33,7 +33,7 @@ final class VoucherAdminDownloadPageRenderer
      */
     private function renderTemplate(string $name, array $variables): never
     {
-        extract($variables, EXTR_SKIP);
+        $__view = $variables;
         require __DIR__ . '/Templates/' . $name . '.php';
         exit;
     }
